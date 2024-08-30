@@ -2,7 +2,8 @@
 <resources>
     <string name="app_name">Orientation Control</string>
     <string name="app_hash_tag">#ScreenOrientationControl</string>
-
+    <string name="menu_description_plugged_orientation">menu_description_plugged_orientation</string>
+    <string name="menu_title_plugged_orientation">menu_title_plugged_orientation</string>
     <string name="notification_channel_name">@string/app_name</string>
     <string name="custom_widget">Custom Widget</string>
 
