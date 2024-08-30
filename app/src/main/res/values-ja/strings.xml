@@ -8,7 +8,8 @@
 
     <string name="ok">OK</string>
     <string name="cancel">キャンセル</string>
-
+    <string name="menu_description_plugged_orientation">menu_description_plugged_orientation</string>
+    <string name="menu_title_plugged_orientation">menu_title_plugged_orientation</string>
     <string name="label_unspecified">未指定</string>
     <string name="label_portrait">縦</string>
     <string name="label_landscape">横</string>
