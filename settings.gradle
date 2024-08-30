@@ -1,0 +1,2 @@
+rootProject.name = "YiTate"
+include ':app'
