@@ -21,11 +21,8 @@ jobs:
       with:
         arguments: build
 
-    - name: Tree
-      run: find /home/runner -type f -name "*.apk"
-
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
-        name: build_apk
-        path: ${{ env.APK_PATH }}
+        name: build-output-apk
+        path: /home/runner/work/YiTate/YiTate/app/build/outputs/apk/release/*.apk
