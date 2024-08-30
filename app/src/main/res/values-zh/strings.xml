@@ -142,9 +142,9 @@
     <string name="options_menu_source_code">源码</string>
     <string name="options_menu_privacy_policy">隐私政策</string>
     <string name="options_menu_mail_to_developer">给开发者发邮件</string>
-    <string name="options_menu_share_this_app">分享这个App</string>
+    <string name="options_menu_share_this_app">分享这个 App</string>
     <string name="options_menu_play_store">Google Play 商店</string>
-    <string name="options_menu_relevant_ads">相关广告</string>
+    <string name="options_menu_relevant_ads">相关内容</string>
 
     <string name="menu_title_widget_config">Widget Config</string>
     <string name="menu_widget_config_divider">↑enabled icons\n↓disabled icons</string>
