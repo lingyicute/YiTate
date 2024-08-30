@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2020 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2020 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.control
+package net.lyi.orientation.control
 
 import android.content.Context
 import androidx.room.Room
@@ -18,8 +18,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.mm2d.orientation.room.PackageSettingEntity
-import net.mm2d.orientation.room.PackageSettingsDatabase
+import net.lyi.orientation.room.PackageSettingEntity
+import net.lyi.orientation.room.PackageSettingsDatabase
 import javax.inject.Inject
 import javax.inject.Singleton
 

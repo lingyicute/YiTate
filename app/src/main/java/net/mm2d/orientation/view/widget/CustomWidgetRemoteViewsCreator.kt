@@ -1,4 +1,4 @@
-package net.mm2d.orientation.view.widget
+package net.lyi.orientation.view.widget
 
 import android.app.PendingIntent
 import android.content.Context
@@ -7,15 +7,15 @@ import android.widget.RemoteViews
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.annotation.IdRes
-import net.mm2d.android.orientationfaker.BuildConfig
-import net.mm2d.android.orientationfaker.R
-import net.mm2d.orientation.control.Functions
-import net.mm2d.orientation.control.PendingIntentCreator
-import net.mm2d.orientation.room.WidgetSettingEntity
-import net.mm2d.orientation.settings.OrientationPreference
-import net.mm2d.orientation.util.alpha
-import net.mm2d.orientation.util.opaque
-import net.mm2d.orientation.view.widget.ViewIds.ViewId
+import net.lyi.android.orientationfaker.BuildConfig
+import net.lyi.android.orientationfaker.R
+import net.lyi.orientation.control.Functions
+import net.lyi.orientation.control.PendingIntentCreator
+import net.lyi.orientation.room.WidgetSettingEntity
+import net.lyi.orientation.settings.OrientationPreference
+import net.lyi.orientation.util.alpha
+import net.lyi.orientation.util.opaque
+import net.lyi.orientation.view.widget.ViewIds.ViewId
 
 class CustomWidgetRemoteViewsCreator(
     private val context: Context,

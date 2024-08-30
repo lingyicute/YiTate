@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2021 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2021 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.settings
+package net.lyi.orientation.settings
 
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
-import net.mm2d.orientation.control.Orientation
+import net.lyi.orientation.control.Orientation
 import javax.inject.Inject
 import javax.inject.Singleton
 

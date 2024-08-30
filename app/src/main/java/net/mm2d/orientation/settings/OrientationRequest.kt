@@ -1,13 +1,13 @@
 /*
- * Copyright (c) 2021 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2021 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.settings
+package net.lyi.orientation.settings
 
-import net.mm2d.orientation.control.Orientation
+import net.lyi.orientation.control.Orientation
 
 data class OrientationRequest(
     val orientation: Orientation = Orientation.INVALID,

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2018 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.util
+package net.lyi.orientation.util
 
 import android.app.Activity
 import android.content.Context
@@ -16,10 +16,10 @@ import android.os.Build.VERSION
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.ShareCompat
-import net.mm2d.android.orientationfaker.BuildConfig
-import net.mm2d.android.orientationfaker.R
-import net.mm2d.orientation.constant.Constants
-import net.mm2d.orientation.tabs.CustomTabsHelper
+import net.lyi.android.orientationfaker.BuildConfig
+import net.lyi.android.orientationfaker.R
+import net.lyi.orientation.constant.Constants
+import net.lyi.orientation.tabs.CustomTabsHelper
 
 object Launcher {
     private fun openUri(context: Context, uri: String): Boolean = runCatching {

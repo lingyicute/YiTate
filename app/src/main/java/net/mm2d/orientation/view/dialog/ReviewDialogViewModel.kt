@@ -1,17 +1,17 @@
 /*
- * Copyright (c) 2021 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2021 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view.dialog
+package net.lyi.orientation.view.dialog
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import net.mm2d.orientation.settings.PreferenceRepository
-import net.mm2d.orientation.settings.ReviewPreferenceRepository
+import net.lyi.orientation.settings.PreferenceRepository
+import net.lyi.orientation.settings.ReviewPreferenceRepository
 import javax.inject.Inject
 
 @HiltViewModel

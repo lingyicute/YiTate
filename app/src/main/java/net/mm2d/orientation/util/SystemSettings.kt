@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2020 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2020 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.util
+package net.lyi.orientation.util
 
 import android.app.Activity
 import android.app.AppOpsManager
@@ -17,8 +17,8 @@ import android.os.Process
 import android.provider.Settings
 import android.provider.Settings.System
 import androidx.core.content.getSystemService
-import net.mm2d.android.orientationfaker.BuildConfig
-import net.mm2d.android.orientationfaker.R
+import net.lyi.android.orientationfaker.BuildConfig
+import net.lyi.android.orientationfaker.R
 
 object SystemSettings {
     private fun startSystemSettings(activity: Activity, action: String, withPackage: Boolean = true) {

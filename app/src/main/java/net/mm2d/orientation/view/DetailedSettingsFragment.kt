@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2018 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view
+package net.lyi.orientation.view
 
 import android.os.Bundle
 import android.view.View
@@ -17,26 +17,26 @@ import androidx.fragment.app.viewModels
 import androidx.gridlayout.widget.GridLayout
 import androidx.transition.TransitionManager
 import dagger.hilt.android.AndroidEntryPoint
-import net.mm2d.android.orientationfaker.R
-import net.mm2d.android.orientationfaker.databinding.FragmentDetailedSettingsBinding
+import net.lyi.android.orientationfaker.R
+import net.lyi.android.orientationfaker.databinding.FragmentDetailedSettingsBinding
 import net.mm2d.color.chooser.ColorChooserDialog
-import net.mm2d.orientation.control.FunctionButton
-import net.mm2d.orientation.control.Functions
-import net.mm2d.orientation.control.Orientation
-import net.mm2d.orientation.control.mapOrientation
-import net.mm2d.orientation.settings.Default
-import net.mm2d.orientation.util.SystemSettings
-import net.mm2d.orientation.util.Toaster
-import net.mm2d.orientation.util.alpha
-import net.mm2d.orientation.util.autoCleared
-import net.mm2d.orientation.util.opaque
-import net.mm2d.orientation.view.dialog.IconShapeDialog
-import net.mm2d.orientation.view.dialog.OrientationHelpDialog
-import net.mm2d.orientation.view.dialog.OrientationSelectDialog
-import net.mm2d.orientation.view.dialog.ResetLayoutDialog
-import net.mm2d.orientation.view.dialog.ResetThemeDialog
-import net.mm2d.orientation.view.view.CheckItemView
-import net.mm2d.orientation.view.view.SwitchMenuView
+import net.lyi.orientation.control.FunctionButton
+import net.lyi.orientation.control.Functions
+import net.lyi.orientation.control.Orientation
+import net.lyi.orientation.control.mapOrientation
+import net.lyi.orientation.settings.Default
+import net.lyi.orientation.util.SystemSettings
+import net.lyi.orientation.util.Toaster
+import net.lyi.orientation.util.alpha
+import net.lyi.orientation.util.autoCleared
+import net.lyi.orientation.util.opaque
+import net.lyi.orientation.view.dialog.IconShapeDialog
+import net.lyi.orientation.view.dialog.OrientationHelpDialog
+import net.lyi.orientation.view.dialog.OrientationSelectDialog
+import net.lyi.orientation.view.dialog.ResetLayoutDialog
+import net.lyi.orientation.view.dialog.ResetThemeDialog
+import net.lyi.orientation.view.view.CheckItemView
+import net.lyi.orientation.view.view.SwitchMenuView
 
 @AndroidEntryPoint
 class DetailedSettingsFragment : Fragment(R.layout.fragment_detailed_settings) {

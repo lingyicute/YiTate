@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2022 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2022 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.util
+package net.lyi.orientation.util
 
 import android.os.Build
 import android.os.Bundle

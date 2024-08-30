@@ -22,7 +22,7 @@
     </queries>
 
     <application
-        android:name="net.mm2d.orientation.App"
+        android:name="net.lyi.orientation.App"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/full_backup_content"
@@ -36,7 +36,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:targetActivity="net.mm2d.orientation.view.MainActivity"
+            android:targetActivity="net.lyi.orientation.view.MainActivity"
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -46,31 +46,31 @@
         </activity-alias>
 
         <activity
-            android:name="net.mm2d.orientation.view.MainActivity"
+            android:name="net.lyi.orientation.view.MainActivity"
             android:exported="false"
             android:launchMode="singleTask"
             />
         <activity
-            android:name="net.mm2d.orientation.view.LicenseActivity"
+            android:name="net.lyi.orientation.view.LicenseActivity"
             android:exported="false"
             android:label="@string/options_menu_license"
             />
 
         <activity
-            android:name="net.mm2d.orientation.view.CustomWidgetConfigActivity"
+            android:name="net.lyi.orientation.view.CustomWidgetConfigActivity"
             android:exported="false"
             android:theme="@style/Theme.Orientation.NoActionBar"
             />
 
         <service
-            android:name="net.mm2d.orientation.service.MainService"
+            android:name="net.lyi.orientation.service.MainService"
             android:enabled="true"
             android:exported="false"
             android:permission="${applicationId}.permission"
             />
 
         <receiver
-            android:name="net.mm2d.orientation.view.widget.WidgetProvider"
+            android:name="net.lyi.orientation.view.widget.WidgetProvider"
             android:enabled="true"
             android:exported="false"
             >
@@ -84,7 +84,7 @@
                 />
         </receiver>
         <receiver
-            android:name="net.mm2d.orientation.view.widget.CustomWidgetProvider"
+            android:name="net.lyi.orientation.view.widget.CustomWidgetProvider"
             android:enabled="true"
             android:exported="false"
             android:label="@string/custom_widget"
@@ -99,7 +99,7 @@
                 />
         </receiver>
         <receiver
-            android:name="net.mm2d.orientation.service.WakeUpReceiver"
+            android:name="net.lyi.orientation.service.WakeUpReceiver"
             android:enabled="true"
             android:exported="false"
             >
@@ -125,13 +125,13 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name="net.mm2d.orientation.control.OrientationReceiver"
+            android:name="net.lyi.orientation.control.OrientationReceiver"
             android:enabled="true"
             android:exported="true"
             android:permission="${applicationId}.permission"
             >
             <intent-filter>
-                <action android:name="net.mm2d.android.orientationfaker.ACTION_ORIENTATION" />
+                <action android:name="net.lyi.android.orientationfaker.ACTION_ORIENTATION" />
             </intent-filter>
         </receiver>
     </application>

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2021 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2021 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.settings
+package net.lyi.orientation.settings
 
 import android.content.Context
 import androidx.datastore.core.DataMigration
@@ -16,8 +16,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
-import net.mm2d.orientation.control.Orientation
-import net.mm2d.orientation.control.toOrientation
+import net.lyi.orientation.control.Orientation
+import net.lyi.orientation.control.toOrientation
 import javax.inject.Inject
 import javax.inject.Singleton
 

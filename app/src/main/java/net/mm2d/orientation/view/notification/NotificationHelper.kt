@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2018 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view.notification
+package net.lyi.orientation.view.notification
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -16,14 +16,14 @@ import android.os.Build
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
-import net.mm2d.android.orientationfaker.R
-import net.mm2d.orientation.control.FunctionButton.LauncherButton
-import net.mm2d.orientation.control.Functions
-import net.mm2d.orientation.control.PendingIntentCreator
-import net.mm2d.orientation.settings.ControlPreference
-import net.mm2d.orientation.settings.DesignPreference
-import net.mm2d.orientation.settings.OrientationPreference
-import net.mm2d.orientation.view.widget.RemoteViewsCreator
+import net.lyi.android.orientationfaker.R
+import net.lyi.orientation.control.FunctionButton.LauncherButton
+import net.lyi.orientation.control.Functions
+import net.lyi.orientation.control.PendingIntentCreator
+import net.lyi.orientation.settings.ControlPreference
+import net.lyi.orientation.settings.DesignPreference
+import net.lyi.orientation.settings.OrientationPreference
+import net.lyi.orientation.view.widget.RemoteViewsCreator
 
 object NotificationHelper {
     private const val CHANNEL_ID = "CONTROL"

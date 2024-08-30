@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2019 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2019 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.review
+package net.lyi.orientation.review
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -14,11 +14,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
-import net.mm2d.orientation.control.Orientation
-import net.mm2d.orientation.settings.OrientationPreference
-import net.mm2d.orientation.settings.PreferenceRepository
-import net.mm2d.orientation.settings.ReviewPreference
-import net.mm2d.orientation.view.dialog.ReviewDialog
+import net.lyi.orientation.control.Orientation
+import net.lyi.orientation.settings.OrientationPreference
+import net.lyi.orientation.settings.PreferenceRepository
+import net.lyi.orientation.settings.ReviewPreference
+import net.lyi.orientation.view.dialog.ReviewDialog
 import java.util.concurrent.TimeUnit
 
 object ReviewRequest {

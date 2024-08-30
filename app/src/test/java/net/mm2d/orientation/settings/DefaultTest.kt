@@ -1,4 +1,4 @@
-package net.mm2d.orientation.settings
+package net.lyi.orientation.settings
 
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4

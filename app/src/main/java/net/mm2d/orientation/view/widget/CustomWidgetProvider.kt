@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2023 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2023 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view.widget
+package net.lyi.orientation.view.widget
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
@@ -28,11 +28,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
-import net.mm2d.orientation.control.Orientation
-import net.mm2d.orientation.settings.DesignPreference
-import net.mm2d.orientation.settings.OrientationPreference
-import net.mm2d.orientation.settings.PreferenceRepository
-import net.mm2d.orientation.settings.WidgetSettingsRepository
+import net.lyi.orientation.control.Orientation
+import net.lyi.orientation.settings.DesignPreference
+import net.lyi.orientation.settings.OrientationPreference
+import net.lyi.orientation.settings.PreferenceRepository
+import net.lyi.orientation.settings.WidgetSettingsRepository
 import javax.inject.Inject
 
 @AndroidEntryPoint

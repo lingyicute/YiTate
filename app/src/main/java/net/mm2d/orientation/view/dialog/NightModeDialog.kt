@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2020 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2020 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view.dialog
+package net.lyi.orientation.view.dialog
 
 import android.app.Dialog
 import android.os.Bundle
@@ -14,8 +14,8 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import net.mm2d.android.orientationfaker.R
-import net.mm2d.orientation.settings.NightModes
+import net.lyi.android.orientationfaker.R
+import net.lyi.orientation.settings.NightModes
 
 class NightModeDialog : DialogFragment() {
     private val modes = listOf(

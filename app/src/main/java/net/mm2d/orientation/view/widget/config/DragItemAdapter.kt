@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2023 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2023 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view.widget.config
+package net.lyi.orientation.view.widget.config
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -15,11 +15,11 @@ import androidx.core.view.children
 import androidx.recyclerview.widget.DiffUtil.ItemCallback
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import net.mm2d.android.orientationfaker.R
-import net.mm2d.android.orientationfaker.databinding.ItemSortItemBinding
-import net.mm2d.orientation.control.Functions
-import net.mm2d.orientation.room.WidgetSettingEntity
-import net.mm2d.orientation.util.Toaster
+import net.lyi.android.orientationfaker.R
+import net.lyi.android.orientationfaker.databinding.ItemSortItemBinding
+import net.lyi.orientation.control.Functions
+import net.lyi.orientation.room.WidgetSettingEntity
+import net.lyi.orientation.util.Toaster
 
 class DragItemAdapter(
     private val activity: Activity,

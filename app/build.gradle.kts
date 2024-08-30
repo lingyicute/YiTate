@@ -21,11 +21,11 @@ val versionMinor = 1
 val versionPatch = 2
 
 android {
-    namespace = "net.mm2d.android.orientationfaker"
+    namespace = "net.lyi.android.orientationfaker"
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "net.mm2d.android.orientationfaker"
+        applicationId = "net.lyi.android.orientationfaker"
         minSdk = 26
         targetSdk = 33
         versionCode = versionMajor * 10000 + versionMinor * 100 + versionPatch

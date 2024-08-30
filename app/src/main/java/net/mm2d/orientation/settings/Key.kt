@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2020 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2020 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.settings
+package net.lyi.orientation.settings
 
 import android.content.Context
 import androidx.annotation.Keep
@@ -18,7 +18,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import net.mm2d.android.orientationfaker.BuildConfig
+import net.lyi.android.orientationfaker.BuildConfig
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 

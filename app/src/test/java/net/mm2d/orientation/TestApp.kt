@@ -1,4 +1,4 @@
-package net.mm2d.orientation
+package net.lyi.orientation
 
 import android.app.Application
 

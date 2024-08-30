@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2023 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2023 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view
+package net.lyi.orientation.view
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
@@ -14,12 +14,12 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
-import net.mm2d.orientation.control.FunctionButton
-import net.mm2d.orientation.room.WidgetSettingEntity
-import net.mm2d.orientation.settings.Default
-import net.mm2d.orientation.settings.IconShape
-import net.mm2d.orientation.settings.WidgetSettingsRepository
-import net.mm2d.orientation.util.doOnNext
+import net.lyi.orientation.control.FunctionButton
+import net.lyi.orientation.room.WidgetSettingEntity
+import net.lyi.orientation.settings.Default
+import net.lyi.orientation.settings.IconShape
+import net.lyi.orientation.settings.WidgetSettingsRepository
+import net.lyi.orientation.util.doOnNext
 import javax.inject.Inject
 
 @HiltViewModel

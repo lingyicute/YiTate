@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2023 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2023 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.room
+package net.lyi.orientation.room
 
 import android.os.Parcelable
 import androidx.room.ColumnInfo
@@ -13,10 +13,10 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 import kotlinx.parcelize.Parcelize
-import net.mm2d.orientation.control.FunctionButton
-import net.mm2d.orientation.control.FunctionButton.Companion.toFunctionButtons
-import net.mm2d.orientation.control.FunctionButton.Companion.toSerializedString
-import net.mm2d.orientation.settings.IconShape
+import net.lyi.orientation.control.FunctionButton
+import net.lyi.orientation.control.FunctionButton.Companion.toFunctionButtons
+import net.lyi.orientation.control.FunctionButton.Companion.toSerializedString
+import net.lyi.orientation.settings.IconShape
 
 @Entity(tableName = "widget_settings")
 @Parcelize

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2020 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2020 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view.dialog
+package net.lyi.orientation.view.dialog
 
 import android.app.Dialog
 import android.content.DialogInterface
@@ -14,8 +14,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import net.mm2d.android.orientationfaker.R
-import net.mm2d.orientation.util.SystemSettings
+import net.lyi.android.orientationfaker.R
+import net.lyi.orientation.util.SystemSettings
 
 class UsageAppPermissionDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

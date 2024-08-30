@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2023 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2023 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view.widget.config
+package net.lyi.orientation.view.widget.config
 
 import android.content.ClipData
 import android.os.Handler
@@ -15,7 +15,7 @@ import android.view.View
 import android.view.View.DragShadowBuilder
 import android.view.View.OnDragListener
 import androidx.recyclerview.widget.RecyclerView
-import net.mm2d.orientation.control.Functions
+import net.lyi.orientation.control.Functions
 
 class InvisibleDragHelper : DragHelper, OnDragListener {
     private val handler = Handler(Looper.getMainLooper())

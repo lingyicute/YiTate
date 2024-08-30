@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2021 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2021 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.settings
+package net.lyi.orientation.settings
 
 import android.content.Context
 import androidx.datastore.core.DataMigration
@@ -15,10 +15,10 @@ import androidx.datastore.preferences.core.edit
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import net.mm2d.orientation.control.FunctionButton
-import net.mm2d.orientation.control.FunctionButton.Companion.migrateFromOrientations
-import net.mm2d.orientation.control.FunctionButton.Companion.toSerializedString
-import net.mm2d.orientation.control.FunctionButton.LauncherButton
+import net.lyi.orientation.control.FunctionButton
+import net.lyi.orientation.control.FunctionButton.Companion.migrateFromOrientations
+import net.lyi.orientation.control.FunctionButton.Companion.toSerializedString
+import net.lyi.orientation.control.FunctionButton.LauncherButton
 import javax.inject.Inject
 import javax.inject.Singleton
 

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2021 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2021 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.control
+package net.lyi.orientation.control
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -16,9 +16,9 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.core.content.getSystemService
-import net.mm2d.android.orientationfaker.R
-import net.mm2d.orientation.util.Powers
-import net.mm2d.orientation.util.Toaster
+import net.lyi.android.orientationfaker.R
+import net.lyi.orientation.util.Powers
+import net.lyi.orientation.util.Toaster
 
 class SensorHelper(
     private val context: Context,
