@@ -149,4 +149,6 @@
     <string name="menu_title_widget_config">Widget Config</string>
     <string name="menu_widget_config_divider">↑enabled icons\n↓disabled icons</string>
     <string name="menu_title_widget_list">Widget List</string>
+    <string name="menu_description_plugged_orientation">menu_description_plugged_orientation</string>
+    <string name="menu_title_plugged_orientation">menu_title_plugged_orientation</string>
 </resources>
