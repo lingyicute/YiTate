@@ -1,30 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="fg_notification">#FFFFFF</color>
-    <color name="bg_notification">#212121</color>
-    <color name="bg_notification_selected">#448AFF</color>
-    <color name="bg_notification_base">#00000000</color>
-
-    <color name="translucent_gray">#337F7F7F</color>
-
-    <color name="red_600">#E53935</color>
-    <color name="red_a700">#D50000</color>
-
-    <color name="blue_500">#2196F3</color>
-    <color name="blue_900">#0D47A1</color>
-    <color name="blue_a700">#2962FF</color>
-
-    <color name="green_600">#43A047</color>
-    <color name="green_a400">#00E676</color>
-
-    <color name="gray_100">#F5F5F5</color>
-    <color name="gray_300">#E0E0E0</color>
-    <color name="gray_500">#9E9E9E</color>
-    <color name="gray_600">#757575</color>
-    <color name="gray_800">#424242</color>
-    <color name="gray_900">#212121</color>
-
-    <color name="black">#000000</color>
-    <color name="white">#FFFFFF</color>
-
+    <color name="logo_bg">#4D8FFF</color>
+    <color name="button_bg">#30808080</color>
+    <color name="selected_bg">#50808080</color>
+    <color name="icon_tint">#4D8FFF</color>
 </resources>

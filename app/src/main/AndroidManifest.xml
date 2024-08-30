@@ -1,139 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    >
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
 
-    <permission android:name="${applicationId}.permission" />
-
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission
-        android:name="android.permission.PACKAGE_USAGE_STATS"
-        tools:ignore="ProtectedPermissions"
-        />
-
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.MAIN" />
-        </intent>
-    </queries>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
-        android:name="net.lyi.orientation.App"
-        android:allowBackup="false"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/full_backup_content"
-        android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.Orientation.NoActionBar"
-        tools:ignore="GoogleAppIndexingWarning,UnusedAttribute"
-        >
-        <activity-alias
-            android:name=".MainActivity"
-            android:exported="true"
+            android:allowBackup="false"
+            android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
-            android:targetActivity="net.lyi.orientation.view.MainActivity"
-            >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
+            android:roundIcon="@mipmap/ic_launcher"
+            android:supportsRtl="true"
+            android:theme="@style/AppTheme"
+            tools:targetApi="31">
         <activity
-            android:name="net.lyi.orientation.view.MainActivity"
-            android:exported="false"
-            android:launchMode="singleTask"
-            />
-        <activity
-            android:name="net.lyi.orientation.view.LicenseActivity"
-            android:exported="false"
-            android:label="@string/options_menu_license"
-            />
-
-        <activity
-            android:name="net.lyi.orientation.view.CustomWidgetConfigActivity"
-            android:exported="false"
-            android:theme="@style/Theme.Orientation.NoActionBar"
-            />
-
-        <service
-            android:name="net.lyi.orientation.service.MainService"
-            android:enabled="true"
-            android:exported="false"
-            android:permission="${applicationId}.permission"
-            />
-
-        <receiver
-            android:name="net.lyi.orientation.view.widget.WidgetProvider"
-            android:enabled="true"
-            android:exported="false"
-            >
+                android:name=".MainActivity"
+                android:exported="true"
+                android:label="@string/app_name"
+                android:theme="@style/AppTheme">
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
 
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_info"
-                />
-        </receiver>
-        <receiver
-            android:name="net.lyi.orientation.view.widget.CustomWidgetProvider"
-            android:enabled="true"
-            android:exported="false"
-            android:label="@string/custom_widget"
-            >
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/custom_widget_info"
-                />
-        </receiver>
-        <receiver
-            android:name="net.lyi.orientation.service.WakeUpReceiver"
-            android:enabled="true"
-            android:exported="false"
-            >
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.USER_PRESENT" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </receiver>
-        <receiver
-            android:name="net.lyi.orientation.control.OrientationReceiver"
-            android:enabled="true"
-            android:exported="true"
-            android:permission="${applicationId}.permission"
-            >
-            <intent-filter>
-                <action android:name="net.lyi.android.orientationfaker.ACTION_ORIENTATION" />
-            </intent-filter>
-        </receiver>
+        </activity>
+        <service android:name=".service.YiTateService"
+                 android:exported="true"/>
     </application>
 
 </manifest>
