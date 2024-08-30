@@ -16,6 +16,9 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
+    - name: rm
+      run: rm -rf /home/runner/.gradle
+
     - name: Gradle build
       uses: gradle/gradle-build-action@v2
       with:
