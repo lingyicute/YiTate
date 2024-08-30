@@ -19,10 +19,11 @@ jobs:
     - name: rm
       run: rm -rf /home/runner/.gradle
 
-    - name: Gradle build
-      uses: gradle/gradle-build-action@v2
-      with:
-        arguments: build
+    - name: Build APK
+      run: |
+        cd ${{ github.workspace }}
+        chmod 755 gradlew
+        ./gradlew assembleDebug
 
     - name: Tree
       run: find /home/runner -type f -name "*.apk"
