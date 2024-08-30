@@ -21,7 +21,7 @@ Please use at your own risk.
 
 ## Install
 
-[Google Play](https://play.google.com/store/apps/details?id=net.mm2d.android.orientationfaker)
+[GitHub Releases](https://github.com/lingyicute/YiTate/releases)
 
 ## Feature
 
