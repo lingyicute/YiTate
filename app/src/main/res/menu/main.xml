@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+    <item
+        android:id="@+id/license"
+        android:orderInCategory="100"
+        android:title="@string/options_menu_license"
+        app:showAsAction="never"
+        />
+    <item
+        android:id="@+id/source_code"
+        android:orderInCategory="101"
+        android:title="@string/options_menu_source_code"
+        app:showAsAction="never"
+        />
+    <item
+        android:id="@+id/privacy_policy"
+        android:orderInCategory="102"
+        android:title="@string/options_menu_privacy_policy"
+        app:showAsAction="never"
+        />
+    <item
+        android:id="@+id/mail_to_developer"
+        android:orderInCategory="103"
+        android:title="@string/options_menu_mail_to_developer"
+        app:showAsAction="never"
+        />
+    <item
+        android:id="@+id/share_this_app"
+        android:orderInCategory="104"
+        android:title="@string/options_menu_share_this_app"
+        app:showAsAction="never"
+        />
+    <item
+        android:id="@+id/play_store"
+        android:orderInCategory="105"
+        android:title="@string/options_menu_play_store"
+        app:showAsAction="never"
+        />
+</menu>
