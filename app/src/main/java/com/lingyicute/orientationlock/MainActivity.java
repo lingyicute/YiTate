@@ -105,7 +105,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
         }
         findViewById(R.id.iv_about).setOnClickListener(v -> {
-            Uri uri = Uri.parse("https://github.com/lingyicute/YiTate");
+            Uri uri = Uri.parse("https://github.com/lingyicute/YiTate/blob/main/README.md");
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);
             try {
                 startActivity(intent);
