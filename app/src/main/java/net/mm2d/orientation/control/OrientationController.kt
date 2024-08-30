@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2020 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2020 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.control
+package net.lyi.orientation.control
 
 import android.content.Context
 import android.graphics.PixelFormat

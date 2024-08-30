@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2018 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view.dialog
+package net.lyi.orientation.view.dialog
 
 import android.app.Dialog
 import android.os.Bundle
@@ -13,7 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import net.mm2d.android.orientationfaker.R
+import net.lyi.android.orientationfaker.R
 
 class ResetThemeDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2018 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.tabs
+package net.lyi.orientation.tabs
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner

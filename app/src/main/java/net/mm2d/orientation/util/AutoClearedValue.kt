@@ -16,7 +16,7 @@
 
 // https://github.com/android/architecture-components-samples/blob/main/GithubBrowserSample/app/src/main/java/com/android/example/github/util/AutoClearedValue.kt
 
-package net.mm2d.orientation.util
+package net.lyi.orientation.util
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver

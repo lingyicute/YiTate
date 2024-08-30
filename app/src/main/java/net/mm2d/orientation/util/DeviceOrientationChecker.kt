@@ -1,18 +1,18 @@
 /*
- * Copyright (c) 2021 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2021 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.util
+package net.lyi.orientation.util
 
 import android.app.Activity
 import android.content.res.Configuration
 import android.os.Build
 import android.view.Display
 import android.view.Surface
-import net.mm2d.orientation.settings.PreferenceRepository
+import net.lyi.orientation.settings.PreferenceRepository
 
 object DeviceOrientationChecker {
     suspend fun check(activity: Activity, preferenceRepository: PreferenceRepository) {

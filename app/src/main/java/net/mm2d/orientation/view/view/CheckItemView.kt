@@ -1,19 +1,19 @@
 /*
- * Copyright (c) 2020 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2020 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view.view
+package net.lyi.orientation.view.view
 
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import androidx.constraintlayout.widget.ConstraintLayout
-import net.mm2d.android.orientationfaker.databinding.ViewCheckItemBinding
-import net.mm2d.orientation.control.FunctionButton
-import net.mm2d.orientation.control.FunctionButton.OrientationButton
+import net.lyi.android.orientationfaker.databinding.ViewCheckItemBinding
+import net.lyi.orientation.control.FunctionButton
+import net.lyi.orientation.control.FunctionButton.OrientationButton
 
 class CheckItemView @JvmOverloads constructor(
     context: Context,

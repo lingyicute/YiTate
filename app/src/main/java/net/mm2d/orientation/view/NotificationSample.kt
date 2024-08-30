@@ -1,25 +1,25 @@
 /*
- * Copyright (c) 2018 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2018 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view
+package net.lyi.orientation.view
 
 import android.view.View
 import android.widget.ImageView
 import androidx.annotation.ColorInt
 import androidx.core.view.isVisible
-import net.mm2d.android.orientationfaker.R
-import net.mm2d.orientation.control.FunctionButton
-import net.mm2d.orientation.control.FunctionButton.OrientationButton
-import net.mm2d.orientation.control.Functions
-import net.mm2d.orientation.settings.DesignPreference
-import net.mm2d.orientation.settings.OrientationPreference
-import net.mm2d.orientation.util.alpha
-import net.mm2d.orientation.util.opaque
-import net.mm2d.orientation.view.widget.ViewIds
+import net.lyi.android.orientationfaker.R
+import net.lyi.orientation.control.FunctionButton
+import net.lyi.orientation.control.FunctionButton.OrientationButton
+import net.lyi.orientation.control.Functions
+import net.lyi.orientation.settings.DesignPreference
+import net.lyi.orientation.settings.OrientationPreference
+import net.lyi.orientation.util.alpha
+import net.lyi.orientation.util.opaque
+import net.lyi.orientation.view.widget.ViewIds
 
 class NotificationSample(view: View) {
     val buttonList: List<ButtonViews> = ViewIds.notification.map {

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2021 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2021 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view
+package net.lyi.orientation.view
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
@@ -14,11 +14,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import net.mm2d.orientation.control.FunctionButton
-import net.mm2d.orientation.control.Orientation
-import net.mm2d.orientation.control.mapOrientation
-import net.mm2d.orientation.settings.IconShape
-import net.mm2d.orientation.settings.PreferenceRepository
+import net.lyi.orientation.control.FunctionButton
+import net.lyi.orientation.control.Orientation
+import net.lyi.orientation.control.mapOrientation
+import net.lyi.orientation.settings.IconShape
+import net.lyi.orientation.settings.PreferenceRepository
 import javax.inject.Inject
 
 @HiltViewModel

@@ -1,15 +1,15 @@
 /*
- * Copyright (c) 2018 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2018 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.control
+package net.lyi.orientation.control
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
-import net.mm2d.orientation.util.Powers
+import net.lyi.orientation.util.Powers
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.abs

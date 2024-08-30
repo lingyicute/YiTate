@@ -1,13 +1,13 @@
 /*
- * Copyright (c) 2023 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2023 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.control
+package net.lyi.orientation.control
 
-import net.mm2d.orientation.control.FunctionButton.OrientationButton
+import net.lyi.orientation.control.FunctionButton.OrientationButton
 import java.io.Serializable
 
 sealed interface FunctionButton : Serializable {

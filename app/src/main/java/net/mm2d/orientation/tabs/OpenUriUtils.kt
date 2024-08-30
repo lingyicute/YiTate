@@ -1,18 +1,18 @@
 /*
- * Copyright (c) 2018 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2018 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.tabs
+package net.lyi.orientation.tabs
 
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import net.mm2d.orientation.util.queryIntentActivitiesCompat
-import net.mm2d.orientation.util.resolveActivityCompat
+import net.lyi.orientation.util.queryIntentActivitiesCompat
+import net.lyi.orientation.util.resolveActivityCompat
 
 object OpenUriUtils {
     private var defaultBrowserPackage: String? = null

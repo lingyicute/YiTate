@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2020 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2020 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view
+package net.lyi.orientation.view
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -46,18 +46,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.mm2d.android.orientationfaker.R
-import net.mm2d.android.orientationfaker.databinding.FragmentEachAppBinding
-import net.mm2d.android.orientationfaker.databinding.ItemEachAppBinding
-import net.mm2d.orientation.control.ForegroundPackageSettings
-import net.mm2d.orientation.control.Functions
-import net.mm2d.orientation.control.Orientation
-import net.mm2d.orientation.util.SystemSettings
-import net.mm2d.orientation.util.autoCleared
-import net.mm2d.orientation.util.getInstalledPackagesCompat
-import net.mm2d.orientation.util.queryIntentActivitiesCompat
-import net.mm2d.orientation.view.dialog.EachAppOrientationDialog
-import net.mm2d.orientation.view.dialog.UsageAppPermissionDialog
+import net.lyi.android.orientationfaker.R
+import net.lyi.android.orientationfaker.databinding.FragmentEachAppBinding
+import net.lyi.android.orientationfaker.databinding.ItemEachAppBinding
+import net.lyi.orientation.control.ForegroundPackageSettings
+import net.lyi.orientation.control.Functions
+import net.lyi.orientation.control.Orientation
+import net.lyi.orientation.util.SystemSettings
+import net.lyi.orientation.util.autoCleared
+import net.lyi.orientation.util.getInstalledPackagesCompat
+import net.lyi.orientation.util.queryIntentActivitiesCompat
+import net.lyi.orientation.view.dialog.EachAppOrientationDialog
+import net.lyi.orientation.view.dialog.UsageAppPermissionDialog
 import java.util.*
 import javax.inject.Inject
 

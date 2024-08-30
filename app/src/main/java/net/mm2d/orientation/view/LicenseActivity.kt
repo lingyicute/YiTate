@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2018 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view
+package net.lyi.orientation.view
 
 import android.content.Context
 import android.content.Intent
@@ -14,8 +14,8 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
-import net.mm2d.android.orientationfaker.databinding.ActivityLicenseBinding
-import net.mm2d.orientation.util.Launcher
+import net.lyi.android.orientationfaker.databinding.ActivityLicenseBinding
+import net.lyi.orientation.util.Launcher
 
 class LicenseActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLicenseBinding

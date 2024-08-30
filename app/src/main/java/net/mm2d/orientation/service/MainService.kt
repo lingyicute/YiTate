@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2018 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.service
+package net.lyi.orientation.service
 
 import android.content.Context
 import android.content.Intent
@@ -15,20 +15,20 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import net.mm2d.android.orientationfaker.R
-import net.mm2d.orientation.control.ForegroundPackageChecker
-import net.mm2d.orientation.control.ForegroundPackageReceiver
-import net.mm2d.orientation.control.ForegroundPackageSettings
-import net.mm2d.orientation.control.OrientationHelper
-import net.mm2d.orientation.entity.Quadruple
-import net.mm2d.orientation.settings.ControlPreference
-import net.mm2d.orientation.settings.DesignPreference
-import net.mm2d.orientation.settings.OrientationPreference
-import net.mm2d.orientation.settings.PreferenceRepository
-import net.mm2d.orientation.util.SystemSettings
-import net.mm2d.orientation.util.Toaster
-import net.mm2d.orientation.util.getParcelableExtraSafely
-import net.mm2d.orientation.view.notification.NotificationHelper
+import net.lyi.android.orientationfaker.R
+import net.lyi.orientation.control.ForegroundPackageChecker
+import net.lyi.orientation.control.ForegroundPackageReceiver
+import net.lyi.orientation.control.ForegroundPackageSettings
+import net.lyi.orientation.control.OrientationHelper
+import net.lyi.orientation.entity.Quadruple
+import net.lyi.orientation.settings.ControlPreference
+import net.lyi.orientation.settings.DesignPreference
+import net.lyi.orientation.settings.OrientationPreference
+import net.lyi.orientation.settings.PreferenceRepository
+import net.lyi.orientation.util.SystemSettings
+import net.lyi.orientation.util.Toaster
+import net.lyi.orientation.util.getParcelableExtraSafely
+import net.lyi.orientation.view.notification.NotificationHelper
 import javax.inject.Inject
 
 @AndroidEntryPoint

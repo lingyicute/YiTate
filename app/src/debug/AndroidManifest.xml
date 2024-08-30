@@ -5,7 +5,7 @@
     >
 
     <application
-        android:name="net.mm2d.orientation.DebugApp"
+        android:name="net.lyi.orientation.DebugApp"
         tools:replace="name"
         >
         <activity

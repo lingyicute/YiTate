@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2023 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2023 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view
+package net.lyi.orientation.view
 
 import android.app.Activity
 import android.appwidget.AppWidgetManager
@@ -18,21 +18,21 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
-import net.mm2d.android.orientationfaker.R
-import net.mm2d.android.orientationfaker.databinding.FragmentCustomWidgetConfigBinding
+import net.lyi.android.orientationfaker.R
+import net.lyi.android.orientationfaker.databinding.FragmentCustomWidgetConfigBinding
 import net.mm2d.color.chooser.ColorChooserDialog
-import net.mm2d.orientation.control.FunctionButton
-import net.mm2d.orientation.control.Functions
-import net.mm2d.orientation.room.WidgetSettingEntity
-import net.mm2d.orientation.util.alpha
-import net.mm2d.orientation.util.autoCleared
-import net.mm2d.orientation.util.opaque
-import net.mm2d.orientation.view.dialog.IconShapeDialog
-import net.mm2d.orientation.view.dialog.ResetThemeDialog
-import net.mm2d.orientation.view.widget.CustomWidgetProvider
-import net.mm2d.orientation.view.widget.config.DragItemAdapter
-import net.mm2d.orientation.view.widget.config.InvisibleDragHelper
-import net.mm2d.orientation.view.widget.config.VisibleDragHelper
+import net.lyi.orientation.control.FunctionButton
+import net.lyi.orientation.control.Functions
+import net.lyi.orientation.room.WidgetSettingEntity
+import net.lyi.orientation.util.alpha
+import net.lyi.orientation.util.autoCleared
+import net.lyi.orientation.util.opaque
+import net.lyi.orientation.view.dialog.IconShapeDialog
+import net.lyi.orientation.view.dialog.ResetThemeDialog
+import net.lyi.orientation.view.widget.CustomWidgetProvider
+import net.lyi.orientation.view.widget.config.DragItemAdapter
+import net.lyi.orientation.view.widget.config.InvisibleDragHelper
+import net.lyi.orientation.view.widget.config.VisibleDragHelper
 
 @AndroidEntryPoint
 class CustomWidgetConfigFragment : Fragment(R.layout.fragment_custom_widget_config) {

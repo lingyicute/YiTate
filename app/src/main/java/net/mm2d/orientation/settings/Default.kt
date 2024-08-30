@@ -1,20 +1,20 @@
 /*
- * Copyright (c) 2018 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2018 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.settings
+package net.lyi.orientation.settings
 
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
-import net.mm2d.android.orientationfaker.R
-import net.mm2d.orientation.control.FunctionButton
-import net.mm2d.orientation.control.FunctionButton.LauncherButton
-import net.mm2d.orientation.control.FunctionButton.OrientationButton
+import net.lyi.android.orientationfaker.R
+import net.lyi.orientation.control.FunctionButton
+import net.lyi.orientation.control.FunctionButton.LauncherButton
+import net.lyi.orientation.control.FunctionButton.OrientationButton
 import javax.inject.Inject
 import javax.inject.Singleton
 

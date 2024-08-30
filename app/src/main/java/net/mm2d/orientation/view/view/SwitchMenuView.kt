@@ -1,19 +1,19 @@
 /*
- * Copyright (c) 2018 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2018 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view.view
+package net.lyi.orientation.view.view
 
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.getStringOrThrow
-import net.mm2d.android.orientationfaker.R
-import net.mm2d.android.orientationfaker.databinding.ViewSwitchMenuBinding
+import net.lyi.android.orientationfaker.R
+import net.lyi.android.orientationfaker.databinding.ViewSwitchMenuBinding
 
 class SwitchMenuView
 @JvmOverloads constructor(

@@ -1,9 +1,9 @@
 # OrientationFaker
 
-[![license](https://img.shields.io/github/license/ohmae/orientation-faker.svg)](./LICENSE)
-[![GitHub release](https://img.shields.io/github/release/ohmae/orientation-faker.svg)](https://github.com/ohmae/orientation-faker/releases)
-[![GitHub issues](https://img.shields.io/github/issues/ohmae/orientation-faker.svg)](https://github.com/ohmae/orientation-faker/issues)
-[![GitHub closed issues](https://img.shields.io/github/issues-closed/ohmae/orientation-faker.svg)](https://github.com/ohmae/orientation-faker/issues?q=is%3Aissue+is%3Aclosed)
+[![license](https://img.shields.io/github/license/lyi/orientation-faker.svg)](./LICENSE)
+[![GitHub release](https://img.shields.io/github/release/lyi/orientation-faker.svg)](https://github.com/lyi/orientation-faker/releases)
+[![GitHub issues](https://img.shields.io/github/issues/lyi/orientation-faker.svg)](https://github.com/lyi/orientation-faker/issues)
+[![GitHub closed issues](https://img.shields.io/github/issues-closed/lyi/orientation-faker.svg)](https://github.com/lyi/orientation-faker/issues?q=is%3Aissue+is%3Aclosed)
 
 This is an application that fixes the screen in a specific orientation or rotates according to the sensor, regardless of the attributes of the displayed application.
 You can change the screen orientation from the notification area. It is also possible to associate a specific application with the screen orientation and switch settings when the application starts.
@@ -59,11 +59,6 @@ The following settings are possible
 ### Trouble shooting
 
 If you can not fix in the opposite direction of the portrait / landscape, try changing the system setting to auto-rotate
-
-## Author
-
-大前 良介 (OHMAE Ryosuke)
-http://www.mm2d.net/
 
 ## License
 

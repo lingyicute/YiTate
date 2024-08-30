@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2020 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2020 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.control
+package net.lyi.orientation.control
 
 import android.annotation.SuppressLint
 import android.app.usage.UsageEvents
@@ -16,8 +16,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
-import net.mm2d.orientation.util.Powers
-import net.mm2d.orientation.util.SystemSettings
+import net.lyi.orientation.util.Powers
+import net.lyi.orientation.util.SystemSettings
 import java.util.concurrent.TimeUnit
 
 class ForegroundPackageChecker(

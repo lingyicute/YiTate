@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2019 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2019 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.view.dialog
+package net.lyi.orientation.view.dialog
 
 import android.app.Dialog
 import android.content.DialogInterface
@@ -16,9 +16,9 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
-import net.mm2d.android.orientationfaker.R
-import net.mm2d.android.orientationfaker.databinding.LayoutReviewBinding
-import net.mm2d.orientation.util.Launcher
+import net.lyi.android.orientationfaker.R
+import net.lyi.android.orientationfaker.databinding.LayoutReviewBinding
+import net.lyi.orientation.util.Launcher
 
 @AndroidEntryPoint
 class ReviewDialog : DialogFragment() {

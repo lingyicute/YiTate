@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2018 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.tabs
+package net.lyi.orientation.tabs
 
 import android.annotation.SuppressLint
 import android.content.ComponentName
@@ -17,7 +17,7 @@ import androidx.browser.customtabs.CustomTabsClient
 import androidx.browser.customtabs.CustomTabsServiceConnection
 import androidx.browser.customtabs.CustomTabsSession
 import androidx.lifecycle.ProcessLifecycleOwner
-import net.mm2d.orientation.util.queryIntentServicesCompat
+import net.lyi.orientation.util.queryIntentServicesCompat
 
 @SuppressLint("StaticFieldLeak")
 object CustomTabsHelper : CustomTabsServiceConnection() {

@@ -348,7 +348,7 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <net.mm2d.orientation.view.view.SwitchMenuView
+    <net.lyi.orientation.view.view.SwitchMenuView
         android:id="@+id/use_blank_icon_for_notification"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -438,7 +438,7 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <net.mm2d.orientation.view.view.SwitchMenuView
+    <net.lyi.orientation.view.view.SwitchMenuView
         android:id="@+id/auto_rotate_warning"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -449,7 +449,7 @@
         app:title="@string/menu_title_auto_rotate_warning"
         />
 
-    <net.mm2d.orientation.view.view.SwitchMenuView
+    <net.lyi.orientation.view.view.SwitchMenuView
         android:id="@+id/notification_privacy"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

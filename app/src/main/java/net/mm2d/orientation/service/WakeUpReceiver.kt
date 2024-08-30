@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 大前良介 (OHMAE Ryosuke)
+ * Copyright (c) 2014 lingyicute
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/MIT
  */
 
-package net.mm2d.orientation.service
+package net.lyi.orientation.service
 
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver

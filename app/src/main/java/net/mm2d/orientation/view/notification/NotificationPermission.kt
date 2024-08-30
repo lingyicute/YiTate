@@ -1,4 +1,4 @@
-package net.mm2d.orientation.view.notification
+package net.lyi.orientation.view.notification
 
 import android.Manifest
 import android.content.Context
@@ -6,8 +6,8 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.content.PermissionChecker
 import androidx.fragment.app.Fragment
-import net.mm2d.orientation.util.PermissionRequestLauncher
-import net.mm2d.orientation.util.registerForPermissionRequest
+import net.lyi.orientation.util.PermissionRequestLauncher
+import net.lyi.orientation.util.registerForPermissionRequest
 
 object NotificationPermission {
     @RequiresApi(33)
