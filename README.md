@@ -4,9 +4,9 @@
 
 YiTate 是一个开源 App，帮助你轻松锁定屏幕方向，适用于 Android 5+。
 
-## 预览
+## 截图
 
-![YiTate Screenshot](art/screenshot01_zh_cn.png){:width="300px" style="border-radius:8px; max-width:50%; align:center;"}
+![YiTate Screenshot](art/screenshot01_zh_cn.png)
 
 ## 特性 🌟
 
