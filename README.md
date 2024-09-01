@@ -4,6 +4,7 @@
 
 YiTate 是一个开源 App，帮助你轻松锁定屏幕方向，适用于 Android 5+。
 
+[![API](https://img.shields.io/badge/API-21%2B-yellow.svg?style=flat)](https://developer.android.com/about/versions/lollipop)
 [![CodeFactor](https://www.codefactor.io/repository/github/lingyicute/yitate/badge)](https://www.codefactor.io/repository/github/lingyicute/yitate)
 
 ## 截图
@@ -12,8 +13,8 @@ YiTate 是一个开源 App，帮助你轻松锁定屏幕方向，适用于 Andro
 
 ## 特性 🌟
 
-- **极简轻量**：体积小于 100KB，真正的小而美～
-- **设计简洁**：易于使用且直观的界面，轻松上手！
+- **极简轻量**：体积只有不到 100k，真正的小而美喔！
+- **设计简洁**：易于使用且直观的界面，轻松上手～
 - **开源**：无依赖，无广告，无追踪器，纯净体验！
 
 ## 为什么开发 YiTate？ 
