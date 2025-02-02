@@ -23,12 +23,13 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion "1.9.10"
+        kotlinCompilerExtensionVersion "1.9.22"
     }
 
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -42,7 +43,8 @@ android {
         jvmTarget = '17'
         freeCompilerArgs += [
             "-Xjvm-default=all",
-            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
+            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"
         ]
     }
 
@@ -63,7 +65,7 @@ kapt {
 
 dependencies {
     def lifecycle_version = "2.7.0"
-    def compose_version = "1.5.0"
+    def compose_version = "1.6.0"
     def hilt_version = "2.50"
 
     implementation 'androidx.core:core-ktx:1.12.0'
@@ -74,13 +76,15 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version"
     
     // Compose
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material3:material3:1.2.0"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation "androidx.activity:activity-compose:1.9.0"
+    implementation "androidx.activity:activity-compose:1.8.2"
     implementation "androidx.compose.material:material-icons-extended:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     
     // Hilt
     implementation "com.google.dagger:hilt-android:$hilt_version"
