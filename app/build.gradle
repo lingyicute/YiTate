@@ -40,6 +40,23 @@ android {
     
     kotlinOptions {
         jvmTarget = '11'
+        freeCompilerArgs += [
+            "-Xjvm-default=all",
+        ]
+    }
+
+    kotlin {
+        jvmToolchain(11)
+    }
+}
+
+// 确保kapt使用正确的JDK版本
+kapt {
+    correctErrorTypes true
+    useBuildCache true
+    javacOptions {
+        option("-source", "11")
+        option("-target", "11")
     }
 }
 
