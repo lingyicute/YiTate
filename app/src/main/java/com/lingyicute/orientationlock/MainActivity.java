@@ -1,18 +1,24 @@
 package com.lingyicute.orientationlock;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.Manifest;
 import android.util.SparseIntArray;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import com.lingyicute.orientationlock.preference.PreferenceManager;
 import com.lingyicute.orientationlock.service.YiTateService;
 import com.lingyicute.orientationlock.utils.*;
@@ -22,6 +28,7 @@ import java.util.List;
 public class MainActivity extends Activity implements View.OnClickListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 100;
 
     private PreferenceManager preferenceManager;
     private int currentOrientation;
@@ -32,6 +39,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         initView();
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            checkNotificationPermission();
+        }
 
         preferenceManager = PreferenceManager.getInstance(this);
         orientationMap.put(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, R.id.tv_orientation_default);
@@ -46,6 +57,68 @@ public class MainActivity extends Activity implements View.OnClickListener {
         int orientation = PermissionUtils.isDrawOverlaysPermissionGranted(this)
                 ? preferenceManager.getOrientation() : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
         setOrientation(orientation);
+    }
+
+    private void checkNotificationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            // 检查是否应该显示权限说明
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.POST_NOTIFICATIONS)) {
+                new AlertDialog.Builder(this)
+                        .setTitle("需要通知权限")
+                        .setMessage("为了保持屏幕方向锁定服务的正常运行，需要通知权限来显示通知。")
+                        .setPositiveButton("授权", (dialog, which) -> {
+                            ActivityCompat.requestPermissions(this,
+                                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                                    NOTIFICATION_PERMISSION_REQUEST_CODE);
+                        })
+                        .setNegativeButton("取消", null)
+                        .show();
+            } else {
+                // 首次请求或用户选择了"不再询问"
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        NOTIFICATION_PERMISSION_REQUEST_CODE);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0) {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // 权限被授予，重启服务以确保通知正常显示
+                    if (currentOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+                        setOrientation(currentOrientation);
+                    }
+                } else {
+                    // 权限被拒绝
+                    if (!ActivityCompat.shouldShowRequestPermissionRationale(this, 
+                            Manifest.permission.POST_NOTIFICATIONS)) {
+                        // 用户选择了"不再询问"
+                        new AlertDialog.Builder(this)
+                                .setTitle("通知权限被禁用")
+                                .setMessage("您已禁用通知权限。这可能会影响服务的正常运行，是否要前往设置页面开启权限？")
+                                .setPositiveButton("设置", (dialog, which) -> {
+                                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                    Uri uri = Uri.fromParts("package", getPackageName(), null);
+                                    intent.setData(uri);
+                                    try {
+                                        startActivity(intent);
+                                    } catch (ActivityNotFoundException e) {
+                                        Toast.makeText(this, "无法打开设置页面", Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .setNegativeButton("取消", null)
+                                .show();
+                    } else {
+                        Toast.makeText(this, "通知权限被拒绝，部分功能可能无法正常工作", Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+        }
     }
 
     private void setOrientation(int orientation) {
