@@ -82,7 +82,7 @@ fun MainScreen(
         modifier = modifier.fillMaxSize()
     ) {
         // 顶部工具栏
-        SmallTopAppBar(
+        TopAppBar(
             title = { Text(stringResource(R.string.app_name)) },
             actions = {
                 IconButton(onClick = onExcludeAppsClicked) {
