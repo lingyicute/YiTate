@@ -23,33 +23,31 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion "1.9.22"
+        kotlinCompilerExtensionVersion "1.4.0"
     }
 
     buildTypes {
         release {
             minifyEnabled true
-            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     
     kotlinOptions {
-        jvmTarget = '17'
+        jvmTarget = '11'
         freeCompilerArgs += [
             "-Xjvm-default=all",
-            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
         ]
     }
 
     kotlin {
-        jvmToolchain(17)
+        jvmToolchain(11)
     }
 }
 
@@ -58,15 +56,15 @@ kapt {
     correctErrorTypes true
     useBuildCache true
     javacOptions {
-        option("-source", "17")
-        option("-target", "17")
+        option("-source", "11")
+        option("-target", "11")
     }
 }
 
 dependencies {
     def lifecycle_version = "2.7.0"
-    def compose_version = "1.6.0"
-    def hilt_version = "2.50"
+    def compose_version = "1.4.0"
+    def hilt_version = "2.48"
 
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
@@ -76,15 +74,13 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version"
     
     // Compose
     implementation "androidx.compose.ui:ui:$compose_version"
-    implementation "androidx.compose.material3:material3:1.2.0"
+    implementation "androidx.compose.material3:material3:1.1.2"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
     implementation "androidx.activity:activity-compose:1.8.2"
     implementation "androidx.compose.material:material-icons-extended:$compose_version"
-    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     
     // Hilt
     implementation "com.google.dagger:hilt-android:$hilt_version"
