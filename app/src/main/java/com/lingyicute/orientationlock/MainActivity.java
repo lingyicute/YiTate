@@ -1,6 +1,5 @@
 package com.lingyicute.orientationlock;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -17,6 +16,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.lingyicute.orientationlock.preference.PreferenceManager;
@@ -25,7 +25,7 @@ import com.lingyicute.orientationlock.utils.*;
 
 import java.util.List;
 
-public class MainActivity extends Activity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 100;
