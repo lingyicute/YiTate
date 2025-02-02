@@ -191,9 +191,9 @@ class YiTateService : Service() {
                 isFocusable = false
                 isFocusableInTouchMode = false
                 isLongClickable = false
+                visibility = View.GONE
             }
             windowManager.addView(holderView, params)
-            holderView?.visibility = View.GONE
         }
 
         holderView?.let {
