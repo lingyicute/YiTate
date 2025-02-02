@@ -213,7 +213,7 @@ class YiTateService : Service() {
     companion object {
         private const val TAG = "YiTateService"
         private const val NOTIFICATION_CHANNEL_ID = "${BuildConfig.APPLICATION_ID}.notification"
-        private const val NOTIFICATION_ID = 1
+        const val NOTIFICATION_ID = 1
 
         const val ACTION_SET_ORIENTATION = "${BuildConfig.APPLICATION_ID}.action.SET_ORIENTATION"
         const val ACTION_QUICK_CHANGE = "${BuildConfig.APPLICATION_ID}.action.QUICK_CHANGE"

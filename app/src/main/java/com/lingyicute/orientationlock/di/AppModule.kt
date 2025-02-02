@@ -1,5 +1,6 @@
 package com.lingyicute.orientationlock.di
 
+import android.app.NotificationManager
 import android.content.Context
 import com.lingyicute.orientationlock.data.OrientationRepository
 import com.lingyicute.orientationlock.data.OrientationRepositoryImpl
@@ -30,5 +31,13 @@ object AppModule {
         preferenceManager: PreferenceManager
     ): OrientationRepository {
         return OrientationRepositoryImpl(context, preferenceManager)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNotificationManager(
+        @ApplicationContext context: Context
+    ): NotificationManager {
+        return context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
 } 

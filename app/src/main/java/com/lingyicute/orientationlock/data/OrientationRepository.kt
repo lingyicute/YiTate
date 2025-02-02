@@ -1,6 +1,7 @@
 package com.lingyicute.orientationlock.data
 
 import android.app.ActivityManager
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -29,7 +30,8 @@ interface OrientationRepository {
 @Singleton
 class OrientationRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val preferenceManager: PreferenceManager
+    private val preferenceManager: PreferenceManager,
+    private val notificationManager: NotificationManager
 ) : OrientationRepository {
 
     override suspend fun getCurrentOrientation(): Int {
@@ -59,15 +61,17 @@ class OrientationRepositoryImpl @Inject constructor(
     }
 
     override suspend fun isServiceRunning(): Boolean {
-        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        // 在 Android O 及以上版本，通过检查通知来判断服务是否运行
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // 在 Android O 及以上版本，使用前台服务通知来判断
-            activityManager.getRunningServices(Int.MAX_VALUE)
-                .any { it.service.className == YiTateService::class.java.name && it.foreground }
+            notificationManager.activeNotifications.any { 
+                it.id == YiTateService.NOTIFICATION_ID && 
+                it.packageName == context.packageName 
+            }
         } else {
             // 在旧版本上使用传统方法
             @Suppress("DEPRECATION")
-            activityManager.getRunningServices(Int.MAX_VALUE)
+            val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            manager.getRunningServices(Int.MAX_VALUE)
                 .any { it.service.className == YiTateService::class.java.name }
         }
     }
