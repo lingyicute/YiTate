@@ -26,18 +26,19 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideOrientationRepository(
-        @ApplicationContext context: Context,
-        preferenceManager: PreferenceManager
-    ): OrientationRepository {
-        return OrientationRepositoryImpl(context, preferenceManager)
-    }
-
-    @Provides
-    @Singleton
     fun provideNotificationManager(
         @ApplicationContext context: Context
     ): NotificationManager {
         return context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    }
+
+    @Provides
+    @Singleton
+    fun provideOrientationRepository(
+        @ApplicationContext context: Context,
+        preferenceManager: PreferenceManager,
+        notificationManager: NotificationManager
+    ): OrientationRepository {
+        return OrientationRepositoryImpl(context, preferenceManager, notificationManager)
     }
 } 
