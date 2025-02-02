@@ -59,9 +59,17 @@ class OrientationRepositoryImpl @Inject constructor(
     }
 
     override suspend fun isServiceRunning(): Boolean {
-        val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        return manager.getRunningServices(Integer.MAX_VALUE)
-            .any { it.service.className == YiTateService::class.java.name }
+        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // 在 Android O 及以上版本，使用前台服务通知来判断
+            activityManager.getRunningServices(Int.MAX_VALUE)
+                .any { it.service.className == YiTateService::class.java.name && it.foreground }
+        } else {
+            // 在旧版本上使用传统方法
+            @Suppress("DEPRECATION")
+            activityManager.getRunningServices(Int.MAX_VALUE)
+                .any { it.service.className == YiTateService::class.java.name }
+        }
     }
 
     override fun getInstalledApps(): Flow<List<ExcludedApp>> = flow {
