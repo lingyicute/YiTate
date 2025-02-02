@@ -181,9 +181,8 @@ class YiTateService : Service() {
             WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.RGBA_8888
-        ).apply {
-            screenOrientation = this@YiTateService.currentOrientation
-        }
+        )
+        params.screenOrientation = currentOrientation
 
         if (holderView == null) {
             holderView = Space(this).apply {
