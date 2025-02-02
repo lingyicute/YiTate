@@ -2,22 +2,17 @@
 <resources>
     <string name="app_name">YiTate</string>
     <string name="orientation_dynamic">Dynamic</string>
-    <string name="orientation_default">默认</string>
-    <string name="orientation_full_sensor">自动旋转</string>
-    <string name="orientation_landscape">横屏</string>
-    <string name="orientation_reverse_landscape">反向横屏</string>
-    <string name="orientation_sensor_landscape">横屏（自动）</string>
-    <string name="orientation_portrait">竖屏</string>
-    <string name="orientation_reverse_portrait">反向竖屏</string>
-    <string name="orientation_sensor_portrait">竖屏（自动）</string>
-    <string name="running_notification_channel_name">运行状态</string>
-    <string name="running_notification_title">屏幕方向锁定中</string>
-    <string name="running_notification_description">点击打开应用</string>
+    <string name="orientation_default">Default</string>
+    <string name="orientation_full_sensor">Full sensor</string>
+    <string name="orientation_landscape">Landscape</string>
+    <string name="orientation_reverse_landscape">Reverse landscape</string>
+    <string name="orientation_sensor_landscape">Sensor landscape</string>
+    <string name="orientation_portrait">Portrait</string>
+    <string name="orientation_reverse_portrait">Reverse portrait</string>
+    <string name="orientation_sensor_portrait">Sensor portrait</string>
+    <string name="running_notification_channel_name">Running Notification</string>
+    <string name="running_notification_title">YiTate is running</string>
+    <string name="running_notification_description">YiTate is running for keeping the orientation</string>
     <string name="permission_required">Please grant draw over apps permission</string>
-    <string name="service_running">服务正在运行</string>
-    <string name="about">关于</string>
-    <string name="exclude_apps">排除应用</string>
-    <string name="back">返回</string>
-    <string name="quick_change">快速切换</string>
-    <string name="current_orientation">当前方向：%s</string>
+    <string name="about">About</string>
 </resources>

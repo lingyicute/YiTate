@@ -1,17 +1,11 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    ext {
-        kotlin_version = '1.9.22'
-        hilt_version = '2.50'
-    }
     repositories {
         mavenCentral()
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.2.0'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
+        classpath 'com.android.tools.build:gradle:4.2.2'
     }
 }
 
@@ -19,22 +13,6 @@ allprojects {
     repositories {
         mavenCentral()
         google()
-    }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.compilerArgs += [
-        '-Xlint:unchecked',
-        '-Xlint:deprecation'
-    ]
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11
-        freeCompilerArgs += [
-            '-Xjvm-default=all'
-        ]
     }
 }
 
