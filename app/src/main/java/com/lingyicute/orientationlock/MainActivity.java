@@ -65,13 +65,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
                     new AlertDialog.Builder(this)
                             .setTitle("需要通知权限")
-                            .setMessage("为了保持屏幕方向锁定服务的正常运行，需要通知权限来显示通知。")
+                            .setMessage("为了保持屏幕方向锁定服务的正常运行，YiTate 需要通知权限。")
                             .setPositiveButton("授权", (dialog, which) -> {
                                 requestPermissions(
                                         new String[]{Manifest.permission.POST_NOTIFICATIONS},
                                         NOTIFICATION_PERMISSION_REQUEST_CODE);
                             })
-                            .setNegativeButton("取消", null)
+                            .setNegativeButton("忽略", null)
                             .show();
                 } else {
                     // 首次请求或用户选择了"不再询问"
@@ -99,8 +99,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         // 用户选择了"不再询问"
                         new AlertDialog.Builder(this)
                                 .setTitle("通知权限被禁用")
-                                .setMessage("您已禁用通知权限。这可能会影响服务的正常运行，是否要前往设置页面开启权限？")
-                                .setPositiveButton("设置", (dialog, which) -> {
+                                .setMessage("您已禁用通知权限，这可能会影响服务的正常运行，是否要前往设置页面开启权限？")
+                                .setPositiveButton("前往", (dialog, which) -> {
                                     Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                                     Uri uri = Uri.fromParts("package", getPackageName(), null);
                                     intent.setData(uri);
@@ -110,10 +110,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                         Toast.makeText(this, "无法打开设置页面", Toast.LENGTH_SHORT).show();
                                     }
                                 })
-                                .setNegativeButton("取消", null)
+                                .setNegativeButton("忽略", null)
                                 .show();
                     } else {
-                        Toast.makeText(this, "通知权限被拒绝，部分功能可能无法正常工作", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "通知权限被拒绝，YiTate 可能无法正常工作", Toast.LENGTH_LONG).show();
                     }
                 }
             }
