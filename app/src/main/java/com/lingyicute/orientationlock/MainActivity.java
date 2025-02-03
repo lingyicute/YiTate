@@ -17,8 +17,6 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import com.lingyicute.orientationlock.preference.PreferenceManager;
 import com.lingyicute.orientationlock.service.YiTateService;
 import com.lingyicute.orientationlock.utils.*;
@@ -60,25 +58,27 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     private void checkNotificationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED) {
-            // 检查是否应该显示权限说明
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.POST_NOTIFICATIONS)) {
-                new AlertDialog.Builder(this)
-                        .setTitle("需要通知权限")
-                        .setMessage("为了保持屏幕方向锁定服务的正常运行，需要通知权限来显示通知。")
-                        .setPositiveButton("授权", (dialog, which) -> {
-                            ActivityCompat.requestPermissions(this,
-                                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
-                                    NOTIFICATION_PERMISSION_REQUEST_CODE);
-                        })
-                        .setNegativeButton("取消", null)
-                        .show();
-            } else {
-                // 首次请求或用户选择了"不再询问"
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
-                        NOTIFICATION_PERMISSION_REQUEST_CODE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                // 检查是否应该显示权限说明
+                if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                    new AlertDialog.Builder(this)
+                            .setTitle("需要通知权限")
+                            .setMessage("为了保持屏幕方向锁定服务的正常运行，需要通知权限来显示通知。")
+                            .setPositiveButton("授权", (dialog, which) -> {
+                                requestPermissions(
+                                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                                        NOTIFICATION_PERMISSION_REQUEST_CODE);
+                            })
+                            .setNegativeButton("取消", null)
+                            .show();
+                } else {
+                    // 首次请求或用户选择了"不再询问"
+                    requestPermissions(
+                            new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                            NOTIFICATION_PERMISSION_REQUEST_CODE);
+                }
             }
         }
     }
@@ -95,8 +95,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     }
                 } else {
                     // 权限被拒绝
-                    if (!ActivityCompat.shouldShowRequestPermissionRationale(this, 
-                            Manifest.permission.POST_NOTIFICATIONS)) {
+                    if (!shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
                         // 用户选择了"不再询问"
                         new AlertDialog.Builder(this)
                                 .setTitle("通知权限被禁用")
