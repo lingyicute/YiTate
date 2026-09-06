@@ -312,11 +312,17 @@
   .loading {
     position: fixed; inset: 0; z-index: 10000;
     display: grid; place-items: center;
-    background: var(--surface);
+    background: #f7f2fa;
     transition: opacity .5s var(--ease), visibility .5s var(--ease);
   }
+  @media (prefers-color-scheme: dark) {
+    .loading { background: #141414; }
+  }
   .loading.hide { opacity: 0; visibility: hidden; pointer-events: none; }
-  .loading-spinner { width: 36px; height: 36px; color: var(--on-surface-variant); animation: loading-spin 1s linear infinite; }
+  .loading-spinner { width: 36px; height: 36px; color: #9a9a9a; animation: loading-spin 1s linear infinite; }
+  @media (prefers-color-scheme: dark) {
+    .loading-spinner { color: #bdbdbd; }
+  }
   @keyframes loading-spin { to { transform: rotate(360deg); } }
 </style>
 </head>
