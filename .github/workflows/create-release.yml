@@ -4,6 +4,9 @@ on:
   push:
   workflow_dispatch:
 
+permissions:   
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,8 +25,19 @@ jobs:
         chmod 755 gradlew
         ./gradlew assembleRelease
 
+    - name: Publish nightly release 
+      run: |
+          gh release create nightly \
+            app/build/outputs/apk/release/app-release-unsigned.apk \
+            --title "Nightly Build" \
+            --notes "auto build · ${GITHUB_SHA:0:7} · ${GITHUB_REF_NAME}" \
+            --prerelease \
+            --target "$GITHUB_SHA"
+      env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: app-release
-        path: app/build/outputs/apk/release
+        path: app/build/outputs/apk/release/app-release-unsigned.apk
