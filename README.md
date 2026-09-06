@@ -22,6 +22,13 @@ YiTate 是一个开源 App，帮助你轻松锁定屏幕方向，适用于 Andro
 
 锁定屏幕方向的原理其实很简单，就是用悬浮窗添加一个透明的窗口，在这个窗口里指定屏幕方向。由于悬浮窗位于其它软件上方，于是系统就会按照悬浮窗的要求来旋转屏幕。这个 App 非常简单，我不想让它变得复杂，所以我使用原生方法实现，没有任何第三方组件。尽情享受吧！
 
+## 获取
+
+可在 [Releases](https://github.com/lingyicute/Yitate/releases) 获得发行版本和 Nightly 构建版本。 
+
+> [!IMPORTANT]
+> 对于 Nightly 构建版本，请自行对 APK 实施签名。
+
 ## LICENSE 📜
 
 Copyright (C) 2024 lingyicute.
