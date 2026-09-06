@@ -307,9 +307,25 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
   }
+
+  /* ---------- Loading overlay ---------- */
+  .loading {
+    position: fixed; inset: 0; z-index: 10000;
+    display: grid; place-items: center;
+    background: var(--surface);
+    transition: opacity .5s var(--ease), visibility .5s var(--ease);
+  }
+  .loading.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+  .loading-spinner { width: 36px; height: 36px; color: var(--on-surface-variant); animation: loading-spin 1s linear infinite; }
+  @keyframes loading-spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
+
+<!-- ===== Loading overlay ===== -->
+<div class="loading" id="loading" aria-hidden="true">
+  <svg class="loading-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9" opacity=".2"/><path d="M21 12a9 9 0 0 0-9-9"/></svg>
+</div>
 
 <!-- ===== Top App Bar ===== -->
 <header class="appbar" id="appbar">
@@ -616,6 +632,29 @@
     const s = $('#snack'); s.textContent = msg; s.classList.add('show');
     clearTimeout(snackTimer); snackTimer = setTimeout(() => s.classList.remove('show'), 2200);
   }
+
+  /* ---------- Loading overlay ---------- */
+  let loadingDone = false;
+  function hideLoading() {
+    if (loadingDone) return;
+    loadingDone = true;
+    const el = $('#loading');
+    if (!el) return;
+    el.classList.add('hide');
+    el.addEventListener('transitionend', () => el.remove(), { once: true });
+    setTimeout(() => { if (el.isConnected) el.remove(); }, 800); /* safety */
+  }
+  const loadStart = performance.now();
+  function finishLoading() {
+    if (loadingDone) return;
+    const elapsed = performance.now() - loadStart;
+    setTimeout(hideLoading, Math.max(0, 500 - elapsed)); /* brief minimum splash */
+  }
+  window.addEventListener('load', () => {
+    const fontsReady = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+    fontsReady.then(finishLoading).catch(finishLoading);
+  });
+  setTimeout(finishLoading, 8000); /* failsafe: never leave overlay stuck */
 })();
 </script>
 </body>
