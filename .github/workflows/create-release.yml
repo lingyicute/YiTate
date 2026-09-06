@@ -25,12 +25,6 @@ jobs:
         chmod 755 gradlew
         ./gradlew assembleRelease
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-release
-        path: app/build/outputs/apk/release/app-release-unsigned.apk
-
     - name: Publish nightly release 
       run: |
           gh release create nightly \
@@ -41,3 +35,9 @@ jobs:
             --target "$GITHUB_SHA"
       env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-release
+        path: app/build/outputs/apk/release/app-release-unsigned.apk
