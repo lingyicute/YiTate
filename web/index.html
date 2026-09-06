@@ -633,7 +633,7 @@
     clearTimeout(snackTimer); snackTimer = setTimeout(() => s.classList.remove('show'), 2200);
   }
 
-  /* ---------- Loading overlay ---------- */
+  /* ---------- Loading overlay: hide once all resources are loaded ---------- */
   let loadingDone = false;
   function hideLoading() {
     if (loadingDone) return;
