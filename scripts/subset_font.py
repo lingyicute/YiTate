@@ -65,7 +65,7 @@ def main():
     font_css = f'''@font-face{{
   font-family:"Nebulove";
   src:url("data:font/woff2;charset=utf-8;base64,{b64_font}") format("woff2"),
-      url("https://cdn.jsdelivr.net/gh/lingyicute/Nebulove@main/Nebulove.ttf") format("truetype");
+      url("https://cdn.jsdelivr.net/gh/lingyicute/Nebulove@main/Nebulove.woff2") format("woff2");
   font-display:swap;
 }}'''
 
