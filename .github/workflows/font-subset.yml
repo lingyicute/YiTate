@@ -1,0 +1,47 @@
+name: Font Subsetting & Embed
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "web/index.html"
+      - "scripts/subset_font.py"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  subset-and-embed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install fonttools brotli
+
+      - name: Download Nebulove & Subset Font
+        run: |
+          python scripts/subset_font.py
+
+      - name: Commit and push changes as user
+        run: |
+          if git diff --quiet web/index.html; then
+            echo "No changes in web/index.html detected."
+          else
+            git config user.name "${{ github.actor }}"
+            git config user.email "${{ github.event.pusher.email || format('{0}@users.noreply.github.com', github.actor) }}"
+            git add web/index.html
+            git commit -m "perf: 更新 Nebulove 字体子集"
+            git push
+          fi
