@@ -277,6 +277,9 @@
   .foot .links { display: flex; gap: 6px; flex-wrap: wrap; }
   .foot .links a { padding: 8px 14px; border-radius: 999px; transition: background .25s, color .25s; }
   .foot .links a:hover { background: var(--secondary-container); color: var(--on-secondary-container); }
+  .foot .foot-end { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+  .foot .foot-end .links { justify-content: flex-end; }
+  .foot .foot-note { font-size: .82rem; opacity: .85; text-align: right; padding-inline-end: 14px; }
   .license { margin-top: 28px; padding: 22px 26px; border-radius: var(--radius-l); background: var(--surface-container); font-size: .85rem; line-height: 1.7; }
   .license strong { color: var(--on-surface); }
 
@@ -525,11 +528,14 @@
         </div>
         <p style="margin-top:8px">Made with ❤️ by <a href="https://github.com/lingyicute" target="_blank" rel="noopener" style="color:var(--primary);font-weight:600">lingyicute</a></p>
       </div>
-      <div class="links">
-        <a href="https://github.com/lingyicute/YiTate" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://github.com/lingyicute/YiTate/releases" target="_blank" rel="noopener">Releases</a>
-        <a href="https://github.com/lingyicute/YiTate/issues" target="_blank" rel="noopener">Issues</a>
-        <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GPL-3.0</a>
+      <div class="foot-end">
+        <div class="links">
+          <a href="https://github.com/lingyicute/YiTate" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/lingyicute/YiTate/releases" target="_blank" rel="noopener">Releases</a>
+          <a href="https://github.com/lingyicute/YiTate/issues" target="_blank" rel="noopener">Issues</a>
+          <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GPL-3.0</a>
+        </div>
+        <p class="foot-note">This website proudly features Material You design ❤️</p>
       </div>
     </div>
     <div class="license">
