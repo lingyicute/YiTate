@@ -30,8 +30,9 @@
 
       <ImageView
           android:id="@+id/iv_about"
-          android:layout_width="20dp"
-          android:layout_height="20dp"
+          android:layout_width="48dp"
+          android:layout_height="48dp"
+          android:padding="14dp"
           android:background="?android:selectableItemBackgroundBorderless"
           android:contentDescription="@string/about"
           android:src="@drawable/ic_info"

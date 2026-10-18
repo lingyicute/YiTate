@@ -1,46 +1,47 @@
 package com.lingyicute.orientationlock.service;
 
-import android.annotation.TargetApi;
-import android.app.*;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
-import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.IBinder;
-import android.view.View;
+import android.os.PowerManager;
+import android.util.Log;
 import android.view.WindowManager;
-
 import android.widget.Space;
+import android.widget.Toast;
+
 import com.lingyicute.orientationlock.BuildConfig;
 import com.lingyicute.orientationlock.MainActivity;
 import com.lingyicute.orientationlock.R;
-
-import com.lingyicute.orientationlock.utils.SimpleLog;
+import com.lingyicute.orientationlock.preference.PreferenceManager;
+import com.lingyicute.orientationlock.utils.OrientationUtils;
+import com.lingyicute.orientationlock.utils.PermissionUtils;
 
 public class YiTateService extends Service {
-
     private static final String TAG = YiTateService.class.getSimpleName();
-
     private static final String NOTIFICATION_ID = BuildConfig.APPLICATION_ID + ".notification";
-
     public static final String ACTION_SET_ORIENTATION = BuildConfig.APPLICATION_ID + ".action.SET_ORIENTATION";
     public static final String KEY_ORIENTATION = "orientation";
 
-    private Space holderView = null;
+    private Space holderView;
     private int currentOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 
     private final BroadcastReceiver screenReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if(Intent.ACTION_SCREEN_OFF.equals(action)){
+            if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
                 removeOrientationLayout();
-            } else if (Intent.ACTION_SCREEN_ON.equals(action)) {
-                setSystemOrientation(currentOrientation);
+            } else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
+                applyOrientation();
             }
         }
     };
@@ -48,34 +49,45 @@ public class YiTateService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        if(Build.VERSION.SDK_INT >= 26) {
-            setForeground();
-        }
-        IntentFilter screenReceiverFilter = new IntentFilter();
-        screenReceiverFilter.addAction(Intent.ACTION_SCREEN_OFF);
-        screenReceiverFilter.addAction(Intent.ACTION_SCREEN_ON);
-        registerReceiver(screenReceiver, screenReceiverFilter);
-        SimpleLog.d(TAG, "register service receiver");
-    }
-
-    @Override
-    public void onDestroy() {
-        SimpleLog.d(TAG, "unregister service receiver");
-        unregisterReceiver(screenReceiver);
-        removeOrientationLayout();
-        super.onDestroy();
+        // API 21-25 also need a foreground service to keep the lock alive.
+        setForeground();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        filter.addAction(Intent.ACTION_SCREEN_ON);
+        // These are protected system broadcasts, not app-defined broadcasts.
+        registerReceiver(screenReceiver, filter);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String action = intent == null ? null : intent.getAction();
-        if (ACTION_SET_ORIENTATION.equals(action)) {
-            int orientation = intent.getIntExtra(KEY_ORIENTATION, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-            if (orientation != currentOrientation) {
-                setSystemOrientation(orientation);
+        int orientation;
+        if (intent == null) {
+            // START_STICKY recreation does not redeliver the original intent.
+            orientation = PreferenceManager.getInstance(this).getOrientation();
+        } else if (ACTION_SET_ORIENTATION.equals(intent.getAction())) {
+            orientation = intent.getIntExtra(KEY_ORIENTATION, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+            if (!OrientationUtils.isSupported(orientation)) {
+                if (currentOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) stopSelf();
+                return currentOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                        ? START_NOT_STICKY : START_STICKY;
             }
+        } else {
+            if (currentOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) stopSelf();
+            return currentOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                    ? START_NOT_STICKY : START_STICKY;
         }
-        return super.onStartCommand(intent, flags, startId);
+        currentOrientation = orientation;
+        if (!applyOrientation()) return START_NOT_STICKY;
+        PreferenceManager.getInstance(this).setOrientation(orientation);
+        return START_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+        unregisterReceiver(screenReceiver);
+        removeOrientationLayout();
+        stopForeground(true);
+        super.onDestroy();
     }
 
     @Override
@@ -83,65 +95,93 @@ public class YiTateService extends Service {
         return null;
     }
 
-    @TargetApi(26)
-    private void setForeground(){
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        NotificationChannel channel = new NotificationChannel(NOTIFICATION_ID,
-                getString(R.string.running_notification_channel_name),
-                NotificationManager.IMPORTANCE_MIN);
-        manager.createNotificationChannel(channel);
+    private void setForeground() {
+        Notification.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            NotificationChannel channel = new NotificationChannel(NOTIFICATION_ID,
+                    getString(R.string.running_notification_channel_name), NotificationManager.IMPORTANCE_LOW);
+            manager.createNotificationChannel(channel);
+            builder = new Notification.Builder(this, NOTIFICATION_ID);
+        } else {
+            builder = new Notification.Builder(this);
+        }
         Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                ? PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-                : PendingIntent.FLAG_UPDATE_CURRENT);
-        Notification notification = new Notification.Builder(this, NOTIFICATION_ID)
+                PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                        ? PendingIntent.FLAG_IMMUTABLE : 0));
+        Notification notification = builder
                 .setContentTitle(getString(R.string.running_notification_title))
                 .setContentText(getString(R.string.running_notification_description))
                 .setSmallIcon(R.drawable.ic_stat_orientation)
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
                 .setContentIntent(pendingIntent)
+                .setPriority(Notification.PRIORITY_LOW)
+                .setOngoing(true)
                 .build();
         startForeground(1, notification);
     }
 
-    private void setSystemOrientation(int screenOrientation) {
-        SimpleLog.d(TAG, "set system orientation: " + screenOrientation);
-
-        if (ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED == screenOrientation) {
+    private boolean applyOrientation() {
+        if (currentOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+            clearLock();
+            return false; // Do not recreate an overlay after removing it.
+        }
+        if (!PermissionUtils.isDrawOverlaysPermissionGranted(this)) {
+            failLock();
+            return false;
+        }
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        if (!powerManager.isInteractive()) {
             removeOrientationLayout();
+            return true; // Keep the requested orientation for SCREEN_ON.
         }
-
-        currentOrientation = screenOrientation;
-
-        WindowManager windowManager = (WindowManager) this.getSystemService(Service.WINDOW_SERVICE);
-        WindowManager.LayoutParams orientationLayoutParams = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT,
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.RGBA_8888);
-
-        if (holderView == null) {
-            holderView = new Space(this);
-            holderView.setClickable(false);
-            holderView.setFocusable(false);
-            holderView.setFocusableInTouchMode(false);
-            holderView.setLongClickable(false);
-
-            windowManager.addView(holderView, orientationLayoutParams);
-            holderView.setVisibility(View.GONE);
+        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(0, 0,
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                        ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT);
+        params.screenOrientation = currentOrientation;
+        try {
+            if (holderView == null) {
+                Space view = new Space(this);
+                view.setVisibility(android.view.View.VISIBLE);
+                windowManager.addView(view, params);
+                holderView = view; // Only remember successfully attached views.
+            } else {
+                windowManager.updateViewLayout(holderView, params);
+            }
+            return true;
+        } catch (SecurityException | WindowManager.BadTokenException e) {
+            // Permission can be revoked between the check and add/updateViewLayout.
+            Log.w(TAG, "Unable to apply orientation overlay", e);
+            failLock();
+            return false;
         }
+    }
 
-        orientationLayoutParams.screenOrientation = screenOrientation;
-        windowManager.updateViewLayout(holderView, orientationLayoutParams);
-        holderView.setVisibility(View.VISIBLE);
+    private void failLock() {
+        clearLock();
+        Toast.makeText(this, R.string.orientation_failed, Toast.LENGTH_LONG).show();
+    }
+
+    private void clearLock() {
+        currentOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        PreferenceManager.getInstance(this).setOrientation(currentOrientation);
+        removeOrientationLayout();
+        stopForeground(true);
+        stopSelf();
     }
 
     private void removeOrientationLayout() {
-        SimpleLog.d(TAG, "remove system orientation");
         if (holderView == null) return;
-        WindowManager windowManager = (WindowManager) this.getSystemService(Service.WINDOW_SERVICE);
-        windowManager.removeViewImmediate(holderView);
-        holderView = null;
+        try {
+            ((WindowManager) getSystemService(WINDOW_SERVICE)).removeViewImmediate(holderView);
+        } catch (IllegalArgumentException e) {
+            Log.w(TAG, "Overlay was already detached", e);
+        } finally {
+            holderView = null;
+        }
     }
 }

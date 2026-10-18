@@ -28,7 +28,10 @@
         </activity>
         <service android:name=".service.YiTateService"
                  android:foregroundServiceType="specialUse"
-                 android:exported="true"/>
+                 android:exported="false">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                      android:value="User-selected persistent screen orientation lock via a transparent overlay"/>
+        </service>
     </application>
 
 </manifest>

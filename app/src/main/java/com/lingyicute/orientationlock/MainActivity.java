@@ -10,7 +10,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.Manifest;
 import android.util.SparseIntArray;
 import android.view.View;
@@ -29,7 +28,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 100;
 
     private PreferenceManager preferenceManager;
-    private int currentOrientation;
+    private int currentOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+    private Integer pendingOrientation;
+    private static final String STATE_PENDING_ORIENTATION = "pending_orientation";
     private final SparseIntArray orientationMap = new SparseIntArray();
 
     @Override
@@ -38,7 +39,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.main);
         initView();
         
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (savedInstanceState == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             checkNotificationPermission();
         }
 
@@ -52,9 +53,27 @@ public class MainActivity extends Activity implements View.OnClickListener {
         orientationMap.put(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT, R.id.tv_orientation_reverse_portrait);
         orientationMap.put(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT, R.id.tv_orientation_sensor_portrait);
 
-        int orientation = PermissionUtils.isDrawOverlaysPermissionGranted(this)
-                ? preferenceManager.getOrientation() : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        if (savedInstanceState != null && savedInstanceState.containsKey(STATE_PENDING_ORIENTATION)) {
+            pendingOrientation = savedInstanceState.getInt(STATE_PENDING_ORIENTATION);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        boolean granted = PermissionUtils.isDrawOverlaysPermissionGranted(this);
+        int orientation = granted ? preferenceManager.getOrientation()
+                : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        if (pendingOrientation != null && granted) orientation = pendingOrientation;
+        pendingOrientation = null;
+        // Reconcile permission revocation and complete the selection after Settings returns.
         setOrientation(orientation);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        if (pendingOrientation != null) state.putInt(STATE_PENDING_ORIENTATION, pendingOrientation);
     }
 
     private void checkNotificationPermission() {
@@ -64,14 +83,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 // 检查是否应该显示权限说明
                 if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
                     new AlertDialog.Builder(this)
-                            .setTitle("需要通知权限")
-                            .setMessage("为了保持屏幕方向锁定服务的正常运行，YiTate 需要通知权限。")
-                            .setPositiveButton("授权", (dialog, which) -> {
+                            .setTitle(R.string.notification_permission_title)
+                            .setMessage(R.string.notification_permission_message)
+                            .setPositiveButton(R.string.allow, (dialog, which) -> {
                                 requestPermissions(
                                         new String[]{Manifest.permission.POST_NOTIFICATIONS},
                                         NOTIFICATION_PERMISSION_REQUEST_CODE);
                             })
-                            .setNegativeButton("忽略", null)
+                            .setNegativeButton(android.R.string.cancel, null)
                             .show();
                 } else {
                     // 首次请求或用户选择了"不再询问"
@@ -86,44 +105,19 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0) {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // 权限被授予，重启服务以确保通知正常显示
-                    if (currentOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
-                        setOrientation(currentOrientation);
-                    }
-                } else {
-                    // 权限被拒绝
-                    if (!shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
-                        // 用户选择了"不再询问"
-                        new AlertDialog.Builder(this)
-                                .setTitle("通知权限被禁用")
-                                .setMessage("您已禁用通知权限，这可能会影响服务的正常运行，是否要前往设置页面开启权限？")
-                                .setPositiveButton("前往", (dialog, which) -> {
-                                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                    Uri uri = Uri.fromParts("package", getPackageName(), null);
-                                    intent.setData(uri);
-                                    try {
-                                        startActivity(intent);
-                                    } catch (ActivityNotFoundException e) {
-                                        Toast.makeText(this, "无法打开设置页面", Toast.LENGTH_SHORT).show();
-                                    }
-                                })
-                                .setNegativeButton("忽略", null)
-                                .show();
-                    } else {
-                        Toast.makeText(this, "通知权限被拒绝，YiTate 可能无法正常工作", Toast.LENGTH_LONG).show();
-                    }
-                }
-            }
+        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE && grantResults.length > 0
+                && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+            // Notification permission is NOT a prerequisite for a foreground service.
+            Toast.makeText(this, R.string.notification_permission_denied, Toast.LENGTH_LONG).show();
         }
     }
 
     private void setOrientation(int orientation) {
+        if (!OrientationUtils.isSupported(orientation)) orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
         SimpleLog.d(TAG, "select orientation: " + orientation);
         if (orientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
             if (!PermissionUtils.isDrawOverlaysPermissionGranted(this)) {
+                pendingOrientation = orientation;
                 PermissionUtils.requestDrawOverlaysPermission(this);
                 Toast.makeText(this, R.string.permission_required, Toast.LENGTH_SHORT).show();
                 return;
@@ -133,10 +127,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
         int lastViewId = orientationMap.get(currentOrientation, View.NO_ID);
         if (lastViewId != View.NO_ID) {
             findViewById(lastViewId).setBackgroundResource(R.drawable.bg_button);
+            findViewById(lastViewId).setSelected(false);
         }
         int viewId = orientationMap.get(orientation, View.NO_ID);
         if (viewId != View.NO_ID) {
             findViewById(viewId).setBackgroundResource(R.drawable.bg_selected);
+            findViewById(viewId).setSelected(true);
         }
         Intent intent = new Intent(this, YiTateService.class);
         intent.setAction(YiTateService.ACTION_SET_ORIENTATION);

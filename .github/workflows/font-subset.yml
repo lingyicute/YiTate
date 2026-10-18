@@ -11,8 +11,13 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: font-subset-main
+  cancel-in-progress: false
+
 jobs:
   subset-and-embed:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

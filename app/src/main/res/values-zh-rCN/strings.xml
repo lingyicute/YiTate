@@ -15,4 +15,9 @@
     <string name="running_notification_description">YiTate 正在运行以保持屏幕方向</string>
     <string name="permission_required">请允许“在其他应用上层显示”的权限</string>
     <string name="about">关于</string>
+    <string name="orientation_failed">无法锁定屏幕方向，请检查“在其他应用上层显示”权限。</string>
+    <string name="notification_permission_title">显示运行状态通知？</string>
+    <string name="notification_permission_message">通知方便您返回 YiTate；不授予通知权限也能运行屏幕方向锁定服务。</string>
+    <string name="notification_permission_denied">通知已关闭，屏幕方向锁定仍可运行。</string>
+    <string name="allow">允许</string>
 </resources>

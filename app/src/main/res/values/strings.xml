@@ -15,4 +15,9 @@
     <string name="running_notification_description">YiTate is running for keeping the orientation</string>
     <string name="permission_required">Please grant draw over apps permission</string>
     <string name="about">About</string>
+    <string name="orientation_failed">Unable to lock orientation. Please check the display-over-other-apps permission.</string>
+    <string name="notification_permission_title">Show running notification?</string>
+    <string name="notification_permission_message">Notifications make it easier to return to YiTate. Orientation locking still works without notification permission.</string>
+    <string name="notification_permission_denied">Notifications are disabled; orientation locking can still run.</string>
+    <string name="allow">Allow</string>
 </resources>

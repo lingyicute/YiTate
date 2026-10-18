@@ -14,6 +14,18 @@
   font-display:swap;
 }
   :root {
+    color-scheme: light;
+    --primary: #6750a4; --on-primary: #ffffff;
+    --primary-container: #eaddff; --on-primary-container: #21005d;
+    --secondary: #625b71; --on-secondary: #ffffff;
+    --secondary-container: #e8def8; --on-secondary-container: #1d192b;
+    --tertiary: #7d5260; --on-tertiary: #ffffff;
+    --tertiary-container: #ffd8e4; --on-tertiary-container: #31111d;
+    --surface: #fffbfe; --on-surface: #1c1b1f; --on-surface-variant: #49454f;
+    --surface-container-low: #f7f2fa; --surface-container: #f3edf7;
+    --surface-container-high: #ece6f0; --surface-container-highest: #e6e0e9;
+    --outline: #79747e; --outline-variant: #cac4d0;
+    --inverse-surface: #313033; --inverse-on-surface: #f4eff4;
     --hue: 290;
     --font: "Nebulove", "HarmonyOS Sans SC", "MiSans", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
     --radius-xs: 8px;
@@ -23,6 +35,21 @@
     --radius-xl: 36px;
     --ease: cubic-bezier(.2,0,0,1);
     --ease-emph: cubic-bezier(.05,.7,.1,1);
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --primary: #d0bcff; --on-primary: #381e72;
+    --primary-container: #4f378b; --on-primary-container: #eaddff;
+    --secondary: #ccc2dc; --on-secondary: #332d41;
+    --secondary-container: #4a4458; --on-secondary-container: #e8def8;
+    --tertiary: #efb8c8; --on-tertiary: #492532;
+    --tertiary-container: #633b48; --on-tertiary-container: #ffd8e4;
+    --surface: #141218; --on-surface: #e6e0e9; --on-surface-variant: #cac4d0;
+    --surface-container-low: #1d1b20; --surface-container: #211f26;
+    --surface-container-high: #2b2930; --surface-container-highest: #36343b;
+    --outline: #938f99; --outline-variant: #49454f;
+    --inverse-surface: #e6e0e9; --inverse-on-surface: #313033;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -284,8 +311,8 @@
   .license strong { color: var(--on-surface); }
 
   /* Reveal */
-  .reveal { opacity: 0; transform: translateY(26px); transition: opacity .7s var(--ease), transform .7s var(--ease-emph); }
-  .reveal.in { opacity: 1; transform: none; }
+  .reveal { transition: opacity .7s var(--ease), transform .7s var(--ease-emph); }
+  .reveal.pending:not(.in) { opacity: 0; transform: translateY(26px); }
 
   /* Snackbar */
   .snack {
@@ -309,6 +336,7 @@
     .phone { width: 169px; height: 330px; }
   }
   @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
     *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
   }
 
@@ -406,7 +434,7 @@
       <div class="demo">
         <div class="phone">
           <div class="screen">
-            <img src="/screenshot-for-web.webp" alt="YiTate 应用截图" loading="eager">
+            <img src="./screenshot-for-web.webp" alt="YiTate 应用截图" loading="eager">
           </div>
         </div>
       </div>
@@ -553,8 +581,17 @@
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 
+  // Storage may be blocked in privacy mode or sandboxed embeds.
+  const storage = {
+    get(key) { try { return window.localStorage.getItem(key); } catch (_) { return null; } },
+    set(key, value) { try { window.localStorage.setItem(key, value); } catch (_) { /* session-only */ } }
+  };
+
   /* ---------- Material You tonal palette via oklch ---------- */
   function applyPalette(hue, dark) {
+    root.dataset.theme = dark ? 'dark' : 'light';
+    root.style.colorScheme = dark ? 'dark' : 'light';
+    if (!window.CSS || !CSS.supports('color', 'oklch(.5 .1 290)')) return;
     const c = (l, ch, h) => `oklch(${l} ${ch} ${h})`;
     const h = hue, h2 = hue, h3 = (hue + 60) % 360;
     const light = {
@@ -591,10 +628,13 @@
     root.style.colorScheme = dark ? 'dark' : 'light';
   }
 
-  let hue = +localStorage.getItem('yt-hue') || 290;
-  let dark = localStorage.getItem('yt-dark') != null
-    ? localStorage.getItem('yt-dark') === '1'
-    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const storedHue = storage.get('yt-hue');
+  const parsedHue = Number(storedHue);
+  let hue = storedHue !== null && storedHue.trim() !== '' && Number.isFinite(parsedHue)
+    && parsedHue >= 0 && parsedHue <= 360 ? parsedHue : 290;
+  const storedDark = storage.get('yt-dark');
+  let dark = storedDark === '1' || (storedDark !== '0'
+    && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   const seeds = [290, 250, 210, 170, 140, 90, 50, 25, 350, 320];
   const swatchesEl = $('#swatches');
@@ -610,18 +650,19 @@
 
   function setHue(h, snack) {
     hue = h; hueRange.value = h;
-    localStorage.setItem('yt-hue', h);
+    storage.set('yt-hue', h);
     $$('.swatch').forEach(s => s.classList.toggle('active', +s.dataset.hue === h));
     applyPalette(hue, dark);
     if (snack) showSnack('主题色已更新 ✦');
   }
-  function setDark(d) {
-    dark = d; localStorage.setItem('yt-dark', d ? '1' : '0');
+  function setDark(d, persist = true) {
+    dark = d;
+    if (persist) storage.set('yt-dark', d ? '1' : '0');
     $('#iconMoon').style.display = d ? 'none' : '';
     $('#iconSun').style.display = d ? '' : 'none';
     applyPalette(hue, dark);
   }
-  setHue(hue, false); setDark(dark);
+  setHue(hue, false); setDark(dark, false);
 
   $('#themeBtn').addEventListener('click', () => { setDark(!dark); showSnack(dark ? '已切换到深色模式 🌙' : '已切换到浅色模式 ☀️'); });
 
@@ -630,10 +671,12 @@
   document.addEventListener('click', e => { if (!palette.contains(e.target)) palette.classList.remove('open'); });
 
   /* ---------- Reveal on scroll ---------- */
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
-  }, { threshold: .12 });
-  $$('.reveal').forEach(el => io.observe(el));
+  if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+    }, { threshold: .12 });
+    $$('.reveal').forEach(el => { io.observe(el); el.classList.add('pending'); });
+  }
 
   /* ---------- App bar shadow ---------- */
   const appbar = $('#appbar');
