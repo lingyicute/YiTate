@@ -3,6 +3,7 @@ package com.lingyicute.orientationlock.preference;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import com.lingyicute.orientationlock.utils.OrientationUtils;
 
 public class PreferenceManager {
 
@@ -13,7 +14,7 @@ public class PreferenceManager {
 
     private static final String PREFERENCES = "settings";
 
-    public static PreferenceManager getInstance(Context context) {
+    public static synchronized PreferenceManager getInstance(Context context) {
         if (sManager == null) {
             sManager = new PreferenceManager(context);
         }
@@ -37,6 +38,13 @@ public class PreferenceManager {
     }
 
     public int getOrientation() {
-        return sPreferences.getInt(KEY_ORIENTATION, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        int orientation;
+        try {
+            orientation = sPreferences.getInt(KEY_ORIENTATION, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        } catch (ClassCastException e) {
+            orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        }
+        return OrientationUtils.isSupported(orientation)
+                ? orientation : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
     }
 }

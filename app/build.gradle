@@ -14,6 +14,13 @@ android {
         versionName "1.6"
     }
 
+    buildFeatures {
+        buildConfig true
+    }
+    testOptions {
+        unitTests.includeAndroidResources = true
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -28,4 +35,5 @@ android {
 
 dependencies {
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.12.2'
 }

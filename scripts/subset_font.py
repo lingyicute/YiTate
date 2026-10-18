@@ -1,83 +1,89 @@
 #!/usr/bin/env python3
-"""
-Subset the Nebulove font to only the characters used in web/index.html,
-then embed the WOFF2 subset as base64 into the @font-face rule.
-"""
-import re, base64, urllib.request, os, sys
+"""Subset Nebulove deterministically and replace only its own @font-face rule."""
+import base64
+from html import unescape
+from io import BytesIO
+import os
+from pathlib import Path
+import re
+import tempfile
+import urllib.request
 
 FONT_URL = "https://raw.githubusercontent.com/lingyicute/Nebulove/main/Nebulove.ttf"
-INDEX_PATH = "web/index.html"
-TMP_FONT_PATH = "/tmp/Nebulove.ttf"
+INDEX_PATH = Path("web/index.html")
+FONT_FACE = re.compile(r"@font-face\s*\{[^}]*\}", re.DOTALL | re.IGNORECASE)
+NEBULOVE_FAMILY = re.compile(
+    r'''font-family\s*:\s*(?:"Nebulove"|'Nebulove'|Nebulove)\s*;''', re.IGNORECASE
+)
+PUNCTUATION = "：，。！？；“”‘’（）【】—…·《》×＝÷＋－"
 
-def main():
-    if not os.path.exists(INDEX_PATH):
-        print(f"Error: {INDEX_PATH} not found.", file=sys.stderr)
-        sys.exit(1)
 
-    print("Reading web/index.html...")
-    with open(INDEX_PATH, "r", encoding="utf-8") as f:
-        html = f.read()
+def find_font_rule(html):
+    matches = [m for m in FONT_FACE.finditer(html) if NEBULOVE_FAMILY.search(m.group())]
+    if len(matches) != 1:
+        raise ValueError("Expected exactly one Nebulove @font-face rule")
+    return matches[0]
 
-    # 1. Collect all characters needed
-    chars = set(html)
-    # Ensure full ASCII printable set (32 to 126)
-    for c in range(32, 127):
-        chars.add(chr(c))
-    # Common punctuation
-    chars.update(['：', '，', '。', '！', '？', '；', '“', '”', '‘', '’', '（', '）', '【', '】', '—', '…', '·', '《', '》', '×', '＝', '÷', '＋', '－'])
 
-    print(f"Total unique characters needed: {len(chars)}")
+def collect_characters(html):
+    # Decode numeric/named HTML entities (e.g. &#x4E2D;). Ignore previous font data.
+    text = unescape(FONT_FACE.sub("", html))
+    return "".join(sorted(set(text) | set(map(chr, range(32, 127))) | set(PUNCTUATION)))
 
-    # 2. Download full Nebulove font
-    print(f"Downloading font from {FONT_URL}...")
-    try:
-        urllib.request.urlretrieve(FONT_URL, TMP_FONT_PATH)
-    except Exception as e:
-        print(f"Failed to download font: {e}", file=sys.stderr)
-        sys.exit(1)
 
-    # 3. Subset font using fontTools
+def build_subset(font_data, characters):
     from fontTools.ttLib import TTFont
     from fontTools.subset import Subsetter, Options
 
-    print("Subsetting font...")
-    # recalcTimestamp=False keeps the original `head.modified` timestamp
-    # (fontTools would otherwise stamp "now" into it), so the subset output
-    # is byte-for-byte reproducible and the CI workflow stays idempotent
-    # (re-running on a push never produces a spurious diff/commit).
-    font = TTFont(TMP_FONT_PATH, recalcTimestamp=False)
-    subsetter = Subsetter(options=Options())
-    subsetter.populate(text="".join(chars))
-    subsetter.subset(font)
+    with TTFont(BytesIO(font_data), recalcTimestamp=False) as font:
+        subsetter = Subsetter(options=Options())
+        subsetter.populate(text=characters)
+        subsetter.subset(font)
+        font.flavor = "woff2"
+        output = BytesIO()
+        font.save(output)
+        return output.getvalue()
 
-    font.flavor = "woff2"
-    tmp_woff2 = "/tmp/Nebulove-Subset.woff2"
-    font.save(tmp_woff2)
 
-    woff2_size = os.path.getsize(tmp_woff2)
-    print(f"Subsetted WOFF2 size: {woff2_size} bytes ({woff2_size / 1024:.2f} KB)")
-
-    # 4. Convert to base64
-    with open(tmp_woff2, "rb") as f:
-        b64_font = base64.b64encode(f.read()).decode("utf-8")
-
-    # 5. Replace font-face in web/index.html
-    font_css = f'''@font-face{{
+def embed_font(html, font_data):
+    match = find_font_rule(html)
+    encoded = base64.b64encode(font_data).decode("ascii")
+    css = f'''@font-face{{
   font-family:"Nebulove";
-  src:url("data:font/woff2;charset=utf-8;base64,{b64_font}") format("woff2"),
+  src:url("data:font/woff2;charset=utf-8;base64,{encoded}") format("woff2"),
       url("https://cdn.jsdelivr.net/gh/lingyicute/Nebulove@main/Nebulove.woff2") format("woff2");
   font-display:swap;
 }}'''
+    return html[:match.start()] + css + html[match.end():]
 
-    new_html = re.sub(r'@font-face\s*\{[^}]*\}', font_css, html, flags=re.DOTALL)
 
-    if new_html == html:
-        print("web/index.html is already up to date. No changes made.")
+def main():
+    path = Path(INDEX_PATH)
+    html = path.read_text(encoding="utf-8")
+    find_font_rule(html)  # Fail before downloading if the template is invalid.
+    characters = collect_characters(html)
+    print(f"Subsetting {len(characters)} characters from {FONT_URL}")
+    with urllib.request.urlopen(FONT_URL, timeout=30) as response:
+        subset = build_subset(response.read(), characters)
+    updated = embed_font(html, subset)
+    if updated == html:
+        print("web/index.html is already up to date.")
+        return
 
-    with open(INDEX_PATH, "w", encoding="utf-8") as f:
-        f.write(new_html)
+    # Unique temp file, atomic replacement, and no partial HTML on a write error.
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent,
+                                         suffix=".html", delete=False) as output:
+            temporary = Path(output.name)
+            output.write(updated)
+        os.chmod(temporary, path.stat().st_mode)
+        os.replace(temporary, path)
+    finally:
+        if temporary is not None and temporary.exists():
+            temporary.unlink()
+    print(f"Embedded {len(subset)} bytes of WOFF2 into {path}")
 
-    print("web/index.html updated successfully!")
 
 if __name__ == "__main__":
     main()

@@ -31,6 +31,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      # GITHUB_TOKEN-generated font commits do not trigger another Pages run.
+      # Generate from this checkout so the deployed font contains its current text.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Generate font for this deployment
+        run: |
+          pip install fonttools brotli
+          python scripts/subset_font.py
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
