@@ -34,3 +34,7 @@ google-services.json
 .DS_Store
 release/
 *.html
+
+# Python
+__pycache__/
+*.py[cod]
