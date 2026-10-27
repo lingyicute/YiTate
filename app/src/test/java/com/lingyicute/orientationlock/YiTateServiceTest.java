@@ -23,6 +23,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ServiceController;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowNotification;
 import org.robolectric.shadows.ShadowSettings;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -184,5 +185,23 @@ public class YiTateServiceTest {
     public void notificationIsForegroundOnAllSupportedApiGenerations() {
         assertNotNull(shadowOf(service).getLastForegroundNotification());
         assertEquals(1, shadowOf(service).getLastForegroundNotificationId());
+    }
+
+    @Test
+    public void notificationReportsTheLockedMode() {
+        select(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        assertEquals("Locked: Portrait", notificationText());
+        select(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+        assertEquals("Locked: Sensor landscape", notificationText());
+    }
+
+    @Test
+    public void notificationFallsBackToTheGenericDescriptionWithoutALock() {
+        assertEquals("YiTate is running for keeping the orientation", notificationText());
+    }
+
+    private String notificationText() {
+        ShadowNotification notification = shadowOf(shadowOf(service).getLastForegroundNotification());
+        return notification.getContentText().toString();
     }
 }
