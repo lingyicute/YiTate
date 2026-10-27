@@ -38,7 +38,7 @@ jobs:
           python-version: "3.11"
       - name: Generate font for this deployment
         run: |
-          pip install fonttools brotli
+          pip install -r scripts/requirements.txt
           python scripts/subset_font.py
       - name: Setup Pages
         uses: actions/configure-pages@v5
