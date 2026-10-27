@@ -50,19 +50,29 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/download-artifact@v4
         with:
           name: app-release
           path: apk
-      - name: Replace nightly release
+      - name: Publish nightly
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
+          notes="auto build · ${GITHUB_SHA:0:7} · ${GITHUB_REF_NAME} · unsigned APK"
+          # --target updates release metadata, not the existing Git tag ref.
+          git tag --force nightly "$GITHUB_SHA"
+          git push --force origin refs/tags/nightly
           if gh release view nightly >/dev/null 2>&1; then
-            gh release delete nightly --yes --cleanup-tag
+            # Update in place so the release URL and its download link survive
+            # every build, and a failure cannot leave the project without one.
+            gh release upload nightly apk/app-release-unsigned.apk --clobber
+            gh release edit nightly --notes "$notes" --target "$GITHUB_SHA"
+          else
+            gh release create nightly apk/app-release-unsigned.apk \
+              --title "Nightly Build" --notes "$notes" \
+              --prerelease --target "$GITHUB_SHA"
           fi
-          gh release create nightly apk/app-release-unsigned.apk \
-            --title "Nightly Build" \
-            --notes "auto build · ${GITHUB_SHA:0:7} · ${GITHUB_REF_NAME} · unsigned APK" \
-            --prerelease --target "$GITHUB_SHA"
