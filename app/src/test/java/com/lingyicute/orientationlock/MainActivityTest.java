@@ -1,10 +1,15 @@
 package com.lingyicute.orientationlock;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.widget.TextView;
 
 import com.lingyicute.orientationlock.preference.PreferenceManager;
+import com.lingyicute.orientationlock.utils.ContextUtils;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -68,6 +73,19 @@ public class MainActivityTest {
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class)
                 .create(state).start().resume().visible()) {
             assertEquals(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT, preferences.getOrientation());
+        }
+    }
+
+    @Test
+    public void iconsAreTintedWithTheThemeAccent() {
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            Activity activity = controller.get();
+            int accent = ContextUtils.getColorFromAttr(activity, android.R.attr.colorAccent);
+            assertEquals(0xFF, accent >>> 24);
+            Drawable icon = ((TextView) activity.findViewById(R.id.tv_orientation_landscape))
+                    .getCompoundDrawables()[1];
+            assertNotNull(icon);
+            assertTrue(icon.getColorFilter() instanceof PorterDuffColorFilter);
         }
     }
 

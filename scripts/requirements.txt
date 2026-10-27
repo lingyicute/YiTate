@@ -1,0 +1,4 @@
+# Pinned so re-running subset_font.py keeps producing the same WOFF2 payload.
+# Bump these together with a commit that refreshes web/index.html.
+fonttools==4.67.0
+brotli==1.2.1

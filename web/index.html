@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>YiTate · 轻松锁定屏幕方向</title>
 <meta name="description" content="YiTate 是一个不到 100k 的开源 Android 应用，帮助你轻松锁定屏幕方向。无依赖、无广告、无追踪器。Made with ❤️ by lingyicute.">
+<script>
+  /* Runs before the stylesheet paints so the splash never flashes the wrong theme. */
+  (function () {
+    var stored = null;
+    try { stored = localStorage.getItem('yt-dark'); } catch (_) { /* storage blocked */ }
+    var dark = stored === '1' || (stored !== '0' && window.matchMedia
+      && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  })();
+</script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='28' fill='%236750a4'/><rect x='30' y='18' width='40' height='64' rx='9' fill='white'/><rect x='36' y='26' width='28' height='40' rx='3' fill='%236750a4' opacity='.35'/></svg>">
 <style>
   @font-face{
@@ -131,6 +141,7 @@
   }
   .swatch:hover { transform: scale(1.12); }
   .swatch.active { outline-color: var(--primary); }
+  .swatch:focus-visible { outline-color: var(--on-surface); }
   .palette input[type=range] { width: 100%; accent-color: var(--primary); }
   @keyframes pop { from { opacity: 0; transform: translateY(-8px) scale(.96);} to { opacity: 1; transform: none; } }
 
@@ -343,20 +354,25 @@
   /* ---------- Loading overlay ---------- */
   .loading {
     position: fixed; inset: 0; z-index: 10000;
-    display: grid; place-items: center;
-    background: #f7f2fa;
+    display: none; place-items: center;
+    background: var(--surface);
     transition: opacity .5s var(--ease), visibility .5s var(--ease);
   }
-  @media (prefers-color-scheme: dark) {
-    .loading { background: #141414; }
-  }
+  .loading.show { display: grid; }
   .loading.hide { opacity: 0; visibility: hidden; pointer-events: none; }
-  .loading-spinner { width: 36px; height: 36px; color: #9a9a9a; animation: loading-spin 1s linear infinite; }
-  @media (prefers-color-scheme: dark) {
-    .loading-spinner { color: #bdbdbd; }
-  }
+  .loading-spinner { width: 36px; height: 36px; color: var(--on-surface-variant); animation: loading-spin 1s linear infinite; }
   @keyframes loading-spin { to { transform: rotate(360deg); } }
+
+  /* Printing must not swallow the splash or not-yet-revealed sections. */
+  @media print {
+    .loading, .snack { display: none !important; }
+    .reveal.pending:not(.in) { opacity: 1; transform: none; }
+  }
 </style>
+<noscript>
+  <!-- Without JavaScript the overlay would cover the whole page forever. -->
+  <style>.loading { display: none; }</style>
+</noscript>
 </head>
 <body>
 
@@ -383,16 +399,17 @@
       </div>
       <div class="actions">
         <div class="palette-wrap">
-          <button class="icon-btn" id="paletteBtn" title="更换主题色" aria-label="更换主题色">
+          <button class="icon-btn" id="paletteBtn" title="更换主题色" aria-label="更换主题色"
+                  aria-expanded="false" aria-controls="palette">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="1.2" fill="currentColor"/><circle cx="17.5" cy="10.5" r="1.2" fill="currentColor"/><circle cx="8.5" cy="7.5" r="1.2" fill="currentColor"/><circle cx="6.5" cy="12.5" r="1.2" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.7-.7 1.7-1.7 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.7 1.7-1.7H16c3.3 0 6-2.7 6-6 0-4.9-4.5-8.4-10-8.4z"/></svg>
           </button>
-          <div class="palette" id="palette">
-            <h4>动态取色 · Material You</h4>
+          <div class="palette" id="palette" role="group" aria-labelledby="paletteHeading">
+            <h4 id="paletteHeading">动态取色 · Material You</h4>
             <div class="swatches" id="swatches"></div>
             <input type="range" id="hueRange" min="0" max="360" value="290" aria-label="色相">
           </div>
         </div>
-        <button class="icon-btn" id="themeBtn" title="切换深浅色" aria-label="切换深浅色">
+        <button class="icon-btn" id="themeBtn" title="深色模式" aria-label="深色模式" aria-pressed="false">
           <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
           <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
         </button>
@@ -434,7 +451,7 @@
       <div class="demo">
         <div class="phone">
           <div class="screen">
-            <img src="./screenshot-for-web.webp" alt="YiTate 应用截图" loading="eager">
+            <img src="./screenshot-for-web.webp" alt="YiTate 应用截图" loading="eager" decoding="async" width="864" height="1688">
           </div>
         </div>
       </div>
@@ -581,6 +598,35 @@
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 
+  /* ---------- Loading overlay ----------
+     Registered before anything else: the splash must go away even if a widget
+     below throws, and the `load` handler must be in place before the page can
+     finish loading. */
+  let loadingDone = false;
+  function hideLoading() {
+    if (loadingDone) return;
+    loadingDone = true;
+    const el = $('#loading');
+    if (!el) return;
+    el.classList.add('hide');
+    el.addEventListener('transitionend', () => el.remove(), { once: true });
+    setTimeout(() => { if (el.isConnected) el.remove(); }, 800); /* safety */
+  }
+  const loadStart = performance.now();
+  function finishLoading() {
+    if (loadingDone) return;
+    const elapsed = performance.now() - loadStart;
+    setTimeout(hideLoading, Math.max(0, 500 - elapsed)); /* brief minimum splash */
+  }
+  window.addEventListener('load', () => {
+    const fontsReady = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+    fontsReady.then(finishLoading).catch(finishLoading);
+  });
+  setTimeout(finishLoading, 8000); /* failsafe: never leave overlay stuck */
+  // The splash is opt-in: a blocked or invalid script must leave the page visible.
+  const loadingEl = $('#loading');
+  if (loadingEl) loadingEl.classList.add('show');
+
   // Storage may be blocked in privacy mode or sandboxed embeds.
   const storage = {
     get(key) { try { return window.localStorage.getItem(key); } catch (_) { return null; } },
@@ -635,31 +681,53 @@
   const storedDark = storage.get('yt-dark');
   let dark = storedDark === '1' || (storedDark !== '0'
     && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  // Track an explicit choice in memory too: storage can be unavailable or reject writes.
+  let userSelectedDark = storedDark === '1' || storedDark === '0';
+  const darkMedia = window.matchMedia('(prefers-color-scheme: dark)');
+  const followSystemTheme = e => {
+    if (!userSelectedDark) setDark(e.matches, false);
+  };
+  if (darkMedia.addEventListener) darkMedia.addEventListener('change', followSystemTheme);
+  else if (darkMedia.addListener) darkMedia.addListener(followSystemTheme);
 
   const seeds = [290, 250, 210, 170, 140, 90, 50, 25, 350, 320];
   const swatchesEl = $('#swatches');
   seeds.forEach(s => {
     const b = document.createElement('button');
     b.className = 'swatch'; b.dataset.hue = s; b.title = `色相 ${s}°`;
+    b.setAttribute('aria-label', `色相 ${s}°`);
+    b.setAttribute('aria-pressed', String(s === hue));
     b.style.background = `oklch(.65 .15 ${s})`;
-    b.addEventListener('click', () => setHue(s, true));
+    b.addEventListener('click', () => { setHue(s); showSnack('主题色已更新 ✦'); });
     swatchesEl.appendChild(b);
   });
   const hueRange = $('#hueRange');
   hueRange.addEventListener('input', e => setHue(+e.target.value, false));
+  // `input` fires on every pixel while dragging; only a committed change is stored.
+  hueRange.addEventListener('change', e => storage.set('yt-hue', +e.target.value));
 
-  function setHue(h, snack) {
+  function setHue(h, persist = true) {
     hue = h; hueRange.value = h;
-    storage.set('yt-hue', h);
-    $$('.swatch').forEach(s => s.classList.toggle('active', +s.dataset.hue === h));
+    if (persist) storage.set('yt-hue', h);
+    $$('.swatch').forEach(s => {
+      const active = +s.dataset.hue === h;
+      s.classList.toggle('active', active);
+      s.setAttribute('aria-pressed', String(active));
+    });
     applyPalette(hue, dark);
-    if (snack) showSnack('主题色已更新 ✦');
   }
   function setDark(d, persist = true) {
     dark = d;
-    if (persist) storage.set('yt-dark', d ? '1' : '0');
+    if (persist) {
+      userSelectedDark = true;
+      storage.set('yt-dark', d ? '1' : '0');
+    }
     $('#iconMoon').style.display = d ? 'none' : '';
     $('#iconSun').style.display = d ? '' : 'none';
+    const btn = $('#themeBtn');
+    btn.setAttribute('aria-pressed', String(d));
+    btn.setAttribute('aria-label', '深色模式');
+    btn.title = '深色模式';
     applyPalette(hue, dark);
   }
   setHue(hue, false); setDark(dark, false);
@@ -667,8 +735,21 @@
   $('#themeBtn').addEventListener('click', () => { setDark(!dark); showSnack(dark ? '已切换到深色模式 🌙' : '已切换到浅色模式 ☀️'); });
 
   const paletteBtn = $('#paletteBtn'), palette = $('#palette');
-  paletteBtn.addEventListener('click', e => { e.stopPropagation(); palette.classList.toggle('open'); });
-  document.addEventListener('click', e => { if (!palette.contains(e.target)) palette.classList.remove('open'); });
+  function setPaletteOpen(open) {
+    palette.classList.toggle('open', open);
+    paletteBtn.setAttribute('aria-expanded', String(open));
+  }
+  paletteBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    setPaletteOpen(!palette.classList.contains('open'));
+  });
+  setPaletteOpen(false);
+  document.addEventListener('click', e => { if (!palette.contains(e.target)) setPaletteOpen(false); });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape' || !palette.classList.contains('open')) return;
+    setPaletteOpen(false);
+    paletteBtn.focus();
+  });
 
   /* ---------- Reveal on scroll ---------- */
   if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -689,28 +770,6 @@
     clearTimeout(snackTimer); snackTimer = setTimeout(() => s.classList.remove('show'), 2200);
   }
 
-  /* ---------- Loading overlay: hide once all resources are loaded ---------- */
-  let loadingDone = false;
-  function hideLoading() {
-    if (loadingDone) return;
-    loadingDone = true;
-    const el = $('#loading');
-    if (!el) return;
-    el.classList.add('hide');
-    el.addEventListener('transitionend', () => el.remove(), { once: true });
-    setTimeout(() => { if (el.isConnected) el.remove(); }, 800); /* safety */
-  }
-  const loadStart = performance.now();
-  function finishLoading() {
-    if (loadingDone) return;
-    const elapsed = performance.now() - loadStart;
-    setTimeout(hideLoading, Math.max(0, 500 - elapsed)); /* brief minimum splash */
-  }
-  window.addEventListener('load', () => {
-    const fontsReady = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
-    fontsReady.then(finishLoading).catch(finishLoading);
-  });
-  setTimeout(finishLoading, 8000); /* failsafe: never leave overlay stuck */
 })();
 </script>
 </body>
