@@ -79,6 +79,8 @@ public class YiTateService extends Service {
         currentOrientation = orientation;
         if (!applyOrientation()) return START_NOT_STICKY;
         PreferenceManager.getInstance(this).setOrientation(orientation);
+        // Reuse the running notification to show which mode is locked.
+        setForeground();
         return START_STICKY;
     }
 
@@ -113,13 +115,21 @@ public class YiTateService extends Service {
                         ? PendingIntent.FLAG_IMMUTABLE : 0));
         Notification notification = builder
                 .setContentTitle(getString(R.string.running_notification_title))
-                .setContentText(getString(R.string.running_notification_description))
+                .setContentText(getNotificationText())
                 .setSmallIcon(R.drawable.ic_stat_orientation)
                 .setContentIntent(pendingIntent)
                 .setPriority(Notification.PRIORITY_LOW)
                 .setOngoing(true)
                 .build();
         startForeground(1, notification);
+    }
+
+    /** The notification is the only place a locked mode is visible outside the app. */
+    private String getNotificationText() {
+        int label = OrientationUtils.getLabelRes(currentOrientation);
+        return label == 0
+                ? getString(R.string.running_notification_description)
+                : getString(R.string.running_notification_mode, getString(label));
     }
 
     private boolean applyOrientation() {

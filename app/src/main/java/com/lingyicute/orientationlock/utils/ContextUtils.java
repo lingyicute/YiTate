@@ -2,24 +2,17 @@ package com.lingyicute.orientationlock.utils;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.os.Build;
-import android.util.TypedValue;
 
 public class ContextUtils {
 
-    public static int getColor(Context context, int colorRes) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return context.getColor(colorRes);
-        }
-        return context.getResources().getColor(colorRes);
-    }
-
+    /** Resolves a theme attribute such as {@code android.R.attr.colorAccent} to its color. */
     public static int getColorFromAttr(Context context, int attrColorRes) {
-        TypedValue typedValue = new TypedValue();
-        TypedArray a = context.obtainStyledAttributes(typedValue.data, new int[] { attrColorRes });
-        int color = a.getColor(0, 0);
-        a.recycle();
-        return color;
+        TypedArray a = context.obtainStyledAttributes(new int[] { attrColorRes });
+        try {
+            return a.getColor(0, 0);
+        } finally {
+            a.recycle();
+        }
     }
 
     private ContextUtils() {

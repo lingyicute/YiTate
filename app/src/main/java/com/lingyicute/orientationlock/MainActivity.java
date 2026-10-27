@@ -154,9 +154,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         List<View> childViews = ViewUtils.getAllChildViews(rootView);
         Drawable icon;
         int iconSize = ViewUtils.dp(this, 32);
-        int iconColor = Build.VERSION.SDK_INT >= 21
-                ? ContextUtils.getColorFromAttr(this, android.R.attr.colorAccent)
-                : ContextUtils.getColor(this, R.color.icon_tint);
+        int iconColor = ContextUtils.getColorFromAttr(this, android.R.attr.colorAccent);
         for (View view : childViews) {
             if (view instanceof TextView) {
                 Drawable[] drawables = ((TextView) view).getCompoundDrawables();
