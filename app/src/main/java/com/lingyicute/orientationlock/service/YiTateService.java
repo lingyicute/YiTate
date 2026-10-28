@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.IBinder;
@@ -49,6 +50,7 @@ public class YiTateService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        ensureNotificationChannel();
         // API 21-25 also need a foreground service to keep the lock alive.
         setForeground();
         IntentFilter filter = new IntentFilter();
@@ -56,6 +58,15 @@ public class YiTateService extends Service {
         filter.addAction(Intent.ACTION_SCREEN_ON);
         // These are protected system broadcasts, not app-defined broadcasts.
         registerReceiver(screenReceiver, filter);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (currentOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+            ensureNotificationChannel();
+            setForeground();
+        }
     }
 
     @Override
@@ -97,17 +108,19 @@ public class YiTateService extends Service {
         return null;
     }
 
-    private void setForeground() {
-        Notification.Builder builder;
+    private void ensureNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             NotificationChannel channel = new NotificationChannel(NOTIFICATION_ID,
                     getString(R.string.running_notification_channel_name), NotificationManager.IMPORTANCE_LOW);
             manager.createNotificationChannel(channel);
-            builder = new Notification.Builder(this, NOTIFICATION_ID);
-        } else {
-            builder = new Notification.Builder(this);
         }
+    }
+
+    private void setForeground() {
+        Notification.Builder builder = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? new Notification.Builder(this, NOTIFICATION_ID)
+                : new Notification.Builder(this);
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,

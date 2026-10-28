@@ -3,8 +3,10 @@ package com.lingyicute.orientationlock;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -19,10 +21,12 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowPorterDuffColorFilter;
 import org.robolectric.shadows.ShadowSettings;
 import org.robolectric.util.ReflectionHelpers;
 
 import static org.junit.Assert.*;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
@@ -77,6 +81,7 @@ public class MainActivityTest {
     }
 
     @Test
+    @Config(sdk = {21, 28, 34})
     public void iconsAreTintedWithTheThemeAccent() {
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
             Activity activity = controller.get();
@@ -85,7 +90,13 @@ public class MainActivityTest {
             Drawable icon = ((TextView) activity.findViewById(R.id.tv_orientation_landscape))
                     .getCompoundDrawables()[1];
             assertNotNull(icon);
-            assertTrue(icon.getColorFilter() instanceof PorterDuffColorFilter);
+            // VectorDrawable did not override Drawable.getColorFilter() on API 21.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                assertTrue(icon.getColorFilter() instanceof PorterDuffColorFilter);
+                ShadowPorterDuffColorFilter filter = shadowOf((PorterDuffColorFilter) icon.getColorFilter());
+                assertEquals(accent, filter.getColor());
+                assertEquals(PorterDuff.Mode.SRC_IN, filter.getMode());
+            }
         }
     }
 
