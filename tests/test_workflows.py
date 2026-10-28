@@ -34,6 +34,12 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn('"scripts/requirements.txt"', subset)
         self.assertIn("pip install -r scripts/requirements.txt", subset)
         self.assertIn("pip install -r scripts/requirements.txt", pages)
+        self.assertIn("persist-credentials: false", pages)
+        self.assertIn("GIT_USER_NAME: ${{ github.actor }}", subset)
+        self.assertIn("GIT_USER_EMAIL: ${{ github.event.pusher.email || format(", subset)
+        self.assertIn("for attempt in 1 2 3; do", subset)
+        self.assertIn('if git push origin "HEAD:$GITHUB_REF_NAME"; then', subset)
+        self.assertIn('echo "Push raced with a newer commit (attempt $attempt); retrying."', subset)
         self.assertNotIn("git pull --rebase", subset)
         self.assertNotIn('git config user.email "${{', subset)
         self.assertLess(
