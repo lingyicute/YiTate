@@ -33,7 +33,7 @@ google-services.json
 
 .DS_Store
 release/
-*.html
+/*.html
 
 # Python
 __pycache__/

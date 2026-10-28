@@ -23,8 +23,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -36,20 +34,28 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r scripts/requirements.txt
 
-      - name: Download Nebulove & Subset Font
+      - name: Subset font from latest branch head and push if changed
+        env:
+          GIT_USER_NAME: ${{ github.actor }}
+          GIT_USER_EMAIL: ${{ github.event.pusher.email || format('{0}@users.noreply.github.com', github.actor) }}
         run: |
-          python scripts/subset_font.py
-
-      - name: Commit and push changes as user
-        run: |
-          if git diff --quiet web/index.html; then
-            echo "No changes in web/index.html detected."
-            exit 0
-          fi
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.event.pusher.email || format('{0}@users.noreply.github.com', github.actor) }}"
-          git add web/index.html
-          git commit -m "perf: 更新 Nebulove 字体子集"
-          # Commits may have landed while the font was downloading and subsetting.
-          git pull --rebase origin "$GITHUB_REF_NAME"
-          git push origin "HEAD:$GITHUB_REF_NAME"
+          git config user.name "$GIT_USER_NAME"
+          git config user.email "$GIT_USER_EMAIL"
+          # Regenerate against the latest branch tip instead of rebasing a 78 KB
+          # single-line @font-face diff when queued runs land back-to-back.
+          for attempt in 1 2 3; do
+            git fetch origin "$GITHUB_REF_NAME"
+            git checkout -B "$GITHUB_REF_NAME" "origin/$GITHUB_REF_NAME"
+            python scripts/subset_font.py
+            if git diff --quiet web/index.html; then
+              echo "No changes in web/index.html detected."
+              exit 0
+            fi
+            git add web/index.html
+            git commit -m "perf: 更新 Nebulove 字体子集"
+            if git push origin "HEAD:$GITHUB_REF_NAME"; then
+              exit 0
+            fi
+            echo "Push raced with a newer commit (attempt $attempt); retrying."
+          done
+          exit 1

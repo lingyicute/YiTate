@@ -51,8 +51,6 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/download-artifact@v4
         with:
           name: app-release
@@ -63,15 +61,17 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           notes="auto build · ${GITHUB_SHA:0:7} · ${GITHUB_REF_NAME} · unsigned APK"
-          # --target updates release metadata, not the existing Git tag ref.
-          git tag --force nightly "$GITHUB_SHA"
-          git push --force origin refs/tags/nightly
           if gh release view nightly >/dev/null 2>&1; then
-            # Update in place so the release URL and its download link survive
-            # every build, and a failure cannot leave the project without one.
+            # Update in place and upload the new APK before moving the tag or
+            # notes so a failed upload never leaves metadata ahead of its asset.
             gh release upload nightly apk/app-release-unsigned.apk --clobber
+            # --target updates release metadata, not the existing Git tag ref.
+            git tag --force nightly "$GITHUB_SHA"
+            git push --force origin refs/tags/nightly
             gh release edit nightly --notes "$notes" --target "$GITHUB_SHA"
           else
+            git tag --force nightly "$GITHUB_SHA"
+            git push --force origin refs/tags/nightly
             gh release create nightly apk/app-release-unsigned.apk \
               --title "Nightly Build" --notes "$notes" \
               --prerelease --target "$GITHUB_SHA"
