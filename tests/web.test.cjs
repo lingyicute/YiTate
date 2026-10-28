@@ -33,9 +33,13 @@ function element() {
   };
 }
 
-function boot({ saved = {}, blocked = false, observer = true, color = true, reducedMotion = false, schemeDark = false, mediaApi = 'event' } = {}) {
+function boot({
+  saved = {}, blocked = false, observer = true, color = true,
+  reducedMotion = false, schemeDark = false, mediaApi = 'event', readyState = 'loading'
+} = {}) {
   const ids = new Map();
   const calls = [];
+  const timeouts = [];
   const get = selector => {
     if (!ids.has(selector)) ids.set(selector, element());
     return ids.get(selector);
@@ -44,6 +48,7 @@ function boot({ saved = {}, blocked = false, observer = true, color = true, redu
   const reveals = [element(), element()];
   const storage = new Map(Object.entries(saved));
   const document = {
+    readyState,
     documentElement: root,
     querySelector(selector) { calls.push('query:' + selector); return get(selector); },
     querySelectorAll: selector => selector === '.swatch' ? get('#swatches').children : reveals,
@@ -55,7 +60,17 @@ function boot({ saved = {}, blocked = false, observer = true, color = true, redu
   const mediaListeners = [];
   const sandbox = {
     document, CSS: { supports: () => color },
-    matchMedia: query => {
+    addEventListener(name, fn) {
+      calls.push('window:' + name);
+      sandbox.listeners[name] = fn;
+    },
+    listeners: {},
+    setTimeout(fn, delay) { timeouts.push({ fn, delay }); return timeouts.length; },
+    clearTimeout() {},
+    performance: { now: () => 0 }, scrollY: 0
+  };
+  if (mediaApi !== 'none') {
+    sandbox.matchMedia = query => {
       const media = {
         query,
         matches: query.includes('reduced-motion') ? reducedMotion
@@ -65,10 +80,8 @@ function boot({ saved = {}, blocked = false, observer = true, color = true, redu
       if (mediaApi === 'event') media.addEventListener = listen;
       if (mediaApi === 'legacy') media.addListener = fn => listen('change', fn);
       return media;
-    },
-    addEventListener(name) { calls.push('window:' + name); }, setTimeout() { return 1; }, clearTimeout() {},
-    performance: { now: () => 0 }, scrollY: 0
-  };
+    };
+  }
   if (observer) sandbox.IntersectionObserver = class {
     constructor(fn) { this.fn = fn; }
     observe() {} unobserve() {}
@@ -85,7 +98,7 @@ function boot({ saved = {}, blocked = false, observer = true, color = true, redu
   sandbox.window = sandbox;
   vm.runInNewContext(script, sandbox, { timeout: 1000 });
   return {
-    get, root, storage, reveals, calls, document,
+    get, root, storage, reveals, calls, timeouts, document, window: sandbox,
     fireMedia: matches => mediaListeners.forEach(fn => fn({ matches }))
   };
 }
@@ -94,8 +107,26 @@ test('theme is resolved before the stylesheet paints', () => {
   const head = html.slice(0, html.indexOf('<style>'));
   const headScripts = [...head.matchAll(/<script>([\s\S]*?)<\/script>/g)];
   assert.equal(headScripts.length, 1, 'exactly one early theme script');
-  assert.match(headScripts[0][1], /localStorage\.getItem\('yt-dark'\)/);
-  assert.match(headScripts[0][1], /dataset\.theme/);
+  const runEarly = ({ stored = null, blocked = false, schemeDark = false, hasMedia = true } = {}) => {
+    const root = element();
+    const ctx = {
+      document: { documentElement: root },
+      matchMedia: hasMedia ? () => ({ matches: schemeDark }) : undefined
+    };
+    Object.defineProperty(ctx, 'localStorage', {
+      get() {
+        if (blocked) throw new Error('blocked');
+        return { getItem: () => stored };
+      }
+    });
+    ctx.window = ctx;
+    vm.runInNewContext(headScripts[0][1], ctx, { timeout: 1000 });
+    return root.dataset.theme;
+  };
+  assert.equal(runEarly({ schemeDark: true }), 'dark');
+  assert.equal(runEarly({ stored: '0', schemeDark: true }), 'light');
+  assert.equal(runEarly({ stored: '1', schemeDark: false }), 'dark');
+  assert.equal(runEarly({ blocked: true, hasMedia: false }), 'light');
 });
 
 test('palette reports its open state and closes on Escape', () => {
@@ -142,14 +173,31 @@ test('dragging the hue slider only stores the committed value', () => {
   assert.equal(page.storage.get('yt-hue'), '33');
 });
 
-test('theme button keeps its name while exposing the selected state', () => {
+test('closing the palette or tabbing away commits an in-progress hue drag', () => {
+  const page = boot();
+  const trigger = page.get('#paletteBtn'), palette = page.get('#palette'), range = page.get('#hueRange');
+  trigger.listeners.click({ stopPropagation() {} });
+  range.value = 145;
+  range.listeners.input({ target: range });
+  assert.equal(page.storage.has('yt-hue'), false);
+  page.document.listeners.focusin({ target: page.get('#themeBtn') });
+  assert.equal(palette.classList.contains('open'), false);
+  assert.equal(page.storage.get('yt-hue'), '145');
+});
+
+test('theme button keeps its name while exposing the selected state and action tooltip', () => {
+  assert.match(html, /<button type="button"[^>]+id="paletteBtn"/);
+  assert.match(html, /<button type="button"[^>]+id="themeBtn"/);
   const page = boot();
   const button = page.get('#themeBtn');
+  assert.equal(page.get('#swatches').children[0].type, 'button');
   assert.equal(button.attributes['aria-pressed'], 'false');
   assert.equal(button.attributes['aria-label'], '深色模式');
+  assert.equal(button.title, '切换到深色模式');
   button.listeners.click();
   assert.equal(button.attributes['aria-pressed'], 'true');
   assert.equal(button.attributes['aria-label'], '深色模式');
+  assert.equal(button.title, '切换到浅色模式');
 });
 
 test('system theme changes are followed until a theme is chosen explicitly', () => {
@@ -200,6 +248,22 @@ test('splash failsafe is registered before widgets and the overlay is then enabl
   assert.ok(firstQuery >= 0, 'the script did query the DOM');
   assert.ok(load < firstQuery, `load handler must come first, got ${page.calls.slice(0, 3).join(', ')}`);
   assert.equal(page.get('#loading').classList.contains('show'), true);
+});
+
+test('already-loaded documents dismiss the splash without waiting for the 8s failsafe', async () => {
+  const page = boot({ readyState: 'complete', reducedMotion: true });
+  await Promise.resolve();
+  const immediateHide = page.timeouts.find(t => t.delay === 0);
+  assert.ok(immediateHide, 'hideLoading is scheduled immediately once fonts resolve');
+  immediateHide.fn();
+  assert.equal(page.get('#loading').classList.contains('hide'), true);
+});
+
+test('missing matchMedia does not abort initialization', () => {
+  const page = boot({ mediaApi: 'none' });
+  assert.equal(page.root.dataset.theme, 'light');
+  page.get('#themeBtn').listeners.click();
+  assert.equal(page.root.dataset.theme, 'dark');
 });
 
 test('blocked localStorage does not abort initialization or theme clicks', () => {
