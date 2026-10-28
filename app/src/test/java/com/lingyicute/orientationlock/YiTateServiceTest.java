@@ -94,6 +94,7 @@ public class YiTateServiceTest {
         assertNotNull(overlay());
         assertEquals(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT,
                 ((WindowManager.LayoutParams) overlay().getLayoutParams()).screenOrientation);
+        assertEquals("Locked: Reverse portrait", notificationText());
     }
 
     @Test
@@ -176,7 +177,13 @@ public class YiTateServiceTest {
     @Test
     public void modeValidationAcceptsOnlyTheEightUiModes() {
         int count = 0;
-        for (int i = -10; i <= 100; i++) if (OrientationUtils.isSupported(i)) count++;
+        for (int i = -10; i <= 100; i++) {
+            if (!OrientationUtils.isSupported(i)) continue;
+            count++;
+            if (i != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+                assertNotEquals(0, OrientationUtils.getLabelRes(i));
+            }
+        }
         assertEquals(8, count);
     }
 
@@ -193,6 +200,15 @@ public class YiTateServiceTest {
         assertEquals("Locked: Portrait", notificationText());
         select(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
         assertEquals("Locked: Sensor landscape", notificationText());
+    }
+
+    @Test
+    public void notificationRefreshesWhenSystemLocaleChanges() {
+        select(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        assertEquals("Locked: Portrait", notificationText());
+        RuntimeEnvironment.setQualifiers("zh-rCN");
+        service.onConfigurationChanged(service.getResources().getConfiguration());
+        assertEquals("已锁定：竖屏", notificationText());
     }
 
     @Test

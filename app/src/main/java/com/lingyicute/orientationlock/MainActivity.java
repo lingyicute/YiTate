@@ -162,6 +162,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 if (icon == null) {
                     continue;
                 }
+                icon = icon.mutate();
                 icon.setBounds(0, 0, iconSize, iconSize);
                 ViewUtils.setDrawableColorFilter(icon, iconColor);
                 ((TextView) view).setCompoundDrawables(drawables[0], icon, drawables[2], drawables[3]);
