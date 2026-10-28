@@ -3,9 +3,9 @@ name: Web and script checks
 on:
   push:
     branches: ["main"]
-    paths: ["web/**", "scripts/**", "tests/**", ".github/workflows/lightweight-checks.yml"]
+    paths: ["web/**", "scripts/**", "tests/**", ".github/workflows/**"]
   pull_request:
-    paths: ["web/**", "scripts/**", "tests/**", ".github/workflows/lightweight-checks.yml"]
+    paths: ["web/**", "scripts/**", "tests/**", ".github/workflows/**"]
   workflow_dispatch:
 
 permissions:
