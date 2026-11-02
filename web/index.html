@@ -796,11 +796,15 @@
   addEventListener('scroll', syncAppbar, { passive: true });
 
   /* ---------- Snackbar ---------- */
-  let snackTimer;
+  let snackTimer, snackClearTimer;
   function showSnack(msg) {
     const s = $('#snack'); s.textContent = msg; s.classList.add('show');
-    clearTimeout(snackTimer);
-    snackTimer = setTimeout(() => { s.classList.remove('show'); s.textContent = ''; }, 2200);
+    clearTimeout(snackTimer); clearTimeout(snackClearTimer);
+    snackTimer = setTimeout(() => {
+      s.classList.remove('show');
+      // Clear the text only after the 400ms exit transition has finished.
+      snackClearTimer = setTimeout(() => { s.textContent = ''; }, 450);
+    }, 2200);
   }
 
 })();
