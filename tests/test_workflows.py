@@ -61,6 +61,7 @@ class WorkflowTests(unittest.TestCase):
         checks = (ROOT / ".github/workflows/lightweight-checks.yml").read_text(encoding="utf-8")
 
         self.assertEqual(checks.count('".github/workflows/**"'), 2)
+        self.assertIn("concurrency:", checks)
 
 
 if __name__ == "__main__":
