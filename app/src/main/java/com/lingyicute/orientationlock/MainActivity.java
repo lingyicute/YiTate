@@ -91,14 +91,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
             if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
                 boolean rationale = shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS);
-                if (!rationale && preferenceManager.isNotificationPermissionRequested()) {
-                    // Already refused with "don't ask again": requesting again fails
-                    // silently and would only repeat the denial toast on every launch.
+                if (rationale ? preferenceManager.isNotificationRationaleShown()
+                        : preferenceManager.isNotificationPermissionRequested()) {
+                    // Already refused (either permanently or by dismissing the rationale):
+                    // prompting again on every cold start would only nag or fail silently.
                     return;
                 }
                 preferenceManager.setNotificationPermissionRequested(true);
                 // 检查是否应该显示权限说明
                 if (rationale) {
+                    preferenceManager.setNotificationRationaleShown(true);
                     rationaleDialog = new AlertDialog.Builder(this)
                             .setTitle(R.string.notification_permission_title)
                             .setMessage(R.string.notification_permission_message)
@@ -142,14 +144,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
         preferenceManager.setOrientation(orientation);
         int lastViewId = orientationMap.get(currentOrientation, View.NO_ID);
-        if (lastViewId != View.NO_ID) {
-            findViewById(lastViewId).setBackgroundResource(R.drawable.bg_button);
-            findViewById(lastViewId).setSelected(false);
-        }
         int viewId = orientationMap.get(orientation, View.NO_ID);
+        if (lastViewId != View.NO_ID && lastViewId != viewId) {
+            View lastView = findViewById(lastViewId);
+            lastView.setBackgroundResource(R.drawable.bg_button);
+            lastView.setSelected(false);
+        }
         if (viewId != View.NO_ID) {
-            findViewById(viewId).setBackgroundResource(R.drawable.bg_selected);
-            findViewById(viewId).setSelected(true);
+            View currentView = findViewById(viewId);
+            currentView.setBackgroundResource(R.drawable.bg_selected);
+            currentView.setSelected(true);
         }
         Intent intent = new Intent(this, YiTateService.class);
         intent.setAction(YiTateService.ACTION_SET_ORIENTATION);

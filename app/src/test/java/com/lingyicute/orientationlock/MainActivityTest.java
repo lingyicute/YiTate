@@ -1,6 +1,8 @@
 package com.lingyicute.orientationlock;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -137,6 +139,24 @@ public class MainActivityTest {
         preferences.setNotificationPermissionRequested(true);
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
             assertNull(shadowOf(controller.get()).getLastRequestedPermission());
+        }
+    }
+
+    @Test
+    @Config(sdk = 34)
+    public void notificationRationaleDialogIsShownAtMostOnce() {
+        preferences.setNotificationPermissionRequested(true);
+        shadowOf(RuntimeEnvironment.getApplication().getPackageManager())
+                .setShouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS, true);
+        try (ActivityController<MainActivity> first = Robolectric.buildActivity(MainActivity.class).setup()) {
+            AlertDialog dialog = ReflectionHelpers.getField(first.get(), "rationaleDialog");
+            assertNotNull(dialog);
+            assertTrue(dialog.isShowing());
+            assertTrue(preferences.isNotificationRationaleShown());
+        }
+        try (ActivityController<MainActivity> second = Robolectric.buildActivity(MainActivity.class).setup()) {
+            assertNull(ReflectionHelpers.getField(second.get(), "rationaleDialog"));
+            assertNull(shadowOf(second.get()).getLastRequestedPermission());
         }
     }
 
