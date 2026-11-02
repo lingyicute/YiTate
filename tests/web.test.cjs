@@ -158,6 +158,10 @@ test('palette stays inside narrow viewports', () => {
   assert.match(mobile, /\.palette\s*\{[^}]*width:\s*min\(240px,\s*92vw\)/);
 });
 
+test('snackbar messages are announced to assistive technology', () => {
+  assert.match(html, /<div class="snack" id="snack" role="status" aria-live="polite"[^>]*><\/div>/);
+});
+
 test('swatches carry a label and a single pressed state', () => {
   const swatches = boot().get('#swatches').children;
   assert.equal(swatches.length, 10);
