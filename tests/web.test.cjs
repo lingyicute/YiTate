@@ -66,7 +66,7 @@ function boot({
     },
     listeners: {},
     setTimeout(fn, delay) { timeouts.push({ fn, delay }); return timeouts.length; },
-    clearTimeout() {},
+    clearTimeout(id) { if (timeouts[id - 1]) timeouts[id - 1].cancelled = true; },
     performance: { now: () => 0 }, scrollY
   };
   if (mediaApi !== 'none') {
@@ -168,7 +168,20 @@ test('snackbar messages are announced to assistive technology and hidden when di
   assert.equal(snack.textContent, '主题色已更新 ✦');
   page.timeouts.find(t => t.delay === 2200).fn();
   assert.equal(snack.classList.contains('show'), false);
+  assert.equal(snack.textContent, '主题色已更新 ✦', 'text stays while the 400ms exit transition runs');
+  page.timeouts.find(t => t.delay === 450).fn();
   assert.equal(snack.textContent, '');
+});
+
+test('a new snackbar cancels the pending text clear of the previous one', () => {
+  const page = boot();
+  const swatches = page.get('#swatches').children;
+  swatches[0].listeners.click();
+  page.timeouts.find(t => t.delay === 2200).fn();
+  const clear = page.timeouts.find(t => t.delay === 450);
+  swatches[1].listeners.click();
+  assert.equal(clear.cancelled, true, 'the stale clear must not wipe the new message');
+  assert.equal(page.get('#snack').classList.contains('show'), true);
 });
 
 test('app bar reflects an already-scrolled document on initial load', () => {
