@@ -35,7 +35,7 @@ function element() {
 
 function boot({
   saved = {}, blocked = false, observer = true, color = true,
-  reducedMotion = false, schemeDark = false, mediaApi = 'event', readyState = 'loading'
+  reducedMotion = false, schemeDark = false, mediaApi = 'event', readyState = 'loading', scrollY = 0
 } = {}) {
   const ids = new Map();
   const calls = [];
@@ -67,7 +67,7 @@ function boot({
     listeners: {},
     setTimeout(fn, delay) { timeouts.push({ fn, delay }); return timeouts.length; },
     clearTimeout() {},
-    performance: { now: () => 0 }, scrollY: 0
+    performance: { now: () => 0 }, scrollY
   };
   if (mediaApi !== 'none') {
     sandbox.matchMedia = query => {
@@ -158,8 +158,15 @@ test('palette stays inside narrow viewports', () => {
   assert.match(mobile, /\.palette\s*\{[^}]*width:\s*min\(240px,\s*92vw\)/);
 });
 
-test('snackbar messages are announced to assistive technology', () => {
+test('snackbar messages are announced to assistive technology and hidden when dismissed', () => {
   assert.match(html, /<div class="snack" id="snack" role="status" aria-live="polite"[^>]*><\/div>/);
+  assert.match(html, /\.snack\s*\{[^}]*opacity:\s*0;\s*pointer-events:\s*none;/);
+  assert.match(html, /\.snack\.show\s*\{[^}]*opacity:\s*1;/);
+});
+
+test('app bar reflects an already-scrolled document on initial load', () => {
+  assert.equal(boot({ scrollY: 0 }).get('#appbar').classList.contains('scrolled'), false);
+  assert.equal(boot({ scrollY: 24 }).get('#appbar').classList.contains('scrolled'), true);
 });
 
 test('swatches carry a label and a single pressed state', () => {
