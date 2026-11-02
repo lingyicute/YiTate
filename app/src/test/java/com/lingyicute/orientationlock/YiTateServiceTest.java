@@ -118,6 +118,19 @@ public class YiTateServiceTest {
     }
 
     @Test
+    public void detachedOverlayIsReattachedOnNextSelection() {
+        select(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        View first = overlay();
+        ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).removeViewImmediate(first);
+        assertEquals(Service.START_STICKY, select(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT));
+        assertNotNull(overlay());
+        assertNotSame(first, overlay());
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT,
+                ((WindowManager.LayoutParams) overlay().getLayoutParams()).screenOrientation);
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, preferences.getOrientation());
+    }
+
+    @Test
     public void screenOffRemovesAndScreenOnRestoresOverlay() {
         select(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         screen(false);

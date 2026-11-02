@@ -167,14 +167,20 @@ public class YiTateService extends Service {
                 PixelFormat.TRANSLUCENT);
         params.screenOrientation = currentOrientation;
         try {
-            if (holderView == null) {
-                Space view = new Space(this);
-                view.setVisibility(android.view.View.VISIBLE);
-                windowManager.addView(view, params);
-                holderView = view; // Only remember successfully attached views.
-            } else {
-                windowManager.updateViewLayout(holderView, params);
+            if (holderView != null) {
+                try {
+                    windowManager.updateViewLayout(holderView, params);
+                    return true;
+                } catch (IllegalArgumentException e) {
+                    // The system dropped the window behind our back; attach a new one.
+                    Log.w(TAG, "Overlay was detached; re-attaching", e);
+                    holderView = null;
+                }
             }
+            Space view = new Space(this);
+            view.setVisibility(android.view.View.VISIBLE);
+            windowManager.addView(view, params);
+            holderView = view; // Only remember successfully attached views.
             return true;
         } catch (SecurityException | WindowManager.BadTokenException e) {
             // Permission can be revoked between the check and add/updateViewLayout.
