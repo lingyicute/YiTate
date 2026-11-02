@@ -8,8 +8,6 @@ import android.os.Build;
 import android.os.Process;
 import android.provider.Settings;
 
-import com.lingyicute.orientationlock.BuildConfig;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -43,14 +41,20 @@ public class PermissionUtils {
         return true;
     }
 
-    public static void requestDrawOverlaysPermission(Context context){
+    public static void requestDrawOverlaysPermission(Context context) {
         if (Build.VERSION.SDK_INT < 23) return;
-        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-        intent.setData(Uri.parse("package:" + BuildConfig.APPLICATION_ID));
+        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:" + context.getPackageName()));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
             context.startActivity(intent);
-        } catch (ActivityNotFoundException ignore) {
+        } catch (ActivityNotFoundException e) {
+            Intent fallback = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+            fallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            try {
+                context.startActivity(fallback);
+            } catch (ActivityNotFoundException ignore) {
+            }
         }
     }
 
