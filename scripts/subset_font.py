@@ -10,10 +10,10 @@ import tempfile
 import urllib.request
 
 FONT_URL = "https://raw.githubusercontent.com/lingyicute/Nebulove/main/Nebulove.ttf"
-INDEX_PATH = Path("web/index.html")
+INDEX_PATH = Path(__file__).resolve().parents[1] / "web/index.html"
 FONT_FACE = re.compile(r"@font-face\s*\{[^}]*\}", re.DOTALL | re.IGNORECASE)
 NEBULOVE_FAMILY = re.compile(
-    r'''font-family\s*:\s*(?:"Nebulove"|'Nebulove'|Nebulove)\s*;''', re.IGNORECASE
+    r'''font-family\s*:\s*(?:"Nebulove"|'Nebulove'|Nebulove)\s*(?:;|\}|\Z)''', re.IGNORECASE
 )
 PUNCTUATION = "：，。！？；“”‘’（）【】—…·《》×＝÷＋－"
 
@@ -73,8 +73,8 @@ def main():
     # Unique temp file, atomic replacement, and no partial HTML on a write error.
     temporary = None
     try:
-        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent,
-                                         suffix=".html", delete=False) as output:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", newline="\n",
+                                         dir=path.parent, suffix=".html", delete=False) as output:
             temporary = Path(output.name)
             output.write(updated)
         os.chmod(temporary, path.stat().st_mode)
