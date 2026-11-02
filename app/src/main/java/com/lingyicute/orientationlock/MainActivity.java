@@ -38,12 +38,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         initView();
-        
+        preferenceManager = PreferenceManager.getInstance(this);
+
         if (savedInstanceState == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             checkNotificationPermission();
         }
 
-        preferenceManager = PreferenceManager.getInstance(this);
         orientationMap.put(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, R.id.tv_orientation_default);
         orientationMap.put(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR, R.id.tv_orientation_full_sensor);
         orientationMap.put(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, R.id.tv_orientation_landscape);
@@ -80,8 +80,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
+                boolean rationale = shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS);
+                if (!rationale && preferenceManager.isNotificationPermissionRequested()) {
+                    // Already refused with "don't ask again": requesting again fails
+                    // silently and would only repeat the denial toast on every launch.
+                    return;
+                }
+                preferenceManager.setNotificationPermissionRequested(true);
                 // 检查是否应该显示权限说明
-                if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                if (rationale) {
                     new AlertDialog.Builder(this)
                             .setTitle(R.string.notification_permission_title)
                             .setMessage(R.string.notification_permission_message)
