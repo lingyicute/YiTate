@@ -152,6 +152,12 @@ test('swatches retain a visible keyboard focus ring', () => {
   assert.match(html, /\.swatch:focus-visible\s*\{\s*outline-color:\s*var\(--on-surface\)/);
 });
 
+test('palette stays inside narrow viewports', () => {
+  const mobile = html.match(/@media \(max-width: 560px\)\s*\{([\s\S]*?)\n  \}/)[1];
+  assert.match(mobile, /\.palette-wrap\s*\{\s*position:\s*static/);
+  assert.match(mobile, /\.palette\s*\{[^}]*width:\s*min\(240px,\s*92vw\)/);
+});
+
 test('swatches carry a label and a single pressed state', () => {
   const swatches = boot().get('#swatches').children;
   assert.equal(swatches.length, 10);

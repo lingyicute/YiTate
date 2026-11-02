@@ -345,6 +345,10 @@
     .hero { padding-top: 40px; }
     section { padding: 52px 0; }
     .phone { width: 169px; height: 330px; }
+    /* Anchor the popover to the app bar: right-aligned to the 40px trigger it
+       overflows the left edge of viewports narrower than ~350px. */
+    .palette-wrap { position: static; }
+    .palette { right: 4%; top: 64px; width: min(240px, 92vw); }
   }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
