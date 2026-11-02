@@ -642,10 +642,11 @@
   };
 
   /* ---------- Material You tonal palette via oklch ---------- */
+  const supportsOklch = Boolean(window.CSS && CSS.supports('color', 'oklch(.5 .1 290)'));
   function applyPalette(hue, dark) {
     root.dataset.theme = dark ? 'dark' : 'light';
     root.style.colorScheme = dark ? 'dark' : 'light';
-    if (!window.CSS || !CSS.supports('color', 'oklch(.5 .1 290)')) return;
+    if (!supportsOklch) return;
     const c = (l, ch, h) => `oklch(${l} ${ch} ${h})`;
     const h = hue, h2 = hue, h3 = (hue + 60) % 360;
     const light = {
@@ -679,7 +680,6 @@
     const p = dark ? darkP : light;
     for (const k in p) root.style.setProperty(k, p[k]);
     root.style.setProperty('--hue', hue);
-    root.style.colorScheme = dark ? 'dark' : 'light';
   }
 
   const storedHue = storage.get('yt-hue');
@@ -705,7 +705,7 @@
     b.className = 'swatch'; b.dataset.hue = s; b.title = `色相 ${s}°`;
     b.setAttribute('aria-label', `色相 ${s}°`);
     b.setAttribute('aria-pressed', String(s === hue));
-    b.style.background = `oklch(.65 .15 ${s})`;
+    b.style.background = supportsOklch ? `oklch(.65 .15 ${s})` : `hsl(${s}, 70%, 55%)`;
     b.addEventListener('click', () => { setHue(s); showSnack('主题色已更新 ✦'); });
     swatchesEl.appendChild(b);
   });
@@ -718,7 +718,7 @@
   const hueRange = $('#hueRange');
   hueRange.addEventListener('input', e => { hueDirty = true; setHue(+e.target.value, false); });
   // `input` fires on every pixel while dragging; only a committed change is stored.
-  hueRange.addEventListener('change', e => { hue = +e.target.value; hueDirty = true; commitHue(); });
+  hueRange.addEventListener('change', e => setHue(+e.target.value));
   window.addEventListener('pagehide', commitHue);
 
   function setHue(h, persist = true) {
