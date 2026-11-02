@@ -27,6 +27,11 @@ class WorkflowTests(unittest.TestCase):
             "move the Git tag before updating the release metadata",
         )
 
+    def test_android_job_caches_gradle_downloads(self):
+        workflow = (ROOT / ".github/workflows/create-release.yml").read_text(encoding="utf-8")
+
+        self.assertIn("cache: gradle", workflow)
+
     def test_font_workflows_use_pinned_dependencies_and_regenerate_cleanly(self):
         subset = (ROOT / ".github/workflows/font-subset.yml").read_text(encoding="utf-8")
         pages = (ROOT / ".github/workflows/static.yml").read_text(encoding="utf-8")
