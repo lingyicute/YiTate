@@ -261,8 +261,8 @@ test('splash stays hidden until JavaScript starts and printing never shows it', 
   assert.match(html, /\.loading\s*\{[^}]*display:\s*none/, 'CSS hides the splash by default');
   assert.match(html, /\.loading\.show\s*\{\s*display:\s*grid/);
   assert.match(html, /<noscript>[\s\S]*?\.loading\s*\{\s*display:\s*none/, 'noscript hides the splash');
-  assert.match(html, /@media print\s*\{[\s\S]*?\.loading[^}]*display:\s*none/,
-    'print media hides the splash');
+  assert.match(html, /@media print\s*\{[\s\S]*?\.loading,\s*\.snack,\s*\.palette\s*\{\s*display:\s*none/,
+    'print media hides the splash, snackbar, and palette');
   assert.match(html, /@media print\s*\{[\s\S]*?\.reveal\.pending:not\(\.in\)\s*\{[^}]*opacity:\s*1/,
     'print media shows sections that were never scrolled into view');
 });
@@ -326,6 +326,9 @@ test('unsupported OKLCH uses CSS fallback instead of invalid palette values', ()
   const page = boot({ color: false });
   assert.equal(page.root.style['--primary'], undefined);
   assert.match(page.get('#swatches').children[0].style.background, /^hsl\(/);
+  assert.match(html, /\.appbar\s*\{[\s\S]*?background:\s*var\(--surface\);\s*background:\s*color-mix/);
+  assert.match(html, /\.layer\.l3\s*\{[^}]*background:\s*var\(--primary\);\s*background:\s*color-mix/);
+  assert.match(html, /\.download \.btn-outlined\s*\{[^}]*box-shadow:\s*inset 0 0 0 1\.5px var\(--on-primary\);\s*box-shadow:\s*inset 0 0 0 1\.5px color-mix/);
   page.get('#themeBtn').listeners.click();
   assert.equal(page.root.dataset.theme, 'dark');
 });
