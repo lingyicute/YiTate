@@ -39,9 +39,11 @@ public class YiTateService extends Service {
     private final BroadcastReceiver screenReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (intent == null) return;
             if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
                 removeOrientationLayout();
-            } else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
+            } else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())
+                    && currentOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
                 applyOrientation();
             }
         }
@@ -76,7 +78,7 @@ public class YiTateService extends Service {
             // START_STICKY recreation does not redeliver the original intent.
             orientation = PreferenceManager.getInstance(this).getOrientation();
         } else if (ACTION_SET_ORIENTATION.equals(intent.getAction())) {
-            orientation = intent.getIntExtra(KEY_ORIENTATION, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+            orientation = intent.getIntExtra(KEY_ORIENTATION, Integer.MIN_VALUE);
             if (!OrientationUtils.isSupported(orientation)) {
                 if (currentOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) stopSelf();
                 return currentOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED

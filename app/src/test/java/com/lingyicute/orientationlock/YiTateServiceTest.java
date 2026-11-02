@@ -174,6 +174,8 @@ public class YiTateServiceTest {
         select(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         View first = overlay();
         select(999);
+        service.onStartCommand(new Intent(context, YiTateService.class)
+                .setAction(YiTateService.ACTION_SET_ORIENTATION), 0, 1);
         assertSame(first, overlay());
         assertEquals(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, preferences.getOrientation());
     }
