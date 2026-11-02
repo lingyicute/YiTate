@@ -730,6 +730,10 @@
   // `input` fires on every pixel while dragging; only a committed change is stored.
   hueRange.addEventListener('change', e => setHue(+e.target.value));
   window.addEventListener('pagehide', commitHue);
+  // Mobile browsers often suspend or discard a backgrounded tab without firing `pagehide`.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') commitHue();
+  });
 
   function setHue(h, persist = true) {
     hue = h; hueRange.value = h;

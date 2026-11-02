@@ -359,3 +359,16 @@ test('revealed cards and steps keep their hover transitions', () => {
   assert.ok(html.indexOf('.card.reveal {') > html.indexOf('.reveal { transition'),
     'the combined rules must follow the generic .reveal rule');
 });
+
+test('an in-progress hue drag is committed when the tab is hidden', () => {
+  const page = boot();
+  const range = page.get('#hueRange');
+  range.value = 200;
+  range.listeners.input({ target: range });
+  page.document.visibilityState = 'visible';
+  page.document.listeners.visibilitychange();
+  assert.equal(page.storage.has('yt-hue'), false, 'a visible tab keeps the drag uncommitted');
+  page.document.visibilityState = 'hidden';
+  page.document.listeners.visibilitychange();
+  assert.equal(page.storage.get('yt-hue'), '200');
+});
