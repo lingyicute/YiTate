@@ -330,9 +330,10 @@
     position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 80px);
     background: var(--inverse-surface); color: var(--inverse-on-surface);
     padding: 14px 20px; border-radius: 12px; font-size: .92rem; box-shadow: 0 8px 24px rgba(0,0,0,.25);
-    transition: transform .4s var(--ease-emph); z-index: 99; white-space: nowrap;
+    opacity: 0; pointer-events: none;
+    transition: transform .4s var(--ease-emph), opacity .4s var(--ease); z-index: 99; white-space: nowrap;
   }
-  .snack.show { transform: translate(-50%, 0); }
+  .snack.show { transform: translate(-50%, 0); opacity: 1; }
 
   /* ---------- Responsive ---------- */
   @media (max-width: 960px) {
@@ -784,7 +785,9 @@
 
   /* ---------- App bar shadow ---------- */
   const appbar = $('#appbar');
-  addEventListener('scroll', () => appbar.classList.toggle('scrolled', scrollY > 10), { passive: true });
+  const syncAppbar = () => appbar.classList.toggle('scrolled', scrollY > 10);
+  syncAppbar();
+  addEventListener('scroll', syncAppbar, { passive: true });
 
   /* ---------- Snackbar ---------- */
   let snackTimer;
