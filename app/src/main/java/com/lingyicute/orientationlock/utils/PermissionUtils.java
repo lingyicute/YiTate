@@ -1,5 +1,6 @@
 package com.lingyicute.orientationlock.utils;
 
+import android.app.AppOpsManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -8,7 +9,6 @@ import android.os.Build;
 import android.os.Process;
 import android.provider.Settings;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 public class PermissionUtils {
@@ -17,44 +17,38 @@ public class PermissionUtils {
         if (Build.VERSION.SDK_INT >= 23) {
             return Settings.canDrawOverlays(context);
         }
-        if (Build.VERSION.SDK_INT >= 19) {
-            try {
-                Class cls = Class.forName("android.content.Context");
-                Field declaredField = cls.getDeclaredField("APP_OPS_SERVICE");
-                declaredField.setAccessible(true);
-                Object obj = declaredField.get(cls);
-                if (!(obj instanceof String)) {
-                    return false;
-                }
-                String str2 = (String) obj;
-                obj = cls.getMethod("getSystemService", String.class).invoke(context, str2);
-                cls = Class.forName("android.app.AppOpsManager");
-                Field declaredField2 = cls.getDeclaredField("MODE_ALLOWED");
-                declaredField2.setAccessible(true);
-                Method checkOp = cls.getMethod("checkOp", Integer.TYPE, Integer.TYPE, String.class);
-                int result = (Integer) checkOp.invoke(obj, 24, Process.myUid(), context.getPackageName());
-                return result == declaredField2.getInt(cls);
-            } catch (Exception e) {
-                return false;
+        try {
+            AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+            if (appOps == null) {
+                return true;
             }
+            Method checkOp = AppOpsManager.class.getMethod(
+                    "checkOp", Integer.TYPE, Integer.TYPE, String.class);
+            int result = (Integer) checkOp.invoke(appOps, 24, Process.myUid(), context.getPackageName());
+            return result == AppOpsManager.MODE_ALLOWED;
+        } catch (Exception e) {
+            return true;
         }
-        return true;
     }
 
     public static void requestDrawOverlaysPermission(Context context) {
-        if (Build.VERSION.SDK_INT < 23) return;
-        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:" + context.getPackageName()));
+        Uri packageUri = Uri.parse("package:" + context.getPackageName());
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (startSettingsActivity(context, new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, packageUri))
+                    || startSettingsActivity(context, new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))) {
+                return;
+            }
+        }
+        startSettingsActivity(context, new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, packageUri));
+    }
+
+    private static boolean startSettingsActivity(Context context, Intent intent) {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
             context.startActivity(intent);
+            return true;
         } catch (ActivityNotFoundException e) {
-            Intent fallback = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-            fallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            try {
-                context.startActivity(fallback);
-            } catch (ActivityNotFoundException ignore) {
-            }
+            return false;
         }
     }
 
