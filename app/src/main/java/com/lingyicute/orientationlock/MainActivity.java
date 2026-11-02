@@ -97,19 +97,22 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     // prompting again on every cold start would only nag or fail silently.
                     return;
                 }
-                preferenceManager.setNotificationPermissionRequested(true);
                 // 检查是否应该显示权限说明
                 if (rationale) {
-                    preferenceManager.setNotificationRationaleShown(true);
+                    // Persist only once the user answers; an interrupted dialog must be shown again.
                     rationaleDialog = new AlertDialog.Builder(this)
                             .setTitle(R.string.notification_permission_title)
                             .setMessage(R.string.notification_permission_message)
                             .setPositiveButton(R.string.allow, (dialog, which) -> {
+                                preferenceManager.setNotificationRationaleShown(true);
                                 requestPermissions(
                                         new String[]{Manifest.permission.POST_NOTIFICATIONS},
                                         NOTIFICATION_PERMISSION_REQUEST_CODE);
                             })
-                            .setNegativeButton(android.R.string.cancel, null)
+                            .setNegativeButton(android.R.string.cancel, (dialog, which) ->
+                                    preferenceManager.setNotificationRationaleShown(true))
+                            .setOnCancelListener(dialog ->
+                                    preferenceManager.setNotificationRationaleShown(true))
                             .show();
                 } else {
                     // 首次请求或用户选择了"不再询问"
@@ -126,6 +129,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE && grantResults.length > 0
                 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+            // Only a real answer counts; an interrupted request returns no results.
+            preferenceManager.setNotificationPermissionRequested(true);
             // Notification permission is NOT a prerequisite for a foreground service.
             Toast.makeText(this, R.string.notification_permission_denied, Toast.LENGTH_LONG).show();
         }

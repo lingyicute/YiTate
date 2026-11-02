@@ -128,7 +128,13 @@ public class MainActivityTest {
     @Config(sdk = 34)
     public void firstLaunchRequestsNotificationPermissionOnce() {
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
-            assertNotNull(shadowOf(controller.get()).getLastRequestedPermission());
+            MainActivity activity = controller.get();
+            assertNotNull(shadowOf(activity).getLastRequestedPermission());
+            // An unanswered prompt must not be recorded as a refusal.
+            assertFalse(preferences.isNotificationPermissionRequested());
+            activity.onRequestPermissionsResult(100,
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    new int[]{android.content.pm.PackageManager.PERMISSION_DENIED});
             assertTrue(preferences.isNotificationPermissionRequested());
         }
     }
@@ -152,6 +158,9 @@ public class MainActivityTest {
             AlertDialog dialog = ReflectionHelpers.getField(first.get(), "rationaleDialog");
             assertNotNull(dialog);
             assertTrue(dialog.isShowing());
+            // Not answered yet, so it must not be recorded.
+            assertFalse(preferences.isNotificationRationaleShown());
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).performClick();
             assertTrue(preferences.isNotificationRationaleShown());
         }
         try (ActivityController<MainActivity> second = Robolectric.buildActivity(MainActivity.class).setup()) {
