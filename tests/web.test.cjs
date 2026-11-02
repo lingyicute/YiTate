@@ -82,8 +82,9 @@ function boot({
       return media;
     };
   }
+  const observers = [];
   if (observer) sandbox.IntersectionObserver = class {
-    constructor(fn) { this.fn = fn; }
+    constructor(fn) { this.fn = fn; observers.push(this); }
     observe() {} unobserve() {}
   };
   Object.defineProperty(sandbox, 'localStorage', {
@@ -98,7 +99,7 @@ function boot({
   sandbox.window = sandbox;
   vm.runInNewContext(script, sandbox, { timeout: 1000 });
   return {
-    get, root, storage, reveals, calls, timeouts, document, window: sandbox,
+    get, root, storage, reveals, observers, calls, timeouts, document, window: sandbox,
     fireMedia: matches => mediaListeners.forEach(fn => fn({ matches }))
   };
 }
@@ -371,4 +372,23 @@ test('an in-progress hue drag is committed when the tab is hidden', () => {
   page.document.visibilityState = 'hidden';
   page.document.listeners.visibilitychange();
   assert.equal(page.storage.get('yt-hue'), '200');
+});
+
+test('the reveal stagger delay is dropped once the fade has run', () => {
+  assert.match(html, /\.reveal\.pending\s*\{\s*transition-delay:\s*var\(--reveal-delay,\s*0s\)/);
+  assert.doesNotMatch(html, /style="transition-delay:/, 'an inline delay would also postpone hover transitions');
+  const page = boot();
+  const [target] = page.reveals;
+  assert.equal(target.classList.contains('pending'), true);
+  page.observers[0].fn([{ isIntersecting: false, target }]);
+  assert.equal(target.classList.contains('in'), false);
+  page.observers[0].fn([{ isIntersecting: true, target }]);
+  assert.equal(target.classList.contains('in'), true);
+  assert.equal(target.classList.contains('pending'), true, 'the delay still applies while fading in');
+  target.listeners.transitionend({ target: element(), propertyName: 'opacity' });
+  target.listeners.transitionend({ target, propertyName: 'transform' });
+  assert.equal(target.classList.contains('pending'), true, 'child or non-opacity transitions are ignored');
+  target.listeners.transitionend({ target, propertyName: 'opacity' });
+  assert.equal(target.classList.contains('pending'), false);
+  assert.equal(target.classList.contains('in'), true);
 });

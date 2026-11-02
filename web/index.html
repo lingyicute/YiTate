@@ -331,6 +331,9 @@
   /* `.reveal` comes later in the cascade and would otherwise drop the hover transitions below. */
   .card.reveal { transition: opacity .7s var(--ease), transform .4s var(--ease-emph), box-shadow .4s, border-radius .4s var(--ease-emph); }
   .step.reveal { transition: opacity .7s var(--ease), background .3s, transform .4s var(--ease-emph); }
+  /* The stagger applies to the reveal only; the script drops `pending` once the fade has run
+     so the delay cannot postpone later hover transitions. */
+  .reveal.pending { transition-delay: var(--reveal-delay, 0s); }
 
   /* Snackbar */
   .snack {
@@ -485,13 +488,13 @@
           <h3>极简轻量</h3>
           <p>安装包体积不到 100k，几乎不占用存储与内存，真正的小而美。</p>
         </article>
-        <article class="card c2 reveal" style="transition-delay:.08s">
+        <article class="card c2 reveal" style="--reveal-delay:.08s">
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/></svg></div>
           <div class="big">1 步</div>
           <h3>设计简洁</h3>
           <p>直观易用的界面，打开即会用。选好方向，一点即锁，轻松上手。</p>
         </article>
-        <article class="card c3 reveal" style="transition-delay:.16s">
+        <article class="card c3 reveal" style="--reveal-delay:.16s">
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M8 12l3 3 5-6"/></svg></div>
           <div class="big">0</div>
           <h3>纯净开源</h3>
@@ -530,12 +533,12 @@
           <h3>授予悬浮窗权限</h3>
           <p>YiTate 只需要"显示在其他应用上层"这一项权限，用来创建一个透明窗口。</p>
         </div>
-        <div class="step reveal" style="transition-delay:.08s">
+        <div class="step reveal" style="--reveal-delay:.08s">
           <div class="num">2</div>
           <h3>指定屏幕方向</h3>
           <p>在这个透明窗口上声明你想要的方向：竖屏、横屏、反向或自动。</p>
         </div>
-        <div class="step reveal" style="transition-delay:.16s">
+        <div class="step reveal" style="--reveal-delay:.16s">
           <div class="num">3</div>
           <h3>系统跟随旋转</h3>
           <p>悬浮窗位于其它应用上方，系统便会按悬浮窗的要求来旋转屏幕。</p>
@@ -791,7 +794,17 @@
   /* ---------- Reveal on scroll ---------- */
   if ('IntersectionObserver' in window && !mediaQuery('(prefers-reduced-motion: reduce)').matches) {
     const io = new IntersectionObserver(entries => {
-      entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+      entries.forEach(en => {
+        if (!en.isIntersecting) return;
+        const el = en.target;
+        el.classList.add('in');
+        io.unobserve(el);
+        const settle = e => {
+          if (e.target === el && e.propertyName === 'opacity') el.classList.remove('pending');
+        };
+        el.addEventListener('transitionend', settle);
+        el.addEventListener('transitioncancel', settle);
+      });
     }, { threshold: .12 });
     $$('.reveal').forEach(el => { io.observe(el); el.classList.add('pending'); });
   }
