@@ -608,30 +608,32 @@
      Registered before anything else: the splash must go away even if a widget
      below throws, and the `load` handler must be in place before the page can
      finish loading. */
-  let loadingDone = false;
+  let loadingDone = false, finishTimer;
   function hideLoading() {
     if (loadingDone) return;
     loadingDone = true;
+    clearTimeout(failsafeTimer);
     const el = $('#loading');
     if (!el) return;
     el.classList.add('hide');
     el.addEventListener('transitionend', () => el.remove(), { once: true });
-    setTimeout(() => { if (el.isConnected) el.remove(); }, 800); /* safety */
+    setTimeout(() => el.remove(), 800); /* safety */
   }
   const loadStart = performance.now();
   const minSplash = mediaQuery('(prefers-reduced-motion: reduce)').matches ? 0 : 500;
   function finishLoading() {
-    if (loadingDone) return;
+    if (loadingDone || finishTimer) return;
+    clearTimeout(failsafeTimer);
     const elapsed = performance.now() - loadStart;
-    setTimeout(hideLoading, Math.max(0, minSplash - elapsed)); /* brief minimum splash */
+    finishTimer = setTimeout(hideLoading, Math.max(0, minSplash - elapsed)); /* brief minimum splash */
   }
   const onLoad = () => {
     const fontsReady = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
     fontsReady.then(finishLoading).catch(finishLoading);
   };
+  const failsafeTimer = setTimeout(finishLoading, 8000); /* failsafe: never leave overlay stuck */
   if (document.readyState === 'complete') onLoad();
   else window.addEventListener('load', onLoad, { once: true });
-  setTimeout(finishLoading, 8000); /* failsafe: never leave overlay stuck */
   // The splash is opt-in: a blocked or invalid script must leave the page visible.
   const loadingEl = $('#loading');
   if (loadingEl && !loadingDone) loadingEl.classList.add('show');
@@ -793,7 +795,8 @@
   let snackTimer;
   function showSnack(msg) {
     const s = $('#snack'); s.textContent = msg; s.classList.add('show');
-    clearTimeout(snackTimer); snackTimer = setTimeout(() => s.classList.remove('show'), 2200);
+    clearTimeout(snackTimer);
+    snackTimer = setTimeout(() => { s.classList.remove('show'); s.textContent = ''; }, 2200);
   }
 
 })();
