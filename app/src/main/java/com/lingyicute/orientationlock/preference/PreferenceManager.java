@@ -8,6 +8,7 @@ import com.lingyicute.orientationlock.utils.OrientationUtils;
 public class PreferenceManager {
 
     private static final String KEY_ORIENTATION = "orientation";
+    private static final String KEY_NOTIFICATION_REQUESTED = "notification_permission_requested";
 
     private static PreferenceManager sManager;
     private static SharedPreferences sPreferences;
@@ -31,6 +32,19 @@ public class PreferenceManager {
             return;
         }
         sPreferences.edit().putInt(name, value).apply();
+    }
+
+    /** Whether the POST_NOTIFICATIONS prompt has already been shown at least once. */
+    public boolean isNotificationPermissionRequested() {
+        try {
+            return sPreferences.getBoolean(KEY_NOTIFICATION_REQUESTED, false);
+        } catch (ClassCastException e) {
+            return false;
+        }
+    }
+
+    public void setNotificationPermissionRequested(boolean requested) {
+        sPreferences.edit().putBoolean(KEY_NOTIFICATION_REQUESTED, requested).apply();
     }
 
     public void setOrientation(int orientation) {

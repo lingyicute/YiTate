@@ -112,4 +112,22 @@ public class MainActivityTest {
             assertTrue(controller.get().findViewById(R.id.tv_orientation_default).isSelected());
         }
     }
+
+    @Test
+    @Config(sdk = 34)
+    public void firstLaunchRequestsNotificationPermissionOnce() {
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            assertNotNull(shadowOf(controller.get()).getLastRequestedPermission());
+            assertTrue(preferences.isNotificationPermissionRequested());
+        }
+    }
+
+    @Test
+    @Config(sdk = 34)
+    public void permanentlyDeniedNotificationPermissionIsNotRequestedAgain() {
+        preferences.setNotificationPermissionRequested(true);
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            assertNull(shadowOf(controller.get()).getLastRequestedPermission());
+        }
+    }
 }
