@@ -9,9 +9,10 @@ public class PreferenceManager {
 
     private static final String KEY_ORIENTATION = "orientation";
     private static final String KEY_NOTIFICATION_REQUESTED = "notification_permission_requested";
+    private static final String KEY_NOTIFICATION_RATIONALE_SHOWN = "notification_rationale_shown";
 
     private static PreferenceManager sManager;
-    private static SharedPreferences sPreferences;
+    private final SharedPreferences sPreferences;
 
     private static final String PREFERENCES = "settings";
 
@@ -45,6 +46,19 @@ public class PreferenceManager {
 
     public void setNotificationPermissionRequested(boolean requested) {
         sPreferences.edit().putBoolean(KEY_NOTIFICATION_REQUESTED, requested).apply();
+    }
+
+    /** Whether the POST_NOTIFICATIONS rationale dialog has already been shown. */
+    public boolean isNotificationRationaleShown() {
+        try {
+            return sPreferences.getBoolean(KEY_NOTIFICATION_RATIONALE_SHOWN, false);
+        } catch (ClassCastException e) {
+            return false;
+        }
+    }
+
+    public void setNotificationRationaleShown(boolean shown) {
+        sPreferences.edit().putBoolean(KEY_NOTIFICATION_RATIONALE_SHOWN, shown).apply();
     }
 
     public void setOrientation(int orientation) {
