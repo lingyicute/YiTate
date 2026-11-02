@@ -1,17 +1,26 @@
 package com.lingyicute.orientationlock;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.widget.TextView;
 
 import com.lingyicute.orientationlock.preference.PreferenceManager;
 import com.lingyicute.orientationlock.utils.ContextUtils;
+import com.lingyicute.orientationlock.utils.PermissionUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -129,5 +138,23 @@ public class MainActivityTest {
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
             assertNull(shadowOf(controller.get()).getLastRequestedPermission());
         }
+    }
+
+    @Test
+    public void overlayPermissionRequestFallsBackToApplicationDetailsSettings() {
+        List<Intent> started = new ArrayList<>();
+        Context wrapper = new ContextWrapper(RuntimeEnvironment.getApplication()) {
+            @Override
+            public void startActivity(Intent intent) {
+                started.add(intent);
+                if (Settings.ACTION_MANAGE_OVERLAY_PERMISSION.equals(intent.getAction())) {
+                    throw new ActivityNotFoundException();
+                }
+            }
+        };
+        PermissionUtils.requestDrawOverlaysPermission(wrapper);
+        assertEquals(3, started.size());
+        assertEquals(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, started.get(2).getAction());
+        assertEquals(Uri.parse("package:" + wrapper.getPackageName()), started.get(2).getData());
     }
 }
