@@ -181,6 +181,14 @@ public class YiTateServiceTest {
     }
 
     @Test
+    public void invalidInitialCommandStopsForegroundAndSelf() {
+        assertEquals(Service.START_NOT_STICKY, select(999));
+        assertNull(overlay());
+        assertTrue(shadowOf(service).isForegroundStopped());
+        assertTrue(shadowOf(service).isStoppedBySelf());
+    }
+
+    @Test
     public void corruptPreferenceFallsBackToDefault() {
         preferences.setOrientation(999);
         assertEquals(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, preferences.getOrientation());

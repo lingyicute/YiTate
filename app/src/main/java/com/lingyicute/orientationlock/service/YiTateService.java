@@ -79,21 +79,23 @@ public class YiTateService extends Service {
             orientation = PreferenceManager.getInstance(this).getOrientation();
         } else if (ACTION_SET_ORIENTATION.equals(intent.getAction())) {
             orientation = intent.getIntExtra(KEY_ORIENTATION, Integer.MIN_VALUE);
-            if (!OrientationUtils.isSupported(orientation)) {
-                if (currentOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) stopSelf();
-                return currentOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-                        ? START_NOT_STICKY : START_STICKY;
-            }
         } else {
-            if (currentOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) stopSelf();
-            return currentOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-                    ? START_NOT_STICKY : START_STICKY;
+            orientation = Integer.MIN_VALUE;
+        }
+        if (!OrientationUtils.isSupported(orientation)) {
+            setForeground();
+            if (currentOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+                clearLock();
+                return START_NOT_STICKY;
+            }
+            return START_STICKY;
         }
         currentOrientation = orientation;
+        // Reuse the running notification to show which mode is locked and
+        // fulfill startForegroundService() before any early stop.
+        setForeground();
         if (!applyOrientation()) return START_NOT_STICKY;
         PreferenceManager.getInstance(this).setOrientation(orientation);
-        // Reuse the running notification to show which mode is locked.
-        setForeground();
         return START_STICKY;
     }
 
