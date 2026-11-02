@@ -28,6 +28,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 100;
 
     private PreferenceManager preferenceManager;
+    private AlertDialog rationaleDialog;
     private int currentOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
     private Integer pendingOrientation;
     private static final String STATE_PENDING_ORIENTATION = "pending_orientation";
@@ -76,6 +77,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
         if (pendingOrientation != null) state.putInt(STATE_PENDING_ORIENTATION, pendingOrientation);
     }
 
+    @Override
+    protected void onDestroy() {
+        if (rationaleDialog != null && rationaleDialog.isShowing()) {
+            rationaleDialog.dismiss();
+        }
+        rationaleDialog = null;
+        super.onDestroy();
+    }
+
     private void checkNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
@@ -89,7 +99,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 preferenceManager.setNotificationPermissionRequested(true);
                 // 检查是否应该显示权限说明
                 if (rationale) {
-                    new AlertDialog.Builder(this)
+                    rationaleDialog = new AlertDialog.Builder(this)
                             .setTitle(R.string.notification_permission_title)
                             .setMessage(R.string.notification_permission_message)
                             .setPositiveButton(R.string.allow, (dialog, which) -> {
