@@ -14,6 +14,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.provider.Settings;
 import android.widget.TextView;
 
@@ -161,6 +162,8 @@ public class MainActivityTest {
             // Not answered yet, so it must not be recorded.
             assertFalse(preferences.isNotificationRationaleShown());
             dialog.getButton(AlertDialog.BUTTON_NEGATIVE).performClick();
+            // AlertDialog delivers button clicks through a Handler message.
+            shadowOf(Looper.getMainLooper()).idle();
             assertTrue(preferences.isNotificationRationaleShown());
         }
         try (ActivityController<MainActivity> second = Robolectric.buildActivity(MainActivity.class).setup()) {
