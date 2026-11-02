@@ -162,6 +162,13 @@ test('snackbar messages are announced to assistive technology and hidden when di
   assert.match(html, /<div class="snack" id="snack" role="status" aria-live="polite"[^>]*><\/div>/);
   assert.match(html, /\.snack\s*\{[^}]*opacity:\s*0;\s*pointer-events:\s*none;/);
   assert.match(html, /\.snack\.show\s*\{[^}]*opacity:\s*1;/);
+  const page = boot();
+  page.get('#swatches').children[0].listeners.click();
+  const snack = page.get('#snack');
+  assert.equal(snack.textContent, '主题色已更新 ✦');
+  page.timeouts.find(t => t.delay === 2200).fn();
+  assert.equal(snack.classList.contains('show'), false);
+  assert.equal(snack.textContent, '');
 });
 
 test('app bar reflects an already-scrolled document on initial load', () => {
@@ -277,6 +284,8 @@ test('already-loaded documents dismiss the splash without waiting for the 8s fai
   assert.ok(immediateHide, 'hideLoading is scheduled immediately once fonts resolve');
   immediateHide.fn();
   assert.equal(page.get('#loading').classList.contains('hide'), true);
+  page.timeouts.find(t => t.delay === 800).fn();
+  assert.equal(page.get('#loading').removed, true);
 });
 
 test('missing matchMedia does not abort initialization', () => {
