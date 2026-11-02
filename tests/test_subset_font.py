@@ -22,6 +22,9 @@ class FontSubsetTests(unittest.TestCase):
         self.assertIn(other, result)
         self.assertIn('base64,dGVzdA==', result)
         self.assertNotIn('url(old.woff2)', result)
+        minified = '@font-face { src: url(old.woff2); font-family: "Nebulove" }'
+        self.assertIn('base64,dGVzdA==', font.embed_font(minified, b'test'))
+        self.assertTrue(font.INDEX_PATH.is_absolute())
 
     def test_missing_or_duplicate_rule_is_rejected(self):
         for html in ('<p>No font</p>', RULE + RULE):
