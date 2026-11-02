@@ -179,8 +179,11 @@ test('dragging the hue slider only stores the committed value', () => {
   range.value = 33;
   range.listeners.input({ target: range });
   assert.equal(page.storage.has('yt-hue'), false, 'input events must not be persisted');
+  range.value = 250;
   range.listeners.change({ target: range });
-  assert.equal(page.storage.get('yt-hue'), '33');
+  assert.equal(page.storage.get('yt-hue'), '250');
+  assert.equal(page.root.style['--hue'], 250);
+  assert.equal(page.get('#swatches').children[1].attributes['aria-pressed'], 'true');
 });
 
 test('closing the palette or tabbing away commits an in-progress hue drag', () => {
@@ -306,6 +309,7 @@ test('reduced-motion preference avoids reveal animations', () => {
 test('unsupported OKLCH uses CSS fallback instead of invalid palette values', () => {
   const page = boot({ color: false });
   assert.equal(page.root.style['--primary'], undefined);
+  assert.match(page.get('#swatches').children[0].style.background, /^hsl\(/);
   page.get('#themeBtn').listeners.click();
   assert.equal(page.root.dataset.theme, 'dark');
 });
