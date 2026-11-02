@@ -4,8 +4,8 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Binder;
 import android.os.Build;
+import android.os.Process;
 import android.provider.Settings;
 
 import com.lingyicute.orientationlock.BuildConfig;
@@ -34,7 +34,7 @@ public class PermissionUtils {
                 Field declaredField2 = cls.getDeclaredField("MODE_ALLOWED");
                 declaredField2.setAccessible(true);
                 Method checkOp = cls.getMethod("checkOp", Integer.TYPE, Integer.TYPE, String.class);
-                int result = (Integer) checkOp.invoke(obj, 24, Binder.getCallingUid(), context.getPackageName());
+                int result = (Integer) checkOp.invoke(obj, 24, Process.myUid(), context.getPackageName());
                 return result == declaredField2.getInt(cls);
             } catch (Exception e) {
                 return false;
