@@ -352,3 +352,10 @@ test('default system theme is not saved as an explicit user preference', () => {
   page.get('#themeBtn').listeners.click();
   assert.equal(page.storage.get('yt-dark'), '1');
 });
+
+test('revealed cards and steps keep their hover transitions', () => {
+  assert.match(html, /\.card\.reveal\s*\{\s*transition:[^;}]*opacity[^;}]*transform[^;}]*box-shadow[^;}]*border-radius/);
+  assert.match(html, /\.step\.reveal\s*\{\s*transition:[^;}]*opacity[^;}]*background[^;}]*transform/);
+  assert.ok(html.indexOf('.card.reveal {') > html.indexOf('.reveal { transition'),
+    'the combined rules must follow the generic .reveal rule');
+});
