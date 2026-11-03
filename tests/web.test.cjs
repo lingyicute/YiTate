@@ -27,6 +27,7 @@ function element() {
       }
     },
     addEventListener(name, fn) { this.listeners[name] = fn; },
+    removeEventListener(name, fn) { if (this.listeners[name] === fn) delete this.listeners[name]; },
     appendChild(child) { this.children.push(child); },
     contains(child) { return this === child || this.children.includes(child); },
     remove() { this.removed = true; }
@@ -331,9 +332,11 @@ test('missing IntersectionObserver leaves content visible', () => {
   assert.ok(page.reveals.every(el => !el.classList.contains('pending')));
 });
 
-test('reduced-motion preference avoids reveal animations', () => {
+test('reduced-motion preference avoids reveal animations and un-hides pending elements in CSS', () => {
   const page = boot({ reducedMotion: true });
   assert.ok(page.reveals.every(el => !el.classList.contains('pending')));
+  assert.match(html, /@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?transition-delay:\s*0s !important/);
+  assert.match(html, /@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?\.reveal\.pending:not\(\.in\)\s*\{\s*opacity:\s*1;\s*transform:\s*none;\s*\}/);
 });
 
 test('unsupported OKLCH uses CSS fallback instead of invalid palette values', () => {
@@ -391,4 +394,6 @@ test('the reveal stagger delay is dropped once the fade has run', () => {
   target.listeners.transitionend({ target, propertyName: 'opacity' });
   assert.equal(target.classList.contains('pending'), false);
   assert.equal(target.classList.contains('in'), true);
+  assert.equal(target.listeners.transitionend, undefined);
+  assert.equal(target.listeners.transitioncancel, undefined);
 });
