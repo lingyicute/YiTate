@@ -284,4 +284,23 @@ public class MainActivityTest {
             assertFalse(preferences.isNotificationRationaleShown());
         }
     }
+
+    @Test
+    @Config(sdk = 34)
+    public void grantingNotificationPermissionDoesNotOpenOverlaySettingsAfterRevocation() {
+        ShadowSettings.setCanDrawOverlays(true);
+        preferences.setOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            MainActivity activity = controller.get();
+            while (shadowOf(activity).getNextStartedActivity() != null) {
+                // Drain intents started while the activity came up.
+            }
+            ShadowSettings.setCanDrawOverlays(false);
+            activity.onRequestPermissionsResult(100,
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    new int[]{android.content.pm.PackageManager.PERMISSION_GRANTED});
+            Intent next = shadowOf(activity).getNextStartedActivity();
+            assertTrue(next == null || !Settings.ACTION_MANAGE_OVERLAY_PERMISSION.equals(next.getAction()));
+        }
+    }
 }

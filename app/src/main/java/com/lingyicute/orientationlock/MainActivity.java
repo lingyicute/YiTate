@@ -151,7 +151,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             preferenceManager.setNotificationPermissionRequested(false);
             preferenceManager.setNotificationRationaleShown(false);
-            if (currentOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+            // With the overlay permission gone, re-applying would jump to its settings page right
+            // after the user answered this prompt; onResume reconciles the revocation instead.
+            if (currentOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                    && PermissionUtils.isDrawOverlaysPermissionGranted(this)) {
                 setOrientation(currentOrientation);
             }
         } else {
