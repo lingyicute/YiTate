@@ -58,7 +58,7 @@ function boot({
     listeners: {},
     fonts: { ready: Promise.resolve() }
   };
-  const mediaListeners = [];
+  const mediaListeners = [], motionListeners = [];
   const sandbox = {
     document, CSS: { supports: () => color },
     addEventListener(name, fn) {
@@ -72,12 +72,14 @@ function boot({
   };
   if (mediaApi !== 'none') {
     sandbox.matchMedia = query => {
+      const isMotion = query.includes('reduced-motion');
+      const list = isMotion ? motionListeners : mediaListeners;
       const media = {
         query,
-        matches: query.includes('reduced-motion') ? reducedMotion
+        matches: isMotion ? reducedMotion
           : (query.includes('prefers-color-scheme') ? schemeDark : false)
       };
-      const listen = (name, fn) => { if (name === 'change') mediaListeners.push(fn); };
+      const listen = (name, fn) => { if (name === 'change') list.push({ media, fn }); };
       if (mediaApi === 'event') media.addEventListener = listen;
       if (mediaApi === 'legacy') media.addListener = fn => listen('change', fn);
       return media;
@@ -86,7 +88,7 @@ function boot({
   const observers = [];
   if (observer) sandbox.IntersectionObserver = class {
     constructor(fn) { this.fn = fn; observers.push(this); }
-    observe() {} unobserve() {}
+    observe() {} unobserve() {} disconnect() { this.disconnected = true; }
   };
   Object.defineProperty(sandbox, 'localStorage', {
     get() {
@@ -101,7 +103,8 @@ function boot({
   vm.runInNewContext(script, sandbox, { timeout: 1000 });
   return {
     get, root, storage, reveals, observers, calls, timeouts, document, window: sandbox,
-    fireMedia: matches => mediaListeners.forEach(fn => fn({ matches }))
+    fireMedia: matches => mediaListeners.forEach(({ media, fn }) => { media.matches = matches; fn({ matches }); }),
+    fireMotion: matches => motionListeners.forEach(({ media, fn }) => { media.matches = matches; fn({ matches }); })
   };
 }
 
@@ -399,4 +402,18 @@ test('the reveal stagger delay is dropped once the fade has run', () => {
   assert.equal(target.classList.contains('in'), true);
   assert.equal(target.listeners.transitionend, undefined);
   assert.equal(target.listeners.transitioncancel, undefined);
+});
+
+test('enabling reduced motion after load disconnects the observer and clears pending reveals', () => {
+  const page = boot();
+  const [first, second] = page.reveals;
+  page.observers[0].fn([{ isIntersecting: true, target: first }]);
+  assert.equal(first.classList.contains('pending'), true);
+  assert.ok(first.listeners.transitionend);
+  page.fireMotion(true);
+  assert.equal(page.observers[0].disconnected, true);
+  assert.equal(first.classList.contains('pending'), false);
+  assert.equal(second.classList.contains('pending'), false);
+  assert.equal(first.listeners.transitionend, undefined);
+  assert.equal(first.listeners.transitioncancel, undefined);
 });
