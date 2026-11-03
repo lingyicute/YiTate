@@ -43,6 +43,8 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("cache: pip", pages)
         self.assertIn("cache-dependency-path: scripts/requirements.txt", subset)
         self.assertIn("cache-dependency-path: scripts/requirements.txt", pages)
+        self.assertIn('"web/**"', pages)
+        self.assertIn('".github/workflows/static.yml"', pages)
         self.assertIn("persist-credentials: false", pages)
         self.assertIn("GIT_USER_NAME: ${{ github.actor }}", subset)
         self.assertIn("GIT_USER_EMAIL: ${{ github.event.pusher.email || format(", subset)
