@@ -627,9 +627,16 @@
     const el = $('#loading');
     if (!el) return;
     el.classList.add('hide');
-    const removeLoading = () => { clearTimeout(removeTimer); el.remove(); };
+    const removeLoading = e => {
+      if (e && e.target && e.target !== el) return;
+      clearTimeout(removeTimer);
+      el.removeEventListener('transitionend', removeLoading);
+      el.removeEventListener('transitioncancel', removeLoading);
+      el.remove();
+    };
     const removeTimer = setTimeout(removeLoading, 800); /* safety */
-    el.addEventListener('transitionend', removeLoading, { once: true });
+    el.addEventListener('transitionend', removeLoading);
+    el.addEventListener('transitioncancel', removeLoading);
   }
   const loadStart = performance.now();
   const reducedMotion = mediaQuery('(prefers-reduced-motion: reduce)');
@@ -637,6 +644,7 @@
   function finishLoading() {
     if (loadingDone || finishTimer) return;
     clearTimeout(failsafeTimer);
+    window.removeEventListener('load', onLoad);
     const elapsed = performance.now() - loadStart;
     finishTimer = setTimeout(hideLoading, Math.max(0, minSplash - elapsed)); /* brief minimum splash */
   }

@@ -65,6 +65,9 @@ function boot({
       calls.push('window:' + name);
       sandbox.listeners[name] = fn;
     },
+    removeEventListener(name, fn) {
+      if (sandbox.listeners[name] === fn) delete sandbox.listeners[name];
+    },
     listeners: {},
     setTimeout(fn, delay) { timeouts.push({ fn, delay }); return timeouts.length; },
     clearTimeout(id) { if (timeouts[id - 1]) timeouts[id - 1].cancelled = true; },
@@ -304,9 +307,13 @@ test('already-loaded documents dismiss the splash without waiting for the 8s fai
   const loading = page.get('#loading');
   assert.equal(loading.classList.contains('hide'), true);
   const safety = page.timeouts.find(t => t.delay === 800);
-  loading.listeners.transitionend();
+  loading.listeners.transitionend({ target: element() });
+  assert.equal(loading.removed, undefined, 'child transitions must not remove the splash early');
+  loading.listeners.transitionend({ target: loading });
   assert.equal(loading.removed, true);
   assert.equal(safety.cancelled, true, 'transitionend cancels the 800ms safety timer');
+  assert.equal(loading.listeners.transitionend, undefined);
+  assert.equal(loading.listeners.transitioncancel, undefined);
 });
 
 test('missing matchMedia does not abort initialization', () => {
