@@ -35,6 +35,9 @@ public class YiTateService extends Service {
 
     private Space holderView;
     private int currentOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+    private String lastChannelName;
+    private String lastNotificationTitle;
+    private String lastNotificationText;
 
     private final BroadcastReceiver screenReceiver = new BroadcastReceiver() {
         @Override
@@ -65,7 +68,9 @@ public class YiTateService extends Service {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if (currentOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+        if (currentOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                && (!getString(R.string.running_notification_title).equals(lastNotificationTitle)
+                || !getNotificationText().equals(lastNotificationText))) {
             ensureNotificationChannel();
             setForeground();
         }
@@ -101,6 +106,7 @@ public class YiTateService extends Service {
 
     @Override
     public void onDestroy() {
+        currentOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
         unregisterReceiver(screenReceiver);
         removeOrientationLayout();
         stopForeground(true);
@@ -114,14 +120,21 @@ public class YiTateService extends Service {
 
     private void ensureNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            String channelName = getString(R.string.running_notification_channel_name);
+            if (channelName.equals(lastChannelName)) {
+                return;
+            }
             NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             NotificationChannel channel = new NotificationChannel(NOTIFICATION_ID,
-                    getString(R.string.running_notification_channel_name), NotificationManager.IMPORTANCE_LOW);
+                    channelName, NotificationManager.IMPORTANCE_LOW);
             manager.createNotificationChannel(channel);
+            lastChannelName = channelName;
         }
     }
 
     private void setForeground() {
+        String title = getString(R.string.running_notification_title);
+        String text = getNotificationText();
         Notification.Builder builder = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? new Notification.Builder(this, NOTIFICATION_ID)
                 : new Notification.Builder(this);
@@ -131,13 +144,15 @@ public class YiTateService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                         ? PendingIntent.FLAG_IMMUTABLE : 0));
         Notification notification = builder
-                .setContentTitle(getString(R.string.running_notification_title))
-                .setContentText(getNotificationText())
+                .setContentTitle(title)
+                .setContentText(text)
                 .setSmallIcon(R.drawable.ic_stat_orientation)
                 .setContentIntent(pendingIntent)
                 .setPriority(Notification.PRIORITY_LOW)
                 .setOngoing(true)
                 .build();
+        lastNotificationTitle = title;
+        lastNotificationText = text;
         startForeground(1, notification);
     }
 

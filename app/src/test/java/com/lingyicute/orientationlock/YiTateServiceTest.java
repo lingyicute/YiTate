@@ -229,8 +229,12 @@ public class YiTateServiceTest {
     public void notificationRefreshesWhenSystemLocaleChanges() {
         select(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         assertEquals("Locked: Portrait", notificationText());
+        android.app.Notification initial = shadowOf(service).getLastForegroundNotification();
+        service.onConfigurationChanged(service.getResources().getConfiguration());
+        assertSame(initial, shadowOf(service).getLastForegroundNotification());
         RuntimeEnvironment.setQualifiers("zh-rCN");
         service.onConfigurationChanged(service.getResources().getConfiguration());
+        assertNotSame(initial, shadowOf(service).getLastForegroundNotification());
         assertEquals("已锁定：竖屏", notificationText());
     }
 
