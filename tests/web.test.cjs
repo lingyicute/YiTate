@@ -298,9 +298,12 @@ test('already-loaded documents dismiss the splash without waiting for the 8s fai
   const immediateHide = page.timeouts.find(t => t.delay === 0);
   assert.ok(immediateHide, 'hideLoading is scheduled immediately once fonts resolve');
   immediateHide.fn();
-  assert.equal(page.get('#loading').classList.contains('hide'), true);
-  page.timeouts.find(t => t.delay === 800).fn();
-  assert.equal(page.get('#loading').removed, true);
+  const loading = page.get('#loading');
+  assert.equal(loading.classList.contains('hide'), true);
+  const safety = page.timeouts.find(t => t.delay === 800);
+  loading.listeners.transitionend();
+  assert.equal(loading.removed, true);
+  assert.equal(safety.cancelled, true, 'transitionend cancels the 800ms safety timer');
 });
 
 test('missing matchMedia does not abort initialization', () => {

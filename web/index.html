@@ -627,8 +627,9 @@
     const el = $('#loading');
     if (!el) return;
     el.classList.add('hide');
-    el.addEventListener('transitionend', () => el.remove(), { once: true });
-    setTimeout(() => el.remove(), 800); /* safety */
+    const removeLoading = () => { clearTimeout(removeTimer); el.remove(); };
+    const removeTimer = setTimeout(removeLoading, 800); /* safety */
+    el.addEventListener('transitionend', removeLoading, { once: true });
   }
   const loadStart = performance.now();
   const minSplash = mediaQuery('(prefers-reduced-motion: reduce)').matches ? 0 : 500;
