@@ -363,7 +363,8 @@
   }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
+    *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
+    .reveal.pending:not(.in) { opacity: 1; transform: none; }
   }
 
   /* ---------- Loading overlay ---------- */
@@ -800,7 +801,10 @@
         el.classList.add('in');
         io.unobserve(el);
         const settle = e => {
-          if (e.target === el && e.propertyName === 'opacity') el.classList.remove('pending');
+          if (e.target !== el || e.propertyName !== 'opacity') return;
+          el.classList.remove('pending');
+          el.removeEventListener('transitionend', settle);
+          el.removeEventListener('transitioncancel', settle);
         };
         el.addEventListener('transitionend', settle);
         el.addEventListener('transitioncancel', settle);
