@@ -47,7 +47,7 @@ public class PermissionUtils {
         try {
             context.startActivity(intent);
             return true;
-        } catch (ActivityNotFoundException e) {
+        } catch (ActivityNotFoundException | SecurityException e) {
             return false;
         }
     }
