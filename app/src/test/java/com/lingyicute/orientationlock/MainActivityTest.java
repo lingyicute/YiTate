@@ -191,6 +191,64 @@ public class MainActivityTest {
     }
 
     @Test
+    public void overlayPermissionRequestFallsBackWhenOverlaySettingsThrowsSecurityException() {
+        List<Intent> started = new ArrayList<>();
+        Context wrapper = new ContextWrapper(RuntimeEnvironment.getApplication()) {
+            @Override
+            public void startActivity(Intent intent) {
+                started.add(intent);
+                if (Settings.ACTION_MANAGE_OVERLAY_PERMISSION.equals(intent.getAction())) {
+                    throw new SecurityException("Blocked by OEM settings");
+                }
+            }
+        };
+        PermissionUtils.requestDrawOverlaysPermission(wrapper);
+        assertEquals(3, started.size());
+        assertEquals(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, started.get(2).getAction());
+    }
+
+    @Test
+    @Config(sdk = 34)
+    public void unansweredNotificationRationaleDialogSurvivesRecreation() {
+        preferences.setNotificationPermissionRequested(true);
+        shadowOf(RuntimeEnvironment.getApplication().getPackageManager())
+                .setShouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS, true);
+        Bundle state = new Bundle();
+        try (ActivityController<MainActivity> first = Robolectric.buildActivity(MainActivity.class).setup()) {
+            AlertDialog dialog = ReflectionHelpers.getField(first.get(), "rationaleDialog");
+            assertNotNull(dialog);
+            assertTrue(dialog.isShowing());
+            first.pause().saveInstanceState(state);
+        }
+        assertFalse(preferences.isNotificationRationaleShown());
+        try (ActivityController<MainActivity> recreated = Robolectric.buildActivity(MainActivity.class)
+                .create(state).start().resume().visible()) {
+            AlertDialog dialog = ReflectionHelpers.getField(recreated.get(), "rationaleDialog");
+            assertNotNull(dialog);
+            assertTrue(dialog.isShowing());
+        }
+    }
+
+    @Test
+    @Config(sdk = 34)
+    public void grantingNotificationPermissionInSettingsReconcilesOnResume() {
+        preferences.setNotificationPermissionRequested(true);
+        shadowOf(RuntimeEnvironment.getApplication().getPackageManager())
+                .setShouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS, true);
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            AlertDialog dialog = ReflectionHelpers.getField(controller.get(), "rationaleDialog");
+            assertNotNull(dialog);
+            assertTrue(dialog.isShowing());
+            controller.pause();
+            shadowOf(RuntimeEnvironment.getApplication()).grantPermissions(Manifest.permission.POST_NOTIFICATIONS);
+            controller.resume();
+            assertFalse(preferences.isNotificationPermissionRequested());
+            assertFalse(preferences.isNotificationRationaleShown());
+            assertNull(ReflectionHelpers.getField(controller.get(), "rationaleDialog"));
+        }
+    }
+
+    @Test
     public void selectingDefaultCancelsPendingOrientationAndRevocationResetsOnClick() {
         ShadowSettings.setCanDrawOverlays(true);
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {

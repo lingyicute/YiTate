@@ -32,6 +32,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private int currentOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
     private Integer pendingOrientation;
     private static final String STATE_PENDING_ORIENTATION = "pending_orientation";
+    private static final String STATE_SHOWING_RATIONALE = "showing_rationale";
     private final SparseIntArray orientationMap = new SparseIntArray();
 
     @Override
@@ -41,7 +42,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         initView();
         preferenceManager = PreferenceManager.getInstance(this);
 
-        if (savedInstanceState == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if ((savedInstanceState == null || savedInstanceState.getBoolean(STATE_SHOWING_RATIONALE))
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             checkNotificationPermission();
         }
 
@@ -62,6 +64,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onResume() {
         super.onResume();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED) {
+            preferenceManager.setNotificationPermissionRequested(false);
+            preferenceManager.setNotificationRationaleShown(false);
+            if (rationaleDialog != null && rationaleDialog.isShowing()) {
+                rationaleDialog.dismiss();
+            }
+            rationaleDialog = null;
+        }
         boolean granted = PermissionUtils.isDrawOverlaysPermissionGranted(this);
         int orientation = granted ? preferenceManager.getOrientation()
                 : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
@@ -75,6 +87,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
     protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
         if (pendingOrientation != null) state.putInt(STATE_PENDING_ORIENTATION, pendingOrientation);
+        if (rationaleDialog != null && rationaleDialog.isShowing()) {
+            state.putBoolean(STATE_SHOWING_RATIONALE, true);
+        }
     }
 
     @Override
