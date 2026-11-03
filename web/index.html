@@ -632,7 +632,8 @@
     el.addEventListener('transitionend', removeLoading, { once: true });
   }
   const loadStart = performance.now();
-  const minSplash = mediaQuery('(prefers-reduced-motion: reduce)').matches ? 0 : 500;
+  const reducedMotion = mediaQuery('(prefers-reduced-motion: reduce)');
+  const minSplash = reducedMotion.matches ? 0 : 500;
   function finishLoading() {
     if (loadingDone || finishTimer) return;
     clearTimeout(failsafeTimer);
@@ -794,24 +795,45 @@
   });
 
   /* ---------- Reveal on scroll ---------- */
-  if ('IntersectionObserver' in window && !mediaQuery('(prefers-reduced-motion: reduce)').matches) {
+  if ('IntersectionObserver' in window && !reducedMotion.matches) {
+    const cleanups = new Map();
+    const clearPending = el => {
+      el.classList.remove('pending');
+      const settle = cleanups.get(el);
+      if (settle) {
+        el.removeEventListener('transitionend', settle);
+        el.removeEventListener('transitioncancel', settle);
+        cleanups.delete(el);
+      }
+    };
     const io = new IntersectionObserver(entries => {
       entries.forEach(en => {
         if (!en.isIntersecting) return;
         const el = en.target;
         el.classList.add('in');
         io.unobserve(el);
+        if (reducedMotion.matches) {
+          clearPending(el);
+          return;
+        }
         const settle = e => {
           if (e.target !== el || e.propertyName !== 'opacity') return;
-          el.classList.remove('pending');
-          el.removeEventListener('transitionend', settle);
-          el.removeEventListener('transitioncancel', settle);
+          clearPending(el);
         };
+        cleanups.set(el, settle);
         el.addEventListener('transitionend', settle);
         el.addEventListener('transitioncancel', settle);
       });
     }, { threshold: .12 });
-    $$('.reveal').forEach(el => { io.observe(el); el.classList.add('pending'); });
+    const reveals = $$('.reveal');
+    reveals.forEach(el => { io.observe(el); el.classList.add('pending'); });
+    const onReducedMotion = e => {
+      if (!e.matches) return;
+      if (io.disconnect) io.disconnect();
+      reveals.forEach(clearPending);
+    };
+    if (reducedMotion.addEventListener) reducedMotion.addEventListener('change', onReducedMotion);
+    else if (reducedMotion.addListener) reducedMotion.addListener(onReducedMotion);
   }
 
   /* ---------- App bar shadow ---------- */
