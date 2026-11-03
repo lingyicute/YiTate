@@ -189,4 +189,41 @@ public class MainActivityTest {
         assertEquals(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, started.get(2).getAction());
         assertEquals(Uri.parse("package:" + wrapper.getPackageName()), started.get(2).getData());
     }
+
+    @Test
+    public void selectingDefaultCancelsPendingOrientationAndRevocationResetsOnClick() {
+        ShadowSettings.setCanDrawOverlays(true);
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            MainActivity activity = controller.get();
+            activity.findViewById(R.id.tv_orientation_landscape).performClick();
+            assertEquals(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, preferences.getOrientation());
+
+            ShadowSettings.setCanDrawOverlays(false);
+            activity.findViewById(R.id.tv_orientation_portrait).performClick();
+            assertEquals(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, preferences.getOrientation());
+            assertTrue(activity.findViewById(R.id.tv_orientation_default).isSelected());
+
+            activity.findViewById(R.id.tv_orientation_default).performClick();
+            controller.pause();
+            ShadowSettings.setCanDrawOverlays(true);
+            controller.resume();
+            assertEquals(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, preferences.getOrientation());
+            assertTrue(activity.findViewById(R.id.tv_orientation_default).isSelected());
+        }
+    }
+
+    @Test
+    @Config(sdk = 34)
+    public void grantingNotificationPermissionClearsRefusalFlags() {
+        preferences.setNotificationPermissionRequested(true);
+        preferences.setNotificationRationaleShown(true);
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            MainActivity activity = controller.get();
+            activity.onRequestPermissionsResult(100,
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    new int[]{android.content.pm.PackageManager.PERMISSION_GRANTED});
+            assertFalse(preferences.isNotificationPermissionRequested());
+            assertFalse(preferences.isNotificationRationaleShown());
+        }
+    }
 }
