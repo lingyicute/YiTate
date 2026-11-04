@@ -34,9 +34,32 @@ function element() {
   };
 }
 
+// A document/window can have several independent listeners for the same event.
+function eventTarget() {
+  const listeners = {}, callbacks = new Map();
+  return {
+    listeners,
+    addEventListener(name, fn) {
+      if (!callbacks.has(name)) {
+        const handlers = new Set();
+        callbacks.set(name, handlers);
+        listeners[name] = (...args) => [...handlers].forEach(handler => handler(...args));
+      }
+      callbacks.get(name).add(fn);
+    },
+    removeEventListener(name, fn) {
+      const handlers = callbacks.get(name);
+      if (!handlers) return;
+      handlers.delete(fn);
+      if (!handlers.size) { callbacks.delete(name); delete listeners[name]; }
+    }
+  };
+}
+
 function boot({
   saved = {}, blocked = false, observer = true, color = true,
-  reducedMotion = false, schemeDark = false, mediaApi = 'event', readyState = 'loading', scrollY = 0
+  reducedMotion = false, schemeDark = false, mediaApi = 'event', readyState = 'loading',
+  scrollY = 0, visibilityState = 'visible'
 } = {}) {
   const ids = new Map();
   const calls = [];
@@ -49,26 +72,21 @@ function boot({
   const reveals = [element(), element()];
   const storage = new Map(Object.entries(saved));
   const document = {
-    readyState,
+    ...eventTarget(), readyState, visibilityState,
     documentElement: root,
     querySelector(selector) { calls.push('query:' + selector); return get(selector); },
     querySelectorAll: selector => selector === '.swatch' ? get('#swatches').children : reveals,
     createElement: element,
-    addEventListener(name, fn) { this.listeners[name] = fn; },
-    listeners: {},
     fonts: { ready: Promise.resolve() }
   };
   const mediaListeners = [], motionListeners = [];
+  const windowEvents = eventTarget();
   const sandbox = {
-    document, CSS: { supports: () => color },
+    ...windowEvents, document, CSS: { supports: () => color },
     addEventListener(name, fn) {
       calls.push('window:' + name);
-      sandbox.listeners[name] = fn;
+      windowEvents.addEventListener(name, fn);
     },
-    removeEventListener(name, fn) {
-      if (sandbox.listeners[name] === fn) delete sandbox.listeners[name];
-    },
-    listeners: {},
     setTimeout(fn, delay) { timeouts.push({ fn, delay }); return timeouts.length; },
     clearTimeout(id) { if (timeouts[id - 1]) timeouts[id - 1].cancelled = true; },
     performance: { now: () => 0 }, scrollY
@@ -90,8 +108,10 @@ function boot({
   }
   const observers = [];
   if (observer) sandbox.IntersectionObserver = class {
-    constructor(fn) { this.fn = fn; observers.push(this); }
-    observe() {} unobserve() {} disconnect() { this.disconnected = true; }
+    constructor(fn, options) { this.fn = fn; this.options = options; this.observed = []; observers.push(this); }
+    observe(target) { this.observed.push(target); }
+    unobserve(target) { this.unobserved = target; }
+    disconnect() { this.disconnected = true; }
   };
   Object.defineProperty(sandbox, 'localStorage', {
     get() {
@@ -423,4 +443,63 @@ test('enabling reduced motion after load disconnects the observer and clears pen
   assert.equal(second.classList.contains('pending'), false);
   assert.equal(first.listeners.transitionend, undefined);
   assert.equal(first.listeners.transitioncancel, undefined);
+});
+
+test('hero drift pauses offscreen and in hidden tabs without restarting its animation', () => {
+  assert.match(html, /\.hero\.motion-paused \.blob\s*\{\s*animation-play-state:\s*paused/);
+  assert.match(html, /class="blob b1" aria-hidden="true"/);
+  assert.match(html, /class="blob b2" aria-hidden="true"/);
+  const page = boot(), hero = page.get('.hero');
+  const observer = page.observers.find(item => item.observed.includes(hero));
+  assert.ok(observer, 'the hero is observed separately from one-shot reveals');
+  assert.equal(observer.options.threshold, 0);
+  assert.equal(hero.classList.contains('motion-paused'), true, 'wait for the first intersection');
+  observer.fn([{ target: hero, isIntersecting: true }]);
+  assert.equal(hero.classList.contains('motion-paused'), false);
+  observer.fn([{ target: hero, isIntersecting: false }]);
+  assert.equal(hero.classList.contains('motion-paused'), true);
+  page.document.visibilityState = 'hidden';
+  page.document.listeners.visibilitychange();
+  observer.fn([{ target: hero, isIntersecting: true }]);
+  assert.equal(hero.classList.contains('motion-paused'), true, 'visibility overrides intersection');
+  page.document.visibilityState = 'visible';
+  page.document.listeners.visibilitychange();
+  assert.equal(hero.classList.contains('motion-paused'), false);
+  observer.fn([{ target: hero, isIntersecting: false }, { target: hero, isIntersecting: true }]);
+  assert.equal(hero.classList.contains('motion-paused'), false, 'the latest queued entry wins');
+});
+
+test('pagehide and BFCache restoration preserve motion gating and hue commits', () => {
+  const page = boot(), hero = page.get('.hero'), range = page.get('#hueRange');
+  const observer = page.observers.find(item => item.observed.includes(hero));
+  observer.fn([{ target: hero, isIntersecting: true }]);
+  range.value = 123;
+  range.listeners.input({ target: range });
+  page.window.listeners.pagehide({ persisted: true });
+  assert.equal(page.storage.get('yt-hue'), '123', 'the existing pagehide listener still runs');
+  assert.equal(hero.classList.contains('motion-paused'), true);
+  page.document.visibilityState = 'hidden';
+  page.window.listeners.pageshow({ persisted: true });
+  assert.equal(hero.classList.contains('motion-paused'), true, 'a restored hidden tab stays paused');
+  page.document.visibilityState = 'visible';
+  page.document.listeners.visibilitychange();
+  assert.equal(hero.classList.contains('motion-paused'), false);
+  observer.fn([{ target: hero, isIntersecting: false }]);
+  page.window.listeners.pagehide({ persisted: true });
+  page.window.listeners.pageshow({ persisted: true });
+  assert.equal(hero.classList.contains('motion-paused'), true, 'offscreen stays paused after restore');
+});
+
+test('hero motion degrades safely without an observer or with reduced motion', () => {
+  const page = boot({ observer: false, visibilityState: 'hidden' });
+  const hero = page.get('.hero');
+  assert.equal(hero.classList.contains('motion-paused'), true);
+  page.document.visibilityState = 'visible';
+  page.document.listeners.visibilitychange();
+  assert.equal(hero.classList.contains('motion-paused'), false, 'visible fallback remains animated');
+  page.window.listeners.pagehide({ persisted: false });
+  assert.equal(hero.classList.contains('motion-paused'), true);
+  page.window.listeners.pageshow({ persisted: true });
+  assert.equal(hero.classList.contains('motion-paused'), false);
+  assert.match(html, /@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?animation:\s*none !important/);
 });
