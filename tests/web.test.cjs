@@ -11,7 +11,7 @@ const script = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].at(-1)[1];
 function element() {
   const classes = new Set();
   return {
-    style: { setProperty(key, value) { this[key] = value; } },
+    style: { writes: [], setProperty(key, value) { this[key] = value; this.writes.push([key, value]); } },
     dataset: {}, children: [], listeners: {}, attributes: {},
     setAttribute(name, value) { this.attributes[name] = String(value); },
     getAttribute(name) { return name in this.attributes ? this.attributes[name] : null; },
@@ -59,7 +59,7 @@ function eventTarget() {
 function boot({
   saved = {}, blocked = false, observer = true, color = true,
   reducedMotion = false, schemeDark = false, mediaApi = 'event', readyState = 'loading',
-  scrollY = 0, visibilityState = 'visible'
+  scrollY = 0, visibilityState = 'visible', animationFrame = true
 } = {}) {
   const ids = new Map();
   const calls = [];
@@ -106,6 +106,12 @@ function boot({
       return media;
     };
   }
+  const frames = new Map();
+  let frameId = 0;
+  if (animationFrame) {
+    sandbox.requestAnimationFrame = fn => { frames.set(++frameId, fn); return frameId; };
+    sandbox.cancelAnimationFrame = id => frames.delete(id);
+  }
   const observers = [];
   if (observer) sandbox.IntersectionObserver = class {
     constructor(fn, options) { this.fn = fn; this.options = options; this.observed = []; observers.push(this); }
@@ -125,7 +131,12 @@ function boot({
   sandbox.window = sandbox;
   vm.runInNewContext(script, sandbox, { timeout: 1000 });
   return {
-    get, root, storage, reveals, observers, calls, timeouts, document, window: sandbox,
+    get, root, storage, reveals, observers, calls, timeouts, document, window: sandbox, frames,
+    flushFrames() {
+      const pending = [...frames.values()];
+      frames.clear();
+      pending.forEach(fn => fn(16));
+    },
     fireMedia: matches => mediaListeners.forEach(({ media, fn }) => { media.matches = matches; fn({ matches }); }),
     fireMotion: matches => motionListeners.forEach(({ media, fn }) => { media.matches = matches; fn({ matches }); })
   };
@@ -502,4 +513,78 @@ test('hero motion degrades safely without an observer or with reduced motion', (
   page.window.listeners.pageshow({ persisted: true });
   assert.equal(hero.classList.contains('motion-paused'), false);
   assert.match(html, /@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?animation:\s*none !important/);
+});
+
+test('hue input coalesces palette and swatch updates into one render per frame', () => {
+  const page = boot(), range = page.get('#hueRange');
+  const writes = () => page.root.style.writes.filter(([key]) => key === '--hue').length;
+  assert.equal(writes(), 1, 'initialization paints the palette only once');
+  assert.equal(page.root.style['--primary'], 'oklch(0.48 0.16 290)');
+  for (const value of [25, 170, 250]) {
+    range.value = value;
+    range.listeners.input({ target: range });
+  }
+  assert.equal(page.frames.size, 1);
+  assert.equal(writes(), 1, 'events do not synchronously rewrite the palette');
+  assert.equal(page.storage.has('yt-hue'), false);
+  page.flushFrames();
+  assert.equal(writes(), 2);
+  assert.equal(page.root.style['--hue'], 250, 'the last input wins');
+  assert.equal(page.get('#swatches').children[1].attributes['aria-pressed'], 'true');
+  range.listeners.change({ target: range });
+  assert.equal(page.storage.get('yt-hue'), '250');
+  assert.equal(writes(), 2, 'committing an already rendered value does not paint again');
+});
+
+test('commits, swatches, and theme changes supersede a queued hue frame', () => {
+  const page = boot(), range = page.get('#hueRange');
+  range.value = 140;
+  range.listeners.input({ target: range });
+  range.value = 90;
+  range.listeners.change({ target: range });
+  assert.equal(page.frames.size, 0);
+  assert.equal(page.root.style['--hue'], 90);
+  assert.equal(page.storage.get('yt-hue'), '90');
+  range.value = 170;
+  range.listeners.input({ target: range });
+  page.get('#themeBtn').listeners.click();
+  assert.equal(page.frames.size, 0);
+  assert.equal(page.root.dataset.theme, 'dark');
+  assert.equal(page.root.style['--primary'], 'oklch(0.82 0.1 170)');
+  assert.equal(page.get('#swatches').children[3].attributes['aria-pressed'], 'true');
+  range.value = 50;
+  range.listeners.input({ target: range });
+  page.get('#swatches').children[2].listeners.click();
+  page.flushFrames();
+  assert.equal(page.root.style['--hue'], 210);
+  assert.equal(page.storage.get('yt-hue'), '210', 'stale frame cannot overwrite a swatch');
+});
+
+test('hidden pages commit and flush a pending hue before they can be frozen', () => {
+  const page = boot(), range = page.get('#hueRange');
+  range.value = 320;
+  range.listeners.input({ target: range });
+  page.document.visibilityState = 'hidden';
+  page.document.listeners.visibilitychange();
+  assert.equal(page.storage.get('yt-hue'), '320');
+  assert.equal(page.root.style['--hue'], 320);
+  assert.equal(page.frames.size, 0, 'no stale frame can be lost in the back/forward cache');
+  page.document.visibilityState = 'visible';
+  page.document.listeners.visibilitychange();
+  range.value = 350;
+  range.listeners.input({ target: range });
+  assert.equal(page.frames.size, 1, 'later interactions still schedule a frame');
+  page.flushFrames();
+  assert.equal(page.root.style['--hue'], 350);
+});
+
+test('hue inputs still render immediately without animation-frame APIs', () => {
+  const page = boot({ animationFrame: false }), range = page.get('#hueRange');
+  range.value = 350;
+  range.listeners.input({ target: range });
+  assert.equal(page.root.style['--hue'], 350);
+  assert.equal(page.get('#swatches').children[8].attributes['aria-pressed'], 'true');
+  assert.equal(page.storage.has('yt-hue'), false);
+  page.window.listeners.pagehide({ persisted: true });
+  assert.equal(page.storage.get('yt-hue'), '350');
 });
