@@ -675,7 +675,20 @@
     if (!supportsOklch) return;
     const c = (l, ch, h) => `oklch(${l} ${ch} ${h})`;
     const h = hue, h2 = hue, h3 = (hue + 60) % 360;
-    const light = {
+    const p = dark ? {
+      '--primary': c(.82, .10, h), '--on-primary': c(.30, .12, h),
+      '--primary-container': c(.40, .13, h), '--on-primary-container': c(.92, .06, h),
+      '--secondary': c(.80, .05, h2), '--on-secondary': c(.30, .05, h2),
+      '--secondary-container': c(.38, .05, h2), '--on-secondary-container': c(.92, .03, h2),
+      '--tertiary': c(.82, .09, h3), '--on-tertiary': c(.30, .09, h3),
+      '--tertiary-container': c(.40, .10, h3), '--on-tertiary-container': c(.92, .05, h3),
+      '--surface': c(.17, .012, h), '--on-surface': c(.92, .01, h),
+      '--on-surface-variant': c(.78, .02, h),
+      '--surface-container-low': c(.20, .014, h), '--surface-container': c(.23, .016, h),
+      '--surface-container-high': c(.27, .018, h), '--surface-container-highest': c(.31, .02, h),
+      '--outline': c(.60, .03, h), '--outline-variant': c(.36, .02, h),
+      '--inverse-surface': c(.92, .01, h), '--inverse-on-surface': c(.25, .02, h),
+    } : {
       '--primary': c(.48, .16, h), '--on-primary': c(.99, .01, h),
       '--primary-container': c(.90, .07, h), '--on-primary-container': c(.25, .10, h),
       '--secondary': c(.50, .06, h2), '--on-secondary': c(.99, .01, h2),
@@ -689,21 +702,6 @@
       '--outline': c(.58, .03, h), '--outline-variant': c(.83, .02, h),
       '--inverse-surface': c(.27, .02, h), '--inverse-on-surface': c(.95, .01, h),
     };
-    const darkP = {
-      '--primary': c(.82, .10, h), '--on-primary': c(.30, .12, h),
-      '--primary-container': c(.40, .13, h), '--on-primary-container': c(.92, .06, h),
-      '--secondary': c(.80, .05, h2), '--on-secondary': c(.30, .05, h2),
-      '--secondary-container': c(.38, .05, h2), '--on-secondary-container': c(.92, .03, h2),
-      '--tertiary': c(.82, .09, h3), '--on-tertiary': c(.30, .09, h3),
-      '--tertiary-container': c(.40, .10, h3), '--on-tertiary-container': c(.92, .05, h3),
-      '--surface': c(.17, .012, h), '--on-surface': c(.92, .01, h),
-      '--on-surface-variant': c(.78, .02, h),
-      '--surface-container-low': c(.20, .014, h), '--surface-container': c(.23, .016, h),
-      '--surface-container-high': c(.27, .018, h), '--surface-container-highest': c(.31, .02, h),
-      '--outline': c(.60, .03, h), '--outline-variant': c(.36, .02, h),
-      '--inverse-surface': c(.92, .01, h), '--inverse-on-surface': c(.25, .02, h),
-    };
-    const p = dark ? darkP : light;
     for (const k in p) root.style.setProperty(k, p[k]);
     root.style.setProperty('--hue', hue);
   }
@@ -724,7 +722,7 @@
   else if (darkMedia.addListener) darkMedia.addListener(followSystemTheme);
 
   const seeds = [290, 250, 210, 170, 140, 90, 50, 25, 350, 320];
-  const swatchesEl = $('#swatches');
+  const swatchesEl = $('#swatches'), swatches = [];
   seeds.forEach(s => {
     const b = document.createElement('button');
     b.type = 'button';
@@ -734,16 +732,52 @@
     b.style.background = supportsOklch ? `oklch(.65 .15 ${s})` : `hsl(${s}, 70%, 55%)`;
     b.addEventListener('click', () => { setHue(s); showSnack('主题色已更新 ✦'); });
     swatchesEl.appendChild(b);
+    swatches.push(b);
   });
-  let hueDirty = false;
+  let hueDirty = false, hueFrame = null, renderedHue, renderedDark;
   function commitHue() {
     if (!hueDirty) return;
     hueDirty = false;
     storage.set('yt-hue', hue);
+    // A page can be frozen or restored without running a pending animation frame.
+    cancelHueFrame();
+    renderHue();
   }
   const hueRange = $('#hueRange');
-  hueRange.addEventListener('input', e => { hueDirty = true; setHue(+e.target.value, false); });
-  // `input` fires on every pixel while dragging; only a committed change is stored.
+  function renderHue() {
+    hueRange.value = hue;
+    if (renderedHue === hue && renderedDark === dark) return;
+    renderedHue = hue; renderedDark = dark;
+    swatches.forEach(s => {
+      const active = +s.dataset.hue === hue;
+      s.classList.toggle('active', active);
+      s.setAttribute('aria-pressed', String(active));
+    });
+    applyPalette(hue, dark);
+  }
+  function cancelHueFrame() {
+    if (hueFrame === null) return;
+    window.cancelAnimationFrame(hueFrame);
+    hueFrame = null;
+  }
+  function scheduleHueRender() {
+    if (hueFrame !== null) return;
+    if (!window.requestAnimationFrame || !window.cancelAnimationFrame) {
+      renderHue();
+      return;
+    }
+    hueFrame = window.requestAnimationFrame(() => {
+      hueFrame = null;
+      renderHue();
+    });
+  }
+  // Keep the latest value synchronously for pagehide, but paint at most once per frame.
+  hueRange.addEventListener('input', e => {
+    hueDirty = true;
+    hue = +e.target.value;
+    scheduleHueRender();
+  });
+  // Only a committed change is stored; it also supersedes any queued paint.
   hueRange.addEventListener('change', e => setHue(+e.target.value));
   window.addEventListener('pagehide', commitHue);
   // Mobile browsers often suspend or discard a backgrounded tab without firing `pagehide`.
@@ -752,14 +786,10 @@
   });
 
   function setHue(h, persist = true) {
-    hue = h; hueRange.value = h;
+    hue = h;
     if (persist) { hueDirty = false; storage.set('yt-hue', h); }
-    $$('.swatch').forEach(s => {
-      const active = +s.dataset.hue === h;
-      s.classList.toggle('active', active);
-      s.setAttribute('aria-pressed', String(active));
-    });
-    applyPalette(hue, dark);
+    cancelHueFrame();
+    renderHue();
   }
   const themeBtn = $('#themeBtn');
   themeBtn.setAttribute('aria-label', '深色模式');
@@ -773,9 +803,10 @@
     $('#iconSun').style.display = d ? '' : 'none';
     themeBtn.setAttribute('aria-pressed', String(d));
     themeBtn.title = d ? '切换到浅色模式' : '切换到深色模式';
-    applyPalette(hue, dark);
+    cancelHueFrame();
+    renderHue();
   }
-  setHue(hue, false); setDark(dark, false);
+  setDark(dark, false);
 
   themeBtn.addEventListener('click', () => { setDark(!dark); showSnack(dark ? '已切换到深色模式 🌙' : '已切换到浅色模式 ☀️'); });
 
