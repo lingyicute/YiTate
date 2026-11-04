@@ -202,6 +202,8 @@
     position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; pointer-events: none; z-index: -1;
     animation: drift 18s ease-in-out infinite alternate;
   }
+  /* Pausing preserves the current animation phase when the hero returns. */
+  .hero.motion-paused .blob { animation-play-state: paused; }
   .blob.b1 { width: 520px; height: 520px; background: var(--primary-container); top: -180px; right: -120px; }
   .blob.b2 { width: 380px; height: 380px; background: var(--tertiary-container); bottom: -160px; left: -80px; animation-delay: -6s; }
   @keyframes drift { to { transform: translate(40px, 30px) scale(1.08); } }
@@ -440,8 +442,8 @@
 <main>
   <!-- ===== Hero ===== -->
   <section class="hero">
-    <div class="blob b1"></div>
-    <div class="blob b2"></div>
+    <div class="blob b1" aria-hidden="true"></div>
+    <div class="blob b2" aria-hidden="true"></div>
     <div class="container hero-grid">
       <div>
         <span class="chip"><span class="dot">✦</span>GPL-3.0 · Android 5+ ·  Made with ❤️ by lingyicute</span>
@@ -842,6 +844,33 @@
     };
     if (reducedMotion.addEventListener) reducedMotion.addEventListener('change', onReducedMotion);
     else if (reducedMotion.addListener) reducedMotion.addListener(onReducedMotion);
+  }
+
+  /* ---------- Decorative hero motion ----------
+     Keep the blurred blobs still when they cannot be seen. CSS remains the
+     fallback without JavaScript; without IntersectionObserver we still pause
+     when the document is hidden. */
+  const hero = $('.hero');
+  if (hero) {
+    let inViewport = !('IntersectionObserver' in window), pageHidden = false;
+    const syncDrift = () => {
+      hero.classList.toggle('motion-paused', pageHidden ||
+        document.visibilityState === 'hidden' || !inViewport);
+    };
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.target === hero) inViewport = entry.isIntersecting;
+        });
+        syncDrift();
+      }, { threshold: 0 });
+      observer.observe(hero);
+    }
+    // pagehide/pageshow also cover navigation into and out of the back/forward cache.
+    window.addEventListener('pagehide', () => { pageHidden = true; syncDrift(); });
+    window.addEventListener('pageshow', () => { pageHidden = false; syncDrift(); });
+    document.addEventListener('visibilitychange', syncDrift);
+    syncDrift();
   }
 
   /* ---------- App bar shadow ---------- */
