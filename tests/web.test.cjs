@@ -431,6 +431,8 @@ test('the reveal stagger delay is dropped once the fade has run', () => {
   assert.equal(target.classList.contains('in'), false);
   page.observers[0].fn([{ isIntersecting: true, target }]);
   assert.equal(target.classList.contains('in'), true);
+  const safety = page.timeouts.find(t => t.delay === 1200);
+  assert.ok(safety, 'a missing transition event has a bounded cleanup');
   assert.equal(target.classList.contains('pending'), true, 'the delay still applies while fading in');
   target.listeners.transitionend({ target: element(), propertyName: 'opacity' });
   target.listeners.transitionend({ target, propertyName: 'transform' });
@@ -438,6 +440,7 @@ test('the reveal stagger delay is dropped once the fade has run', () => {
   target.listeners.transitionend({ target, propertyName: 'opacity' });
   assert.equal(target.classList.contains('pending'), false);
   assert.equal(target.classList.contains('in'), true);
+  assert.equal(safety.cancelled, true, 'normal completion cancels the fallback');
   assert.equal(target.listeners.transitionend, undefined);
   assert.equal(target.listeners.transitioncancel, undefined);
 });
@@ -448,8 +451,10 @@ test('enabling reduced motion after load disconnects the observer and clears pen
   page.observers[0].fn([{ isIntersecting: true, target: first }]);
   assert.equal(first.classList.contains('pending'), true);
   assert.ok(first.listeners.transitionend);
+  const safety = page.timeouts.find(t => t.delay === 1200);
   page.fireMotion(true);
   assert.equal(page.observers[0].disconnected, true);
+  assert.equal(safety.cancelled, true, 'preference changes cancel pending fallbacks');
   assert.equal(first.classList.contains('pending'), false);
   assert.equal(second.classList.contains('pending'), false);
   assert.equal(first.listeners.transitionend, undefined);
@@ -587,4 +592,27 @@ test('hue inputs still render immediately without animation-frame APIs', () => {
   assert.equal(page.storage.has('yt-hue'), false);
   page.window.listeners.pagehide({ persisted: true });
   assert.equal(page.storage.get('yt-hue'), '350');
+});
+
+test('reveal fallback clears pending state when no transition event is dispatched', () => {
+  const page = boot(), target = page.reveals[0];
+  page.observers[0].fn([{ target, isIntersecting: true }]);
+  const safety = page.timeouts.find(t => t.delay === 1200);
+  assert.ok(safety);
+  safety.fn();
+  assert.equal(target.classList.contains('pending'), false);
+  assert.equal(target.classList.contains('in'), true);
+  assert.equal(target.listeners.transitionend, undefined);
+  assert.equal(target.listeners.transitioncancel, undefined);
+});
+
+test('duplicate and stale reveal observer entries do not register extra cleanups', () => {
+  const page = boot(), [first, second] = page.reveals;
+  page.observers[0].fn([{ target: first, isIntersecting: true }, { target: first, isIntersecting: true }]);
+  assert.equal(page.timeouts.filter(t => t.delay === 1200).length, 1);
+  page.fireMotion(true);
+  page.fireMotion(false);
+  page.observers[0].fn([{ target: second, isIntersecting: true }]);
+  assert.equal(second.classList.contains('in'), false, 'a queued entry after disconnect is ignored');
+  assert.equal(page.timeouts.filter(t => t.delay === 1200).length, 1);
 });
