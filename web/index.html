@@ -840,17 +840,19 @@
     const cleanups = new Map();
     const clearPending = el => {
       el.classList.remove('pending');
-      const settle = cleanups.get(el);
-      if (settle) {
-        el.removeEventListener('transitionend', settle);
-        el.removeEventListener('transitioncancel', settle);
+      const cleanup = cleanups.get(el);
+      if (cleanup) {
+        clearTimeout(cleanup.timer);
+        el.removeEventListener('transitionend', cleanup.settle);
+        el.removeEventListener('transitioncancel', cleanup.settle);
         cleanups.delete(el);
       }
     };
     const io = new IntersectionObserver(entries => {
       entries.forEach(en => {
-        if (!en.isIntersecting) return;
         const el = en.target;
+        // Queued observer entries may arrive after unobserve or a motion change.
+        if (!en.isIntersecting || !el.classList.contains('pending') || el.classList.contains('in')) return;
         el.classList.add('in');
         io.unobserve(el);
         if (reducedMotion.matches) {
@@ -861,7 +863,10 @@
           if (e.target !== el || e.propertyName !== 'opacity') return;
           clearPending(el);
         };
-        cleanups.set(el, settle);
+        // No transition event is guaranteed when styles suppress the transition.
+        // The longest current fade plus stagger is 860ms; this is a safety net.
+        const timer = setTimeout(() => clearPending(el), 1200);
+        cleanups.set(el, { settle, timer });
         el.addEventListener('transitionend', settle);
         el.addEventListener('transitioncancel', settle);
       });
