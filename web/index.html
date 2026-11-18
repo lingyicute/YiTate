@@ -344,7 +344,9 @@
 
   /* Reveal */
   .reveal { transition: opacity .7s var(--ease), transform .7s var(--ease-emph); }
-  .reveal.pending:not(.in):not(:focus-within) { opacity: 0; transform: translateY(26px); }
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .reveal.pending:not(.in):not(:focus-within) { opacity: 0; transform: translateY(26px); }
+  }
   /* `.reveal` comes later in the cascade and would otherwise drop the hover transitions below. */
   .card.reveal { transition: opacity .7s var(--ease), transform .4s var(--ease-emph), box-shadow .4s, border-radius .4s var(--ease-emph); }
   .step.reveal { transition: opacity .7s var(--ease), background .3s, transform .4s var(--ease-emph); }
@@ -383,13 +385,12 @@
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
-    .reveal.pending:not(.in) { opacity: 1; transform: none; }
   }
 
   /* Printing must show sections that have not been scrolled into view. */
   @media print {
     .snack, .palette { display: none !important; }
-    .reveal.pending:not(.in) { opacity: 1; transform: none; }
+    .reveal { transition: none !important; }
   }
 </style>
 </head>

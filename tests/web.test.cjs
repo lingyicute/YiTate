@@ -332,7 +332,10 @@ test('public content does not wait for the page load event or fonts', () => {
 
 test('printing hides popovers and shows unvisited content', () => {
   assert.match(html, /@media print\s*\{[\s\S]*?\.snack,\s*\.palette\s*\{\s*display:\s*none/);
-  assert.match(html, /@media print\s*\{[\s\S]*?\.reveal\.pending:not\(\.in\)\s*\{[^}]*opacity:\s*1/);
+  // Check where the hiding rule applies, not merely the presence of a weaker override.
+  assert.match(html, /@media screen and \(prefers-reduced-motion: no-preference\)\s*\{\s*\.reveal\.pending:not\(\.in\):not\(:focus-within\)\s*\{\s*opacity:\s*0/);
+  assert.equal((html.match(/\.reveal\.pending[^{}]*\{\s*opacity:\s*0/g) || []).length, 1);
+  assert.match(html, /@media print\s*\{[^@]*?\.reveal\s*\{\s*transition:\s*none !important/);
 });
 
 test('missing matchMedia does not abort initialization', () => {
@@ -364,11 +367,10 @@ test('missing IntersectionObserver leaves content visible', () => {
   assert.ok(page.reveals.every(el => !el.classList.contains('pending')));
 });
 
-test('reduced-motion preference avoids reveal animations and un-hides pending elements in CSS', () => {
+test('reduced-motion preference avoids reveal animations', () => {
   const page = boot({ reducedMotion: true });
   assert.ok(page.reveals.every(el => !el.classList.contains('pending')));
   assert.match(html, /@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?transition-delay:\s*0s !important/);
-  assert.match(html, /@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?\.reveal\.pending:not\(\.in\)\s*\{\s*opacity:\s*1;\s*transform:\s*none;\s*\}/);
 });
 
 test('unsupported OKLCH keeps the theme toggle but does not offer an inert palette', () => {
