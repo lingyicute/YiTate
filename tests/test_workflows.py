@@ -19,6 +19,13 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("uses: actions/download-artifact@", publish)
         self.assertIn("bash scripts/publish_nightly.sh apk/app-release-unsigned.apk", publish)
 
+    def test_nightly_publication_is_gated_on_the_publisher_regressions(self):
+        workflow = (ROOT / ".github/workflows/create-release.yml").read_text(encoding="utf-8")
+        verify, publish = workflow.split("\n  publish:", maxsplit=1)
+        self.assertIn("python3 -m unittest discover -s tests -p 'test_publish_nightly.py' -v", verify)
+        self.assertNotIn("continue-on-error: true", verify)
+        self.assertIn("needs: verify", publish)
+
     def test_android_reruns_can_replace_artifacts_in_the_same_workflow_run(self):
         workflow = (ROOT / ".github/workflows/create-release.yml").read_text(encoding="utf-8")
         for artifact in ("app-release", "unit-test-reports"):
