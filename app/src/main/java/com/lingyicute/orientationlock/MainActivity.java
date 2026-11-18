@@ -247,7 +247,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);
             try {
                 startActivity(intent);
-            } catch (ActivityNotFoundException ignore) {
+            } catch (ActivityNotFoundException | SecurityException e) {
+                Log.w(TAG, "Unable to open the project page", e);
+                Toast.makeText(this, R.string.about_link_unavailable, Toast.LENGTH_LONG).show();
             }
         });
     }

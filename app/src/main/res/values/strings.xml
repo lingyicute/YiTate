@@ -16,6 +16,7 @@
     <string name="running_notification_mode">Locked: %1$s</string>
     <string name="permission_required">Please grant draw over apps permission</string>
     <string name="overlay_settings_unavailable">Unable to open Settings. Allow YiTate to display over other apps in system settings, then select a mode again.</string>
+    <string name="about_link_unavailable">Unable to open the project page. Check that a browser is available.</string>
     <string name="about">About</string>
     <string name="orientation_failed">Unable to lock orientation. Please check the display-over-other-apps permission.</string>
     <string name="notification_permission_title">Show running notification?</string>
