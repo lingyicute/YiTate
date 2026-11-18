@@ -7,7 +7,15 @@ from unittest.mock import patch
 
 from scripts import subset_font as font
 
-RULE = '@font-face { font-family: "Nebulove"; src: url(old.woff2); }'
+RULE = "\n".join((
+    '@font-face {',
+    '    font-family: "Nebulove";',
+    f'    {font.SOURCE_MARKER}',
+    '    src: url("old.woff2") format("woff2");',
+    '    font-display: swap;',
+    '    font-style: normal;',
+    '}',
+))
 
 
 class FontSubsetTests(unittest.TestCase):
@@ -17,19 +25,18 @@ class FontSubsetTests(unittest.TestCase):
         self.assertTrue(set(map(chr, range(32, 127))).issubset(chars))
         self.assertEqual(chars, ''.join(sorted(set(chars))))
 
-    def test_only_nebulove_is_replaced(self):
-        other = '@font-face { font-family: "Other"; src: url(other.woff2); }'
-        result = font.embed_font(RULE + other, b'test')
-        self.assertIn(other, result)
-        self.assertIn('base64,dGVzdA==', result)
-        self.assertNotIn('url(old.woff2)', result)
-        self.assertNotIn('https://', result)
-        minified = '@font-face { src: url(old.woff2); font-family: "Nebulove" }'
-        self.assertIn('base64,dGVzdA==', font.embed_font(minified, b'test'))
+    def test_only_the_marked_source_is_replaced(self):
+        # Neither comments nor declarations in other fonts identify the source.
+        other = ('/* @font-face { font-family: "Nebulove"; } */\n'
+                 '@font-face { font-family: "Other"; src: url(other.woff2); }')
+        html = RULE + '\n' + other
+        result = font.embed_font(html, b'test')
+        self.assertEqual(result, html.replace('old.woff2', 'data:font/woff2;base64,dGVzdA=='))
         self.assertTrue(font.INDEX_PATH.is_absolute())
 
-    def test_missing_or_duplicate_rule_is_rejected(self):
-        for html in ('<p>No font</p>', RULE + RULE):
+    def test_missing_duplicate_or_invalid_marker_is_rejected(self):
+        for html in ('<p>No font</p>', RULE + '\n' + RULE,
+                     RULE.replace('format("woff2")', 'format("woff")')):
             with self.assertRaises(ValueError):
                 font.embed_font(html, b'font')
 
