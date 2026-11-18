@@ -29,8 +29,8 @@ jobs:
       - uses: android-actions/setup-android@v4
       - name: Install compile SDK
         run: sdkmanager 'platforms;android-34' 'build-tools;34.0.0'
-      - name: Test and build
-        run: bash gradlew --no-daemon testDebugUnitTest assembleRelease
+      - name: Test, lint and build
+        run: ./gradlew --no-daemon testDebugUnitTest lintDebug assembleRelease
       - uses: actions/upload-artifact@v4
         with:
           name: app-release

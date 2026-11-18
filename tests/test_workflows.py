@@ -23,6 +23,11 @@ class WorkflowTests(unittest.TestCase):
 
         self.assertIn("cache: gradle", workflow)
 
+    def test_android_checks_include_lint_before_publication(self):
+        workflow = (ROOT / ".github/workflows/create-release.yml").read_text(encoding="utf-8")
+        verify = workflow.split("\n  publish:", maxsplit=1)[0]
+        self.assertIn("./gradlew --no-daemon testDebugUnitTest lintDebug assembleRelease", verify)
+
     def test_pages_generates_the_subset_without_repository_write_credentials(self):
         workflows = ROOT / ".github/workflows"
         pages = (workflows / "static.yml").read_text(encoding="utf-8")
