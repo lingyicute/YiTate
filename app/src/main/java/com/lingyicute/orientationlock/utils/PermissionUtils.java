@@ -21,6 +21,12 @@ public class PermissionUtils {
         if (Build.VERSION.SDK_INT >= 23) {
             return Settings.canDrawOverlays(context);
         }
+        // On Lollipop the window policy checks the install-time permission first;
+        // the window manager separately uses the app-op to decide visibility.
+        if (context.checkPermission(Manifest.permission.SYSTEM_ALERT_WINDOW,
+                Process.myPid(), Process.myUid()) != PackageManager.PERMISSION_GRANTED) {
+            return false;
+        }
         AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
         if (appOps != null) {
             try {
@@ -35,8 +41,7 @@ public class PermissionUtils {
                 // Some OEM builds may not expose the hidden check. Use the install-time grant.
             }
         }
-        return context.checkPermission(Manifest.permission.SYSTEM_ALERT_WINDOW,
-                Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED;
+        return true; // The install-time grant was checked above.
     }
 
     public static boolean requestDrawOverlaysPermission(Context context) {
