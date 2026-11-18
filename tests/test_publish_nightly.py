@@ -119,7 +119,9 @@ class PublishNightlyTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.tag(), self.sha)
         self.assertEqual({p.name for p in self.assets.iterdir()}, {self.asset, 'unrelated.txt'})
-        self.assertIn(self.asset, (self.store / 'notes').read_text())
+        notes = (self.store / 'notes').read_text()
+        self.assertIn(self.asset, notes)
+        self.assertIn(f'[{self.sha}](https://github.com/owner/project/tree/{self.sha})', notes)
 
     def test_first_release_is_staged_as_a_draft_then_published(self):
         result = self.publish()

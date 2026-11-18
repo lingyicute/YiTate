@@ -36,9 +36,10 @@ cleanup_staging() {
 }
 trap cleanup_staging EXIT
 cp -- "$apk" "$staging/$asset"
-url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/nightly/$asset"
-printf -v notes 'Automated build of `%s` from `main`. The APK is unsigned.\n\n[Download the unsigned APK](%s)' \
-  "$GITHUB_SHA" "$url"
+repository="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
+url="$repository/releases/download/nightly/$asset"
+printf -v notes 'Automated build of [%s](%s/tree/%s) from `main`. The APK is unsigned.\n\n[Download the unsigned APK](%s)' \
+  "$GITHUB_SHA" "$repository" "$GITHUB_SHA" "$url"
 
 # Listing releases covers drafts as well and fails on API errors, rather than
 # confusing an unavailable API with a missing release.
