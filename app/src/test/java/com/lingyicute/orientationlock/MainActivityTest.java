@@ -18,6 +18,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.lingyicute.orientationlock.preference.PreferenceManager;
@@ -124,6 +126,18 @@ public class MainActivityTest {
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class)
                 .create(state).start().resume().visible()) {
             assertEquals(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT, preferences.getOrientation());
+        }
+    }
+
+    @Test
+    public void orientationChoicesAreFocusableButtonsWithWrappingLabels() {
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            MainActivity activity = controller.get();
+            Button choice = activity.findViewById(R.id.tv_orientation_reverse_landscape);
+            assertTrue(choice.isFocusable());
+            assertTrue(choice.getMaxLines() > 1);
+            assertNull(choice.getEllipsize());
+            assertTrue(activity.findViewById(R.id.iv_about) instanceof ImageButton);
         }
     }
 

@@ -213,13 +213,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
         int lastViewId = orientationMap.get(displayedOrientation, View.NO_ID);
         if (lastViewId != View.NO_ID) {
             View lastView = findViewById(lastViewId);
-            lastView.setBackgroundResource(R.drawable.bg_button);
             lastView.setSelected(false);
         }
         int viewId = orientationMap.get(orientation, View.NO_ID);
         if (viewId != View.NO_ID) {
             View currentView = findViewById(viewId);
-            currentView.setBackgroundResource(R.drawable.bg_selected);
             currentView.setSelected(true);
         }
         displayedOrientation = orientation;

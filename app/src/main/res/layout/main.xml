@@ -15,19 +15,23 @@
       android:paddingBottom="16dp"
       >
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         >
 
       <TextView
-          android:layout_width="match_parent"
+          android:layout_width="0dp"
           android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:gravity="start|center_vertical"
           android:text="@string/orientation_dynamic"
           style="@style/TitleStyle"
           />
 
-      <ImageView
+      <ImageButton
           android:id="@+id/iv_about"
           android:layout_width="48dp"
           android:layout_height="48dp"
@@ -36,12 +40,9 @@
           android:contentDescription="@string/about"
           android:src="@drawable/ic_info"
           android:tint="?android:colorAccent"
-          android:layout_gravity="end|center_vertical"
-          android:layout_marginLeft="16dp"
-          android:layout_marginRight="16dp"
-          android:layout_marginTop="2dp"
+          android:layout_marginEnd="12dp"
           />
-    </FrameLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -49,20 +50,20 @@
         android:orientation="horizontal"
         >
 
-      <TextView
+      <Button
           android:id="@+id/tv_orientation_default"
           android:layout_width="0dp"
-          android:layout_height="wrap_content"
+          android:layout_height="match_parent"
           android:drawableTop="@drawable/ic_rotate_system"
           android:text="@string/orientation_default"
           android:layout_weight="1"
           style="@style/ItemStyle"
           />
 
-      <TextView
+      <Button
           android:id="@+id/tv_orientation_full_sensor"
           android:layout_width="0dp"
-          android:layout_height="wrap_content"
+          android:layout_height="match_parent"
           android:drawableTop="@drawable/ic_rotate_full_sensor"
           android:text="@string/orientation_full_sensor"
           android:layout_weight="1"
@@ -72,8 +73,8 @@
       <Space
           android:layout_width="0dp"
           android:layout_height="wrap_content"
-          android:layout_marginLeft="16dp"
-          android:layout_marginRight="16dp"
+          android:layout_marginStart="6dp"
+          android:layout_marginEnd="6dp"
           android:layout_weight="1"
           />
 
@@ -92,30 +93,30 @@
         android:orientation="horizontal"
         >
 
-      <TextView
+      <Button
           android:id="@+id/tv_orientation_landscape"
           android:layout_width="0dp"
-          android:layout_height="wrap_content"
+          android:layout_height="match_parent"
           android:drawableTop="@drawable/ic_rotate_landscape"
           android:text="@string/orientation_landscape"
           android:layout_weight="1"
           style="@style/ItemStyle"
           />
 
-      <TextView
+      <Button
           android:id="@+id/tv_orientation_reverse_landscape"
           android:layout_width="0dp"
-          android:layout_height="wrap_content"
+          android:layout_height="match_parent"
           android:drawableTop="@drawable/ic_rotate_reverse_landscape"
           android:text="@string/orientation_reverse_landscape"
           android:layout_weight="1"
           style="@style/ItemStyle"
           />
 
-      <TextView
+      <Button
           android:id="@+id/tv_orientation_sensor_landscape"
           android:layout_width="0dp"
-          android:layout_height="wrap_content"
+          android:layout_height="match_parent"
           android:drawableTop="@drawable/ic_rotate_sensor_landscape"
           android:text="@string/orientation_sensor_landscape"
           android:layout_weight="1"
@@ -137,30 +138,30 @@
         android:orientation="horizontal"
         >
 
-      <TextView
+      <Button
           android:id="@+id/tv_orientation_portrait"
           android:layout_width="0dp"
-          android:layout_height="wrap_content"
+          android:layout_height="match_parent"
           android:drawableTop="@drawable/ic_rotate_portrait"
           android:text="@string/orientation_portrait"
           android:layout_weight="1"
           style="@style/ItemStyle"
           />
 
-      <TextView
+      <Button
           android:id="@+id/tv_orientation_reverse_portrait"
           android:layout_width="0dp"
-          android:layout_height="wrap_content"
+          android:layout_height="match_parent"
           android:drawableTop="@drawable/ic_rotate_reverse_portrait"
           android:text="@string/orientation_reverse_portrait"
           android:layout_weight="1"
           style="@style/ItemStyle"
           />
 
-      <TextView
+      <Button
           android:id="@+id/tv_orientation_sensor_portrait"
           android:layout_width="0dp"
-          android:layout_height="wrap_content"
+          android:layout_height="match_parent"
           android:drawableTop="@drawable/ic_rotate_sensor_portrait"
           android:text="@string/orientation_sensor_portrait"
           android:layout_weight="1"
