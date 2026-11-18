@@ -9,6 +9,8 @@ on:
       - "web/**"
       - "scripts/subset_font.py"
       - "scripts/requirements.txt"
+      - "scripts/check_pages_revision.sh"
+      - "tests/web.test.cjs"
       - ".github/workflows/static.yml"
 
   # Allows you to run this workflow manually from the Actions tab
@@ -64,9 +66,16 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     permissions:
+      contents: read
       pages: write
       id-token: write
     steps:
+      - name: Checkout the built revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+      - name: Compare with the current Pages inputs on main
+        id: current
+        run: bash scripts/check_pages_revision.sh
       - name: Deploy to GitHub Pages
+        if: steps.current.outputs.deploy == 'true'
         id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346  # v5
