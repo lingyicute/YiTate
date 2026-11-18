@@ -48,6 +48,10 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("id-token: write", deploy)
         self.assertIn("pages: write", deploy)
 
+    def test_pages_build_and_deploy_are_restricted_to_main(self):
+        pages = (ROOT / ".github/workflows/static.yml").read_text(encoding="utf-8")
+        self.assertEqual(pages.count("if: github.ref == 'refs/heads/main'"), 2)
+
     def test_pages_checks_its_generated_html_before_upload(self):
         workflow = (ROOT / ".github/workflows/static.yml").read_text(encoding="utf-8")
         generate = workflow.index("python scripts/subset_font.py")
