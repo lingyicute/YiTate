@@ -1,5 +1,6 @@
 package com.lingyicute.orientationlock.service;
 
+import android.app.AppOpsManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -13,7 +14,9 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.PowerManager;
 import android.util.Log;
 import android.view.WindowManager;
@@ -40,6 +43,20 @@ public class YiTateService extends Service {
     private String lastNotificationTitle;
     private String lastNotificationText;
 
+    private AppOpsManager overlayOps;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final Runnable checkOverlayPermission = () -> {
+        if (overlayOps == null || currentOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                || PermissionUtils.isDrawOverlaysPermissionGranted(this)) return;
+        if (preferences.getOrientation() == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+            stopLock();
+        } else {
+            failLock();
+        }
+    };
+    private final AppOpsManager.OnOpChangedListener overlayListener =
+            (op, packageName) -> mainHandler.post(checkOverlayPermission);
+
     private final BroadcastReceiver screenReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -64,6 +81,19 @@ public class YiTateService extends Service {
         filter.addAction(Intent.ACTION_SCREEN_ON);
         // These are protected system broadcasts, not app-defined broadcasts.
         registerReceiver(screenReceiver, filter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            AppOpsManager appOps = getSystemService(AppOpsManager.class);
+            if (appOps != null) {
+                try {
+                    appOps.startWatchingMode(AppOpsManager.OPSTR_SYSTEM_ALERT_WINDOW,
+                            getPackageName(), overlayListener);
+                    overlayOps = appOps;
+                } catch (SecurityException e) {
+                    // Wake and selection still recheck permission on devices that block the watch.
+                    Log.w(TAG, "Unable to watch overlay permission", e);
+                }
+            }
+        }
     }
 
     @Override
@@ -108,6 +138,10 @@ public class YiTateService extends Service {
     public void onDestroy() {
         currentOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
         unregisterReceiver(screenReceiver);
+        AppOpsManager appOps = overlayOps;
+        overlayOps = null;
+        if (appOps != null) appOps.stopWatchingMode(overlayListener);
+        mainHandler.removeCallbacks(checkOverlayPermission);
         removeOrientationLayout();
         stopForeground(true);
         super.onDestroy();

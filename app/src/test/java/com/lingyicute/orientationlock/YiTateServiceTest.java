@@ -1,5 +1,6 @@
 package com.lingyicute.orientationlock;
 
+import android.app.AppOpsManager;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -7,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.os.Process;
 import android.view.View;
 import android.view.WindowManager;
 
@@ -160,6 +162,20 @@ public class YiTateServiceTest {
         screen(false);
         ShadowSettings.setCanDrawOverlays(false);
         screen(true);
+        assertNull(overlay());
+        assertTrue(shadowOf(service).isStoppedBySelf());
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, preferences.getOrientation());
+    }
+
+    @Test
+    public void appOpRevocationClearsTheLockWithoutWaitingForWakeOrActivity() {
+        select(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        assertNotNull(overlay());
+        ShadowSettings.setCanDrawOverlays(false);
+        AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+        shadowOf(appOps).setMode(AppOpsManager.OPSTR_SYSTEM_ALERT_WINDOW, Process.myUid(),
+                context.getPackageName(), AppOpsManager.MODE_ERRORED);
+        shadowOf(Looper.getMainLooper()).idle();
         assertNull(overlay());
         assertTrue(shadowOf(service).isStoppedBySelf());
         assertEquals(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, preferences.getOrientation());
