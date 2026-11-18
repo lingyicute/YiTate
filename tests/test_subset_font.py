@@ -109,6 +109,21 @@ class FontSubsetTests(unittest.TestCase):
                 self.assertEqual(path.read_text(), result)
                 self.assertEqual(list(Path(tmp).iterdir()), [path])
 
+    def test_embedding_preserves_mixed_line_endings_outside_the_source_url(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'index.html'
+            original = (RULE.replace('\n', '\r\n') + '\r\n<p>中文</p>\n').encode('utf-8')
+            path.write_bytes(original)
+            with (patch.object(font, 'INDEX_PATH', path),
+                  patch.object(font.urllib.request, 'urlopen', return_value=io.BytesIO(b'font')),
+                  patch.object(font, 'FONT_SHA256', hashlib.sha256(b'font').hexdigest()),
+                  patch.object(font, 'build_subset', return_value=b'new')):
+                font.main()
+            self.assertEqual(path.read_bytes(), original.replace(
+                b'old.woff2', b'data:font/woff2;base64,bmV3'))
+            self.assertEqual(font.collect_characters(RULE),
+                             font.collect_characters(RULE.replace('\n', '\r\n')))
+
     def test_invalid_template_fails_before_network(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / 'index.html'

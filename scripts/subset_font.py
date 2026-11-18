@@ -17,8 +17,8 @@ FONT_SHA256 = "c40a831c4577807aaf7e264fad8dadb6dd2b8fe329bd39abdf74e3ef72770ae4"
 INDEX_PATH = Path(__file__).resolve().parents[1] / "web/index.html"
 SOURCE_MARKER = "/* Nebulove source: managed by scripts/subset_font.py */"
 FONT_SOURCE = re.compile(
-    rf'^[ \t]*{re.escape(SOURCE_MARKER)}[ \t]*\n'
-    r'[ \t]*src:[ \t]*url\("(?P<url>[^"\n]*)"\)[ \t]+format\("woff2"\);[ \t]*$',
+    rf'^[ \t]*{re.escape(SOURCE_MARKER)}[ \t]*\r?\n'
+    r'[ \t]*src:[ \t]*url\("(?P<url>[^"\r\n]*)"\)[ \t]+format\("woff2"\);[ \t]*\r?$',
     re.MULTILINE,
 )
 PUNCTUATION = "：，。！？；“”‘’（）【】—…·《》×＝÷＋－"
@@ -34,7 +34,7 @@ def find_font_source(html):
 def collect_characters(html):
     start, end = find_font_source(html)
     # Decode HTML entities (e.g. &#x4E2D;) and omit the old font data.
-    text = unescape(html[:start] + html[end:])
+    text = unescape((html[:start] + html[end:]).replace("\r\n", "\n"))
     return "".join(sorted(set(text) | set(map(chr, range(32, 127))) | set(PUNCTUATION)))
 
 
@@ -65,7 +65,9 @@ def embed_font(html, font_data):
 
 def main():
     path = Path(INDEX_PATH)
-    html = path.read_text(encoding="utf-8")
+    # Universal newline conversion would rewrite unrelated bytes in a CRLF checkout.
+    with path.open(encoding="utf-8", newline="") as source_page:
+        html = source_page.read()
     characters = collect_characters(html)  # Validate the template before downloading.
     print(f"Subsetting {len(characters)} characters from {FONT_URL}")
     with urllib.request.urlopen(FONT_URL, timeout=30) as response:
