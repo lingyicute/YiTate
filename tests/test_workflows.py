@@ -19,6 +19,11 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("uses: actions/download-artifact@", publish)
         self.assertIn("bash scripts/publish_nightly.sh apk/app-release-unsigned.apk", publish)
 
+    def test_android_reruns_can_replace_artifacts_in_the_same_workflow_run(self):
+        workflow = (ROOT / ".github/workflows/create-release.yml").read_text(encoding="utf-8")
+        for artifact in ("app-release", "unit-test-reports"):
+            self.assertIn(f"name: {artifact}\n          overwrite: true", workflow)
+
     def test_android_job_caches_gradle_downloads(self):
         workflow = (ROOT / ".github/workflows/create-release.yml").read_text(encoding="utf-8")
 
