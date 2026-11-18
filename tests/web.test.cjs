@@ -66,7 +66,12 @@ function boot({
   const calls = [];
   const timeouts = [];
   const get = selector => {
-    if (!ids.has(selector)) ids.set(selector, element());
+    if (!ids.has(selector)) {
+      const node = element();
+      if (selector === '#themeBtn') node.setAttribute('aria-label', '深色模式');
+      node.hidden = selector === '#themeBtn' || selector === '#paletteControls';
+      ids.set(selector, node);
+    }
     return ids.get(selector);
   };
   const root = element();
@@ -341,7 +346,7 @@ test('zero-degree hue survives reload', () => {
 });
 
 test('corrupt or out-of-range hue falls back to 290', () => {
-  for (const hue of ['NaN', 'Infinity', '-1', '361', '', ' ']) {
+  for (const hue of ['NaN', 'Infinity', '-1', '361', '25.5', '', ' ']) {
     assert.equal(Number(boot({ saved: { 'yt-hue': hue } }).get('#hueRange').value), 290);
   }
 });
@@ -358,15 +363,26 @@ test('reduced-motion preference avoids reveal animations and un-hides pending el
   assert.match(html, /@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?\.reveal\.pending:not\(\.in\)\s*\{\s*opacity:\s*1;\s*transform:\s*none;\s*\}/);
 });
 
-test('unsupported OKLCH uses CSS fallback instead of invalid palette values', () => {
+test('unsupported OKLCH keeps the theme toggle but does not offer an inert palette', () => {
   const page = boot({ color: false });
   assert.equal(page.root.style['--primary'], undefined);
-  assert.match(page.get('#swatches').children[0].style.background, /^hsl\(/);
+  assert.equal(page.get('#paletteControls').hidden, true);
+  assert.equal(page.get('#swatches').children.length, 0);
+  assert.equal(page.get('#themeBtn').hidden, false);
   assert.match(html, /\.appbar\s*\{[\s\S]*?background:\s*var\(--surface\);\s*background:\s*color-mix/);
   assert.match(html, /\.layer\.l3\s*\{[^}]*background:\s*var\(--primary\);\s*background:\s*color-mix/);
   assert.match(html, /\.download \.btn-outlined\s*\{[^}]*box-shadow:\s*inset 0 0 0 1\.5px var\(--on-primary\);\s*box-shadow:\s*inset 0 0 0 1\.5px color-mix/);
   page.get('#themeBtn').listeners.click();
   assert.equal(page.root.dataset.theme, 'dark');
+});
+
+test('theme enhancements become visible only after they initialize', () => {
+  assert.match(html, /id="themeBtn" hidden/);
+  assert.match(html, /id="paletteControls" hidden/);
+  assert.match(html, /\.nav \[hidden\]\s*\{\s*display:\s*none/);
+  const page = boot();
+  assert.equal(page.get('#themeBtn').hidden, false);
+  assert.equal(page.get('#paletteControls').hidden, false);
 });
 
 test('default system theme is not saved as an explicit user preference', () => {

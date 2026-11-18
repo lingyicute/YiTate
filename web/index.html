@@ -109,7 +109,7 @@
   .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.25rem; letter-spacing: .01em; }
   .brand .logo {
     width: 40px; height: 40px; border-radius: 13px;
-    background: var(--primary); display: grid; place-items: center;
+    background: var(--primary); color: var(--on-primary); display: grid; place-items: center;
     box-shadow: 0 4px 12px color-mix(in oklab, var(--primary) 35%, transparent);
     transition: border-radius .4s var(--ease-emph), transform .4s var(--ease-emph);
   }
@@ -117,6 +117,7 @@
   .brand .logo svg { width: 22px; height: 22px; }
 
   .nav { display: flex; align-items: center; gap: 4px; }
+  .nav [hidden] { display: none; }
   .nav .links { display: flex; gap: 4px; }
   .nav a {
     padding: 8px 16px; border-radius: 999px; font-size: .95rem;
@@ -394,7 +395,7 @@
   <div class="container inner">
     <a href="#" class="brand" aria-label="YiTate 主页">
       <span class="logo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M12 18h.01"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M12 18h.01"/></svg>
       </span>
       YiTate
     </a>
@@ -406,7 +407,7 @@
         <a href="#download">下载</a>
       </div>
       <div class="actions">
-        <div class="palette-wrap">
+        <div class="palette-wrap" id="paletteControls" hidden>
           <button type="button" class="icon-btn" id="paletteBtn" title="更换主题色" aria-label="更换主题色"
                   aria-expanded="false" aria-controls="palette">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="1.2" fill="currentColor"/><circle cx="17.5" cy="10.5" r="1.2" fill="currentColor"/><circle cx="8.5" cy="7.5" r="1.2" fill="currentColor"/><circle cx="6.5" cy="12.5" r="1.2" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.7-.7 1.7-1.7 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.7 1.7-1.7H16c3.3 0 6-2.7 6-6 0-4.9-4.5-8.4-10-8.4z"/></svg>
@@ -417,7 +418,7 @@
             <input type="range" id="hueRange" min="0" max="360" value="290" aria-label="色相">
           </div>
         </div>
-        <button type="button" class="icon-btn" id="themeBtn" title="切换到深色模式" aria-label="深色模式" aria-pressed="false">
+        <button type="button" class="icon-btn" id="themeBtn" hidden title="切换到深色模式" aria-label="深色模式" aria-pressed="false">
           <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
           <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
         </button>
@@ -576,7 +577,7 @@
     <div class="foot">
       <div>
         <div class="brand" style="font-size:1.1rem">
-          <span class="logo" style="width:32px;height:32px;border-radius:10px"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M12 18h.01"/></svg></span>
+          <span class="logo" style="width:32px;height:32px;border-radius:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M12 18h.01"/></svg></span>
           YiTate
         </div>
         <p style="margin-top:8px">Made with ❤️ by <a href="https://github.com/lingyicute" target="_blank" rel="noopener" style="color:var(--primary);font-weight:600">lingyicute</a></p>
@@ -614,7 +615,7 @@
   };
 
   /* ---------- Material You tonal palette via oklch ---------- */
-  const supportsOklch = Boolean(window.CSS && CSS.supports('color', 'oklch(.5 .1 290)'));
+  const supportsOklch = Boolean(window.CSS && typeof CSS.supports === 'function' && CSS.supports('color', 'oklch(.5 .1 290)'));
   function applyPalette(hue, dark) {
     root.dataset.theme = dark ? 'dark' : 'light';
     root.style.colorScheme = dark ? 'dark' : 'light';
@@ -654,7 +655,7 @@
 
   const storedHue = storage.get('yt-hue');
   const parsedHue = Number(storedHue);
-  let hue = storedHue !== null && storedHue.trim() !== '' && Number.isFinite(parsedHue)
+  let hue = storedHue !== null && storedHue.trim() !== '' && Number.isInteger(parsedHue)
     && parsedHue >= 0 && parsedHue <= 360 ? parsedHue : 290;
   const darkMedia = mediaQuery('(prefers-color-scheme: dark)');
   const storedDark = storage.get('yt-dark');
@@ -669,17 +670,19 @@
 
   const seeds = [290, 250, 210, 170, 140, 90, 50, 25, 350, 320];
   const swatchesEl = $('#swatches'), swatches = [];
-  seeds.forEach(s => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'swatch'; b.dataset.hue = s; b.title = `色相 ${s}°`;
-    b.setAttribute('aria-label', `色相 ${s}°`);
-    b.setAttribute('aria-pressed', String(s === hue));
-    b.style.background = supportsOklch ? `oklch(.65 .15 ${s})` : `hsl(${s}, 70%, 55%)`;
-    b.addEventListener('click', () => { setHue(s); showSnack('主题色已更新 ✦'); });
-    swatchesEl.appendChild(b);
-    swatches.push(b);
-  });
+  if (supportsOklch) {
+    seeds.forEach(s => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'swatch'; b.dataset.hue = s; b.title = `色相 ${s}°`;
+      b.setAttribute('aria-label', `色相 ${s}°`);
+      b.setAttribute('aria-pressed', String(s === hue));
+      b.style.background = `oklch(.65 .15 ${s})`;
+      b.addEventListener('click', () => { setHue(s); showSnack('主题色已更新 ✦'); });
+      swatchesEl.appendChild(b);
+      swatches.push(b);
+    });
+  }
   let hueDirty = false, hueFrame = null, renderedHue, renderedDark;
   function commitHue() {
     if (!hueDirty) return;
@@ -717,28 +720,30 @@
       renderHue();
     });
   }
-  // Keep the latest value synchronously for pagehide, but paint at most once per frame.
-  hueRange.addEventListener('input', e => {
-    hueDirty = true;
-    hue = +e.target.value;
-    scheduleHueRender();
-  });
-  // Only a committed change is stored; it also supersedes any queued paint.
-  hueRange.addEventListener('change', e => setHue(+e.target.value));
-  window.addEventListener('pagehide', commitHue);
-  // Mobile browsers often suspend or discard a backgrounded tab without firing `pagehide`.
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') commitHue();
-  });
+  if (supportsOklch) {
+    // Keep the latest value synchronously for pagehide, but paint at most once per frame.
+    hueRange.addEventListener('input', e => {
+      hueDirty = true;
+      hue = +e.target.value;
+      scheduleHueRender();
+    });
+    // Only a committed change is stored; it also supersedes any queued paint.
+    hueRange.addEventListener('change', e => setHue(+e.target.value));
+    window.addEventListener('pagehide', commitHue);
+    // Mobile browsers often suspend or discard a backgrounded tab without firing `pagehide`.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') commitHue();
+    });
+  }
 
-  function setHue(h, persist = true) {
+  function setHue(h) {
     hue = h;
-    if (persist) { hueDirty = false; storage.set('yt-hue', h); }
+    hueDirty = false;
+    storage.set('yt-hue', h);
     cancelHueFrame();
     renderHue();
   }
   const themeBtn = $('#themeBtn');
-  themeBtn.setAttribute('aria-label', '深色模式');
   function setDark(d, persist = true) {
     dark = d;
     if (persist) {
@@ -756,30 +761,35 @@
 
   themeBtn.addEventListener('click', () => { setDark(!dark); showSnack(dark ? '已切换到深色模式 🌙' : '已切换到浅色模式 ☀️'); });
 
-  const paletteBtn = $('#paletteBtn'), palette = $('#palette');
-  function setPaletteOpen(open) {
-    palette.classList.toggle('open', open);
-    paletteBtn.setAttribute('aria-expanded', String(open));
-    if (!open) commitHue();
-  }
-  paletteBtn.addEventListener('click', e => {
-    e.stopPropagation();
-    setPaletteOpen(!palette.classList.contains('open'));
-  });
-  setPaletteOpen(false);
-  document.addEventListener('click', e => {
-    if (palette.classList.contains('open') && !palette.contains(e.target)) setPaletteOpen(false);
-  });
-  document.addEventListener('focusin', e => {
-    if (palette.classList.contains('open') && !palette.contains(e.target) && e.target !== paletteBtn) {
-      setPaletteOpen(false);
+  themeBtn.hidden = false;
+
+  if (supportsOklch) {
+    const paletteBtn = $('#paletteBtn'), palette = $('#palette');
+    function setPaletteOpen(open) {
+      palette.classList.toggle('open', open);
+      paletteBtn.setAttribute('aria-expanded', String(open));
+      if (!open) commitHue();
     }
-  });
-  document.addEventListener('keydown', e => {
-    if (e.key !== 'Escape' || !palette.classList.contains('open')) return;
+    paletteBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      setPaletteOpen(!palette.classList.contains('open'));
+    });
     setPaletteOpen(false);
-    paletteBtn.focus();
-  });
+    document.addEventListener('click', e => {
+      if (palette.classList.contains('open') && !palette.contains(e.target)) setPaletteOpen(false);
+    });
+    document.addEventListener('focusin', e => {
+      if (palette.classList.contains('open') && !palette.contains(e.target) && e.target !== paletteBtn) {
+        setPaletteOpen(false);
+      }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape' || !palette.classList.contains('open')) return;
+      setPaletteOpen(false);
+      paletteBtn.focus();
+    });
+    $('#paletteControls').hidden = false;
+  }
 
   /* ---------- Reveal on scroll ---------- */
   const reducedMotion = mediaQuery('(prefers-reduced-motion: reduce)');
