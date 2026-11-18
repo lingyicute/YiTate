@@ -271,8 +271,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 && !PermissionUtils.isDrawOverlaysPermissionGranted(this)) {
             applySelection(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
             pendingOrientation = orientation;
-            PermissionUtils.requestDrawOverlaysPermission(this);
-            Toast.makeText(this, R.string.permission_required, Toast.LENGTH_SHORT).show();
+            if (PermissionUtils.requestDrawOverlaysPermission(this)) {
+                Toast.makeText(this, R.string.permission_required, Toast.LENGTH_SHORT).show();
+            } else {
+                pendingOrientation = null;
+                Toast.makeText(this, R.string.overlay_settings_unavailable, Toast.LENGTH_LONG).show();
+            }
         } else {
             applySelection(orientation);
         }

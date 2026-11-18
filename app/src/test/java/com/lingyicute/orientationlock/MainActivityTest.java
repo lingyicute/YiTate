@@ -219,10 +219,11 @@ public class MainActivityTest {
                 }
             }
         };
-        PermissionUtils.requestDrawOverlaysPermission(wrapper);
+        assertTrue(PermissionUtils.requestDrawOverlaysPermission(wrapper));
         assertEquals(3, started.size());
         assertEquals(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, started.get(2).getAction());
         assertEquals(Uri.parse("package:" + wrapper.getPackageName()), started.get(2).getData());
+        assertNotEquals(0, started.get(2).getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK);
     }
 
     @Test
@@ -237,9 +238,37 @@ public class MainActivityTest {
                 }
             }
         };
-        PermissionUtils.requestDrawOverlaysPermission(wrapper);
+        assertTrue(PermissionUtils.requestDrawOverlaysPermission(wrapper));
         assertEquals(3, started.size());
         assertEquals(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, started.get(2).getAction());
+    }
+
+    public static class SettingsBlockedActivity extends MainActivity {
+        @Override
+        public void startActivity(Intent intent) {
+            throw new ActivityNotFoundException();
+        }
+    }
+
+    @Test
+    public void unavailableOverlaySettingsDoNotLeaveAPendingSelection() {
+        try (ActivityController<SettingsBlockedActivity> controller = Robolectric
+                .buildActivity(SettingsBlockedActivity.class).setup()) {
+            MainActivity activity = controller.get();
+            activity.findViewById(R.id.tv_orientation_landscape).performClick();
+            assertNull(ReflectionHelpers.getField(activity, "pendingOrientation"));
+            assertTrue(activity.findViewById(R.id.tv_orientation_default).isSelected());
+        }
+    }
+
+    @Test
+    public void overlaySettingsLaunchedByTheActivityStayOnItsBackStack() {
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            assertTrue(PermissionUtils.requestDrawOverlaysPermission(controller.get()));
+            Intent launched = shadowOf(controller.get()).getNextStartedActivity();
+            assertEquals(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, launched.getAction());
+            assertEquals(0, launched.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
     }
 
     @Test

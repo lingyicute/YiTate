@@ -1,5 +1,6 @@
 package com.lingyicute.orientationlock.utils;
 
+import android.app.Activity;
 import android.app.AppOpsManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -31,19 +32,20 @@ public class PermissionUtils {
         }
     }
 
-    public static void requestDrawOverlaysPermission(Context context) {
+    public static boolean requestDrawOverlaysPermission(Context context) {
         Uri packageUri = Uri.parse("package:" + context.getPackageName());
         if (Build.VERSION.SDK_INT >= 23) {
             if (startSettingsActivity(context, new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, packageUri))
                     || startSettingsActivity(context, new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))) {
-                return;
+                return true;
             }
         }
-        startSettingsActivity(context, new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, packageUri));
+        return startSettingsActivity(context, new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, packageUri));
     }
 
     private static boolean startSettingsActivity(Context context, Intent intent) {
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        // Keep Settings on this activity's back stack when it is the caller.
+        if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
             context.startActivity(intent);
             return true;
