@@ -94,6 +94,15 @@ public class YiTateServiceTest {
     }
 
     @Test
+    public void activeLockStopsImmediatelyWhenPreferenceReturnsToDefault() {
+        select(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        assertNotNull(overlay());
+        preferences.setOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        assertNull(overlay());
+        assertTrue(shadowOf(service).isStoppedBySelf());
+    }
+
+    @Test
     public void stickyRestartRestoresSavedOrientation() {
         preferences.setOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
         assertEquals(Service.START_STICKY, service.onStartCommand(null, 0, 1));

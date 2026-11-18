@@ -73,6 +73,20 @@ public class MainActivityTest {
     }
 
     @Test
+    public void selectingDefaultDoesNotCancelAQueuedForegroundStart() {
+        ShadowSettings.setCanDrawOverlays(true);
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            MainActivity activity = controller.get();
+            activity.findViewById(R.id.tv_orientation_landscape).performClick();
+            assertNotNull(shadowOf(activity).getNextStartedService());
+            // The platform has accepted the start; onCreate/startForeground need not have run yet.
+            activity.findViewById(R.id.tv_orientation_default).performClick();
+            assertNull(shadowOf(activity).getNextStoppedService());
+            assertEquals(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, preferences.getOrientation());
+        }
+    }
+
+    @Test
     public void activeActivityReflectsAServiceRollback() {
         ShadowSettings.setCanDrawOverlays(true);
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {

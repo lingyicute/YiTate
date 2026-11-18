@@ -190,11 +190,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private void applySelection(int orientation) {
         preferenceManager.setOrientation(orientation);
         showSelection(orientation);
+        if (orientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) return;
         Intent intent = new Intent(this, YiTateService.class).setAction(YiTateService.ACTION_SYNC_ORIENTATION);
-        if (orientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
-            stopService(intent);
-            return;
-        }
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 if (startForegroundService(intent) != null) return;

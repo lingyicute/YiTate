@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
@@ -42,6 +43,13 @@ public class YiTateService extends Service {
     private String lastChannelName;
     private String lastNotificationTitle;
     private String lastNotificationText;
+    private final SharedPreferences.OnSharedPreferenceChangeListener orientationListener = (store, key) -> {
+        if (PreferenceManager.KEY_ORIENTATION.equals(key)
+                && currentOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                && preferences.getOrientation() == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+            stopLock();
+        }
+    };
 
     private AppOpsManager overlayOps;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -76,6 +84,9 @@ public class YiTateService extends Service {
         ensureNotificationChannel();
         // API 21-25 also need a foreground service to keep the lock alive.
         setForeground();
+        // Do not stop a queued foreground start from the Activity before we get here.
+        // Active services observe Default immediately; queued starts read it in syncLock().
+        preferences.registerListener(orientationListener);
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(Intent.ACTION_SCREEN_ON);
@@ -137,6 +148,7 @@ public class YiTateService extends Service {
     @Override
     public void onDestroy() {
         currentOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        preferences.unregisterListener(orientationListener);
         unregisterReceiver(screenReceiver);
         AppOpsManager appOps = overlayOps;
         overlayOps = null;
@@ -240,8 +252,8 @@ public class YiTateService extends Service {
     }
 
     private void failLock() {
-        preferences.setOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         stopLock();
+        preferences.setOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         Toast.makeText(this, R.string.orientation_failed, Toast.LENGTH_LONG).show();
     }
 
