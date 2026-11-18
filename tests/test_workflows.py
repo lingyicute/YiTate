@@ -60,6 +60,15 @@ class WorkflowTests(unittest.TestCase):
         self.assertLess(generate, test)
         self.assertLess(test, upload)
 
+    def test_publication_queues_never_replace_pending_runs(self):
+        for filename, job in (("static.yml", "deploy"), ("create-release.yml", "publish")):
+            workflow = (ROOT / ".github/workflows" / filename).read_text(encoding="utf-8")
+            before, publisher = workflow.split(f"\n  {job}:", maxsplit=1)
+            self.assertNotIn("concurrency:", before)
+            self.assertIn("    concurrency:", publisher)
+            self.assertIn("queue: max", publisher)
+            self.assertNotIn("cancel-in-progress: true", publisher)
+
     def test_workflow_actions_are_pinned_to_full_commits(self):
         for path in (ROOT / ".github/workflows").glob("*.yml"):
             refs = re.findall(r"uses:\s*([^\s#]+)", path.read_text(encoding="utf-8"))

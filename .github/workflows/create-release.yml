@@ -10,10 +10,6 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: android-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -45,6 +41,10 @@ jobs:
           if-no-files-found: ignore
 
   publish:
+    # Serialize writes without replacing a pending run with a stale rerun.
+    concurrency:
+      group: android-${{ github.workflow }}-${{ github.ref }}
+      queue: max
     needs: verify
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
