@@ -31,6 +31,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private PreferenceManager preferenceManager;
     private AlertDialog rationaleDialog;
+    private boolean requestingFromRationale;
     private int displayedOrientation = Integer.MIN_VALUE;
     private final SharedPreferences.OnSharedPreferenceChangeListener selectionListener = (store, key) -> {
         if (PreferenceManager.KEY_ORIENTATION.equals(key)) {
@@ -40,6 +41,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Integer pendingOrientation;
     private static final String STATE_PENDING_ORIENTATION = "pending_orientation";
     private static final String STATE_SHOWING_RATIONALE = "showing_rationale";
+    private static final String STATE_REQUESTING_FROM_RATIONALE = "requesting_from_rationale";
     private final SparseIntArray orientationMap = new SparseIntArray();
 
     @Override
@@ -48,11 +50,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.main);
         initView();
         preferenceManager = PreferenceManager.getInstance(this);
-
-        if ((savedInstanceState == null || savedInstanceState.getBoolean(STATE_SHOWING_RATIONALE))
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            checkNotificationPermission();
-        }
 
         orientationMap.put(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, R.id.tv_orientation_default);
         orientationMap.put(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR, R.id.tv_orientation_full_sensor);
@@ -63,8 +60,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
         orientationMap.put(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT, R.id.tv_orientation_reverse_portrait);
         orientationMap.put(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT, R.id.tv_orientation_sensor_portrait);
 
-        if (savedInstanceState != null && savedInstanceState.containsKey(STATE_PENDING_ORIENTATION)) {
-            pendingOrientation = savedInstanceState.getInt(STATE_PENDING_ORIENTATION);
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(STATE_PENDING_ORIENTATION)) {
+                pendingOrientation = savedInstanceState.getInt(STATE_PENDING_ORIENTATION);
+            }
+            requestingFromRationale = savedInstanceState.getBoolean(STATE_REQUESTING_FROM_RATIONALE);
+        }
+        if (!requestingFromRationale && (savedInstanceState == null
+                || savedInstanceState.getBoolean(STATE_SHOWING_RATIONALE))) {
+            checkNotificationPermission();
         }
     }
 
@@ -105,6 +109,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
+        state.putBoolean(STATE_REQUESTING_FROM_RATIONALE, requestingFromRationale);
         if (pendingOrientation != null) state.putInt(STATE_PENDING_ORIENTATION, pendingOrientation);
         if (rationaleDialog != null && rationaleDialog.isShowing()) {
             state.putBoolean(STATE_SHOWING_RATIONALE, true);
@@ -142,7 +147,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         .setTitle(R.string.notification_permission_title)
                         .setMessage(R.string.notification_permission_message)
                         .setPositiveButton(R.string.allow, (dialog, which) -> {
-                            preferenceManager.setNotificationRationaleShown(true);
+                            requestingFromRationale = true;
                             requestPermissions(
                                     new String[]{Manifest.permission.POST_NOTIFICATIONS},
                                     NOTIFICATION_PERMISSION_REQUEST_CODE);
@@ -164,9 +169,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode != NOTIFICATION_PERMISSION_REQUEST_CODE || grantResults.length == 0) {
-            return;
-        }
+        if (requestCode != NOTIFICATION_PERMISSION_REQUEST_CODE) return;
+        boolean fromRationale = requestingFromRationale;
+        requestingFromRationale = false;
+        if (grantResults.length != 1 || permissions.length != 1
+                || !Manifest.permission.POST_NOTIFICATIONS.equals(permissions[0])) return;
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             preferenceManager.setNotificationPermissionRequested(false);
             preferenceManager.setNotificationRationaleShown(false);
@@ -174,6 +181,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         } else {
             // Only a real answer counts; an interrupted request returns no results.
             preferenceManager.setNotificationPermissionRequested(true);
+            if (fromRationale) preferenceManager.setNotificationRationaleShown(true);
             // Notification permission is NOT a prerequisite for a foreground service.
             Toast.makeText(this, R.string.notification_permission_denied, Toast.LENGTH_LONG).show();
         }

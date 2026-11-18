@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
@@ -260,6 +261,49 @@ public class MainActivityTest {
             AlertDialog dialog = ReflectionHelpers.getField(recreated.get(), "rationaleDialog");
             assertNotNull(dialog);
             assertTrue(dialog.isShowing());
+        }
+    }
+
+    @Test
+    @Config(sdk = 34)
+    public void interruptedRequestAfterRationaleCanBeRetried() {
+        preferences.setNotificationPermissionRequested(true);
+        shadowOf(RuntimeEnvironment.getApplication().getPackageManager())
+                .setShouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS, true);
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            MainActivity activity = controller.get();
+            AlertDialog dialog = ReflectionHelpers.getField(activity, "rationaleDialog");
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            shadowOf(Looper.getMainLooper()).idle();
+            assertNotNull(shadowOf(activity).getLastRequestedPermission());
+            activity.onRequestPermissionsResult(100, new String[0], new int[0]);
+            assertFalse(preferences.isNotificationRationaleShown());
+        }
+        try (ActivityController<MainActivity> next = Robolectric.buildActivity(MainActivity.class).setup()) {
+            AlertDialog dialog = ReflectionHelpers.getField(next.get(), "rationaleDialog");
+            assertTrue(dialog.isShowing());
+        }
+    }
+
+    @Test
+    @Config(sdk = 34)
+    public void denialAfterRationaleIsRecordedAcrossRecreation() {
+        preferences.setNotificationPermissionRequested(true);
+        shadowOf(RuntimeEnvironment.getApplication().getPackageManager())
+                .setShouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS, true);
+        Bundle state = new Bundle();
+        try (ActivityController<MainActivity> first = Robolectric.buildActivity(MainActivity.class).setup()) {
+            AlertDialog dialog = ReflectionHelpers.getField(first.get(), "rationaleDialog");
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            shadowOf(Looper.getMainLooper()).idle();
+            first.pause().saveInstanceState(state);
+        }
+        try (ActivityController<MainActivity> next = Robolectric.buildActivity(MainActivity.class)
+                .create(state).start().resume().visible()) {
+            assertNull(ReflectionHelpers.getField(next.get(), "rationaleDialog"));
+            next.get().onRequestPermissionsResult(100, new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    new int[]{PackageManager.PERMISSION_DENIED});
+            assertTrue(preferences.isNotificationRationaleShown());
         }
     }
 
