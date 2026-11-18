@@ -1,5 +1,6 @@
 """Static regression checks for critical workflow wiring."""
 from pathlib import Path
+import re
 import unittest
 
 
@@ -15,7 +16,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("contents: write", publish)
         self.assertIn("needs: verify", publish)
         self.assertIn("github.ref == 'refs/heads/main' && github.event_name != 'pull_request'", publish)
-        self.assertIn("uses: actions/download-artifact@v4", publish)
+        self.assertIn("uses: actions/download-artifact@", publish)
         self.assertIn("bash scripts/publish_nightly.sh apk/app-release-unsigned.apk", publish)
 
     def test_android_job_caches_gradle_downloads(self):
@@ -46,6 +47,13 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("needs: build", deploy)
         self.assertIn("id-token: write", deploy)
         self.assertIn("pages: write", deploy)
+
+    def test_workflow_actions_are_pinned_to_full_commits(self):
+        for path in (ROOT / ".github/workflows").glob("*.yml"):
+            refs = re.findall(r"uses:\s*([^\s#]+)", path.read_text(encoding="utf-8"))
+            self.assertTrue(refs, path.name)
+            for action in refs:
+                self.assertRegex(action, r"@[0-9a-f]{40}$", path.name)
 
     def test_workflow_changes_trigger_lightweight_regression_checks(self):
         checks = (ROOT / ".github/workflows/lightweight-checks.yml").read_text(encoding="utf-8")
