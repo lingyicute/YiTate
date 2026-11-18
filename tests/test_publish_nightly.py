@@ -38,6 +38,13 @@ elif args[:2] in (['release', 'create'], ['release', 'upload']):
     if args[1] == 'create':
         assert '--draft' in args and not notes.exists()
         draft.touch()
+    if mode == 'main-moved':
+        subprocess.run(['git', 'commit', '--quiet', '--allow-empty', '-m', 'concurrent main'], check=True)
+        subprocess.run(['git', 'push', '--quiet', 'origin', 'main'], check=True)
+    if mode == 'tag-moved':
+        subprocess.run(['git', 'tag', '-a', '-m', 'external update', 'external-nightly', 'HEAD^'], check=True)
+        subprocess.run(['git', 'push', '--quiet', '--force', 'origin',
+                        'refs/tags/external-nightly:refs/tags/nightly'], check=True)
 elif args[:2] == ['release', 'edit']:
     tag = subprocess.check_output(['git', 'ls-remote', 'origin', 'refs/tags/nightly'], text=True)
     assert tag.split()[0] == os.environ['GITHUB_SHA']
@@ -52,7 +59,7 @@ elif args[:2] == ['release', 'edit']:
 elif args[:2] == ['release', 'view']:
     print('\n'.join(p.name for p in assets.iterdir()))
 elif args[:2] == ['release', 'delete-asset']:
-    assert args[3] not in notes.read_text(), 'the linked asset must not be deleted'
+    assert not notes.exists() or args[3] not in notes.read_text(), 'the linked asset must not be deleted'
     (assets / args[3]).unlink()
 else:
     raise AssertionError(args)
@@ -142,6 +149,24 @@ class PublishNightlyTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.tag(), self.sha)
         self.assertFalse((self.store / 'calls').exists())
+
+    def test_main_moving_during_staging_withdraws_the_unpublished_asset(self):
+        self.previous_release()
+        result = self.publish(FAKE_GH_MODE='main-moved')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('Skipping stale nightly', result.stdout)
+        self.assertEqual(self.tag(), self.old_sha)
+        self.assertFalse((self.assets / self.asset).exists())
+        self.assertEqual((self.store / 'notes').read_text(), 'previous notes')
+
+    def test_lost_tag_lease_withdraws_only_this_attempts_asset(self):
+        self.previous_release()
+        result = self.publish(FAKE_GH_MODE='tag-moved')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(self.tag(), self.git('rev-parse', 'refs/tags/external-nightly'))
+        self.assertFalse((self.assets / self.asset).exists())
+        self.assertTrue((self.assets / 'app-release-unsigned.apk').exists())
+        self.assertEqual((self.store / 'notes').read_text(), 'previous notes')
 
     def test_api_failure_is_not_treated_as_a_missing_release(self):
         self.previous_release()

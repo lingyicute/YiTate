@@ -25,8 +25,16 @@ previous_tag=${previous_tag%%$'\t'*}
 
 # Use a new filename instead of deleting the live asset before an upload.
 staging=$(mktemp -d)
-trap 'rm -rf -- "$staging"' EXIT
+staged=false
 asset="app-release-unsigned-${GITHUB_SHA:0:12}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.apk"
+cleanup_staging() {
+  if [[ $staged == true ]]; then
+    gh release delete-asset nightly "$asset" --yes ||
+      echo "::warning::Could not remove unpublished nightly asset $asset" >&2
+  fi
+  rm -rf -- "$staging"
+}
+trap cleanup_staging EXIT
 cp -- "$apk" "$staging/$asset"
 url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/nightly/$asset"
 printf -v notes 'Automated build of `%s` from `main`. The APK is unsigned.\n\n[Download the unsigned APK](%s)' \
@@ -42,11 +50,15 @@ else
   gh release create nightly "$staging/$asset" --draft --prerelease --latest=false \
     --title 'Nightly Build' --target "$GITHUB_SHA"
 fi
+staged=true
 
 ensure_current_main
 # Only move the tag once the new asset exists. Do not overwrite a tag changed
 # by someone else during the upload.
 git push "--force-with-lease=refs/tags/nightly:$previous_tag" origin "$GITHUB_SHA:refs/tags/nightly"
+# Once the edit is attempted, a transport failure may still mean the new
+# asset is linked. Never delete it on that path.
+staged=false
 gh release edit nightly --draft=false --prerelease --latest=false --notes "$notes"
 
 # Keep unrelated files, and keep the previous APK until the new notes point to
