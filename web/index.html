@@ -369,35 +369,14 @@
     .reveal.pending:not(.in) { opacity: 1; transform: none; }
   }
 
-  /* ---------- Loading overlay ---------- */
-  .loading {
-    position: fixed; inset: 0; z-index: 10000;
-    display: none; place-items: center;
-    background: var(--surface);
-    transition: opacity .5s var(--ease), visibility .5s var(--ease);
-  }
-  .loading.show { display: grid; }
-  .loading.hide { opacity: 0; visibility: hidden; pointer-events: none; }
-  .loading-spinner { width: 36px; height: 36px; color: var(--on-surface-variant); animation: loading-spin 1s linear infinite; }
-  @keyframes loading-spin { to { transform: rotate(360deg); } }
-
-  /* Printing must not swallow the splash or not-yet-revealed sections. */
+  /* Printing must show sections that have not been scrolled into view. */
   @media print {
-    .loading, .snack, .palette { display: none !important; }
+    .snack, .palette { display: none !important; }
     .reveal.pending:not(.in) { opacity: 1; transform: none; }
   }
 </style>
-<noscript>
-  <!-- Without JavaScript the overlay would cover the whole page forever. -->
-  <style>.loading { display: none; }</style>
-</noscript>
 </head>
 <body>
-
-<!-- ===== Loading overlay ===== -->
-<div class="loading" id="loading" aria-hidden="true">
-  <svg class="loading-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9" opacity=".2"/><path d="M21 12a9 9 0 0 0-9-9"/></svg>
-</div>
 
 <!-- ===== Top App Bar ===== -->
 <header class="appbar" id="appbar">
@@ -617,50 +596,6 @@
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const mediaQuery = q => (window.matchMedia ? window.matchMedia(q) : { matches: false });
 
-  /* ---------- Loading overlay ----------
-     Registered before anything else: the splash must go away even if a widget
-     below throws, and the `load` handler must be in place before the page can
-     finish loading. */
-  let loadingDone = false, finishTimer;
-  function hideLoading() {
-    if (loadingDone) return;
-    loadingDone = true;
-    clearTimeout(failsafeTimer);
-    const el = $('#loading');
-    if (!el) return;
-    el.classList.add('hide');
-    const removeLoading = e => {
-      if (e && e.target && e.target !== el) return;
-      clearTimeout(removeTimer);
-      el.removeEventListener('transitionend', removeLoading);
-      el.removeEventListener('transitioncancel', removeLoading);
-      el.remove();
-    };
-    const removeTimer = setTimeout(removeLoading, 800); /* safety */
-    el.addEventListener('transitionend', removeLoading);
-    el.addEventListener('transitioncancel', removeLoading);
-  }
-  const loadStart = performance.now();
-  const reducedMotion = mediaQuery('(prefers-reduced-motion: reduce)');
-  const minSplash = reducedMotion.matches ? 0 : 500;
-  function finishLoading() {
-    if (loadingDone || finishTimer) return;
-    clearTimeout(failsafeTimer);
-    window.removeEventListener('load', onLoad);
-    const elapsed = performance.now() - loadStart;
-    finishTimer = setTimeout(hideLoading, Math.max(0, minSplash - elapsed)); /* brief minimum splash */
-  }
-  const onLoad = () => {
-    const fontsReady = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
-    fontsReady.then(finishLoading).catch(finishLoading);
-  };
-  const failsafeTimer = setTimeout(finishLoading, 8000); /* failsafe: never leave overlay stuck */
-  if (document.readyState === 'complete') onLoad();
-  else window.addEventListener('load', onLoad, { once: true });
-  // The splash is opt-in: a blocked or invalid script must leave the page visible.
-  const loadingEl = $('#loading');
-  if (loadingEl && !loadingDone) loadingEl.classList.add('show');
-
   // Storage may be blocked in privacy mode or sandboxed embeds.
   const storage = {
     get(key) { try { return window.localStorage.getItem(key); } catch (_) { return null; } },
@@ -836,6 +771,7 @@
   });
 
   /* ---------- Reveal on scroll ---------- */
+  const reducedMotion = mediaQuery('(prefers-reduced-motion: reduce)');
   if ('IntersectionObserver' in window && !reducedMotion.matches) {
     const cleanups = new Map();
     const clearPending = el => {

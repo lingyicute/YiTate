@@ -58,7 +58,7 @@ function eventTarget() {
 
 function boot({
   saved = {}, blocked = false, observer = true, color = true,
-  reducedMotion = false, schemeDark = false, mediaApi = 'event', readyState = 'loading',
+  reducedMotion = false, schemeDark = false, mediaApi = 'event',
   scrollY = 0, visibilityState = 'visible', animationFrame = true
 } = {}) {
   const ids = new Map();
@@ -72,12 +72,11 @@ function boot({
   const reveals = [element(), element()];
   const storage = new Map(Object.entries(saved));
   const document = {
-    ...eventTarget(), readyState, visibilityState,
+    ...eventTarget(), visibilityState,
     documentElement: root,
     querySelector(selector) { calls.push('query:' + selector); return get(selector); },
     querySelectorAll: selector => selector === '.swatch' ? get('#swatches').children : reveals,
-    createElement: element,
-    fonts: { ready: Promise.resolve() }
+    createElement: element
   };
   const mediaListeners = [], motionListeners = [];
   const windowEvents = eventTarget();
@@ -89,7 +88,7 @@ function boot({
     },
     setTimeout(fn, delay) { timeouts.push({ fn, delay }); return timeouts.length; },
     clearTimeout(id) { if (timeouts[id - 1]) timeouts[id - 1].cancelled = true; },
-    performance: { now: () => 0 }, scrollY
+    scrollY
   };
   if (mediaApi !== 'none') {
     sandbox.matchMedia = query => {
@@ -309,42 +308,17 @@ test('hero screenshot declares its intrinsic size', () => {
     'width/height keep the phone frame from jumping while the image decodes');
 });
 
-test('splash stays hidden until JavaScript starts and printing never shows it', () => {
-  assert.match(html, /\.loading\s*\{[^}]*display:\s*none/, 'CSS hides the splash by default');
-  assert.match(html, /\.loading\.show\s*\{\s*display:\s*grid/);
-  assert.match(html, /<noscript>[\s\S]*?\.loading\s*\{\s*display:\s*none/, 'noscript hides the splash');
-  assert.match(html, /@media print\s*\{[\s\S]*?\.loading,\s*\.snack,\s*\.palette\s*\{\s*display:\s*none/,
-    'print media hides the splash, snackbar, and palette');
-  assert.match(html, /@media print\s*\{[\s\S]*?\.reveal\.pending:not\(\.in\)\s*\{[^}]*opacity:\s*1/,
-    'print media shows sections that were never scrolled into view');
-});
-
-test('splash failsafe is registered before widgets and the overlay is then enabled', () => {
+test('public content does not wait for the page load event or fonts', () => {
   const page = boot();
-  const load = page.calls.indexOf('window:load');
-  const firstQuery = page.calls.findIndex(call => call.startsWith('query:'));
-  assert.ok(load >= 0, 'the load handler is registered');
-  assert.ok(firstQuery >= 0, 'the script did query the DOM');
-  assert.ok(load < firstQuery, `load handler must come first, got ${page.calls.slice(0, 3).join(', ')}`);
-  assert.equal(page.get('#loading').classList.contains('show'), true);
+  assert.doesNotMatch(html, /id="loading"/);
+  assert.equal(page.window.listeners.load, undefined);
+  assert.equal(page.timeouts.length, 0, 'no timer is needed before the page can be used');
+  assert.match(html, /class="hero-cta"\s*>\s*<a[^>]+href="https:\/\/github.com\/lingyicute\/YiTate\/releases\/latest"/);
 });
 
-test('already-loaded documents dismiss the splash without waiting for the 8s failsafe', async () => {
-  const page = boot({ readyState: 'complete', reducedMotion: true });
-  await Promise.resolve();
-  const immediateHide = page.timeouts.find(t => t.delay === 0);
-  assert.ok(immediateHide, 'hideLoading is scheduled immediately once fonts resolve');
-  immediateHide.fn();
-  const loading = page.get('#loading');
-  assert.equal(loading.classList.contains('hide'), true);
-  const safety = page.timeouts.find(t => t.delay === 800);
-  loading.listeners.transitionend({ target: element() });
-  assert.equal(loading.removed, undefined, 'child transitions must not remove the splash early');
-  loading.listeners.transitionend({ target: loading });
-  assert.equal(loading.removed, true);
-  assert.equal(safety.cancelled, true, 'transitionend cancels the 800ms safety timer');
-  assert.equal(loading.listeners.transitionend, undefined);
-  assert.equal(loading.listeners.transitioncancel, undefined);
+test('printing hides popovers and shows unvisited content', () => {
+  assert.match(html, /@media print\s*\{[\s\S]*?\.snack,\s*\.palette\s*\{\s*display:\s*none/);
+  assert.match(html, /@media print\s*\{[\s\S]*?\.reveal\.pending:not\(\.in\)\s*\{[^}]*opacity:\s*1/);
 });
 
 test('missing matchMedia does not abort initialization', () => {
