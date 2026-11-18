@@ -48,6 +48,14 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("id-token: write", deploy)
         self.assertIn("pages: write", deploy)
 
+    def test_pages_checks_its_generated_html_before_upload(self):
+        workflow = (ROOT / ".github/workflows/static.yml").read_text(encoding="utf-8")
+        generate = workflow.index("python scripts/subset_font.py")
+        test = workflow.index("node --test tests/web.test.cjs")
+        upload = workflow.index("uses: actions/upload-pages-artifact@")
+        self.assertLess(generate, test)
+        self.assertLess(test, upload)
+
     def test_workflow_actions_are_pinned_to_full_commits(self):
         for path in (ROOT / ".github/workflows").glob("*.yml"):
             refs = re.findall(r"uses:\s*([^\s#]+)", path.read_text(encoding="utf-8"))

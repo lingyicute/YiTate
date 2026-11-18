@@ -44,6 +44,11 @@ jobs:
         run: |
           pip install -r scripts/requirements.txt
           python scripts/subset_font.py
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+        with:
+          node-version: "20"
+      - name: Test the generated page
+        run: node --test tests/web.test.cjs
       - name: Setup Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b  # v5
       - name: Upload artifact
