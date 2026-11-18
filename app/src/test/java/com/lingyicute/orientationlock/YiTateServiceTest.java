@@ -218,6 +218,19 @@ public class YiTateServiceTest {
     }
 
     @Test
+    public void screenOnCannotResurrectARejectedStartBeforeDestruction() {
+        preferences.setOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        assertEquals(Service.START_NOT_STICKY,
+                service.onStartCommand(new Intent(context, YiTateService.class), 0, 1));
+        // stopSelf(startId) is asynchronous; the receiver is still registered.
+        screen(true);
+        assertNull(overlay());
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, preferences.getOrientation());
+        assertEquals(Service.START_STICKY, dispatchSelection(2));
+        assertNotNull(overlay());
+    }
+
+    @Test
     public void queuedStartsApplyOnlyTheLatestSelection() {
         preferences.setOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         // The first start has not reached our process yet when the user changes modes.

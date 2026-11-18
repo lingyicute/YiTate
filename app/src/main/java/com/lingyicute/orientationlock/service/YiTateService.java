@@ -71,7 +71,8 @@ public class YiTateService extends Service {
             if (intent == null) return;
             if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
                 removeOrientationLayout();
-            } else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction()) && latestStartId != 0) {
+            } else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())
+                    && currentOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
                 syncLock(false);
             }
         }
