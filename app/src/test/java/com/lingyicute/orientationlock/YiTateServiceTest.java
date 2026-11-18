@@ -260,6 +260,7 @@ public class YiTateServiceTest {
     public void notificationIsForegroundOnAllSupportedApiGenerations() {
         assertNotNull(shadowOf(service).getLastForegroundNotification());
         assertEquals(1, shadowOf(service).getLastForegroundNotificationId());
+        assertTrue(context.getDrawable(R.drawable.ic_stat_orientation).getIntrinsicHeight() > 0);
     }
 
     @Test
