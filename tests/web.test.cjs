@@ -16,6 +16,7 @@ function element() {
     setAttribute(name, value) { this.attributes[name] = String(value); },
     getAttribute(name) { return name in this.attributes ? this.attributes[name] : null; },
     focus() { this.focused = true; },
+    closest() { return null; },
     classList: {
       add(...names) { names.forEach(n => classes.add(n)); },
       remove(name) { classes.delete(name); },
@@ -417,6 +418,25 @@ test('the reveal stagger delay is dropped once the fade has run', () => {
   assert.equal(safety.cancelled, true, 'normal completion cancels the fallback');
   assert.equal(target.listeners.transitionend, undefined);
   assert.equal(target.listeners.transitioncancel, undefined);
+});
+
+test('keyboard focus immediately settles a pending reveal', () => {
+  assert.match(html, /\.reveal\.pending:not\(\.in\):not\(:focus-within\)\s*\{[^}]*opacity:\s*0/);
+  assert.match(html, /\.reveal:focus-within\s*\{\s*transition:\s*none/);
+  const page = boot(), [target] = page.reveals;
+  page.observers[0].fn([{ target, isIntersecting: true }]);
+  const child = element();
+  child.closest = selector => selector === '.reveal.pending' ? target : null;
+  page.document.listeners.focusin({ target: child });
+  assert.equal(target.classList.contains('pending'), false);
+  assert.equal(page.observers[0].unobserved, target);
+  assert.equal(page.timeouts.find(t => t.delay === 1200).cancelled, true);
+});
+
+test('the skip link and anchor navigation account for the sticky app bar', () => {
+  assert.match(html, /<a class="skip-link" href="#main">/);
+  assert.match(html, /<main id="main" tabindex="-1">/);
+  assert.match(html, /scroll-padding-top:\s*var\(--appbar-height\)/);
 });
 
 test('enabling reduced motion after load disconnects the observer and clears pending reveals', () => {

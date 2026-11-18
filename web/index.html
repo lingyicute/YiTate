@@ -38,6 +38,7 @@
     --inverse-surface: #313033; --inverse-on-surface: #f4eff4;
     --hue: 290;
     --font: "Nebulove", "HarmonyOS Sans SC", "MiSans", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+    --appbar-height: 68px;
     --radius-xs: 8px;
     --radius-s: 12px;
     --radius-m: 16px;
@@ -63,7 +64,14 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; scroll-padding-top: var(--appbar-height); }
+  .skip-link {
+    position: fixed; inset-block-start: 8px; inset-inline-start: 8px; z-index: 100;
+    padding: 8px 16px; border-radius: var(--radius-xs);
+    background: var(--primary); color: var(--on-primary);
+    transform: translateY(calc(-100% - 8px));
+  }
+  .skip-link:focus { transform: none; }
 
   body {
     font-family: var(--font);
@@ -96,7 +104,7 @@
   }
   .appbar .inner {
     display: flex; align-items: center; justify-content: space-between;
-    height: 68px; gap: 16px;
+    height: var(--appbar-height); gap: 16px;
   }
   .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.25rem; letter-spacing: .01em; }
   .brand .logo {
@@ -151,13 +159,13 @@
 
   /* ---------- Buttons ---------- */
   .btn {
-    display: inline-flex; align-items: center; gap: 10px;
-    padding: 0 26px; height: 52px; border-radius: 999px; border: 0;
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 8px 26px; min-height: 52px; max-width: 100%; border-radius: 999px; border: 0;
     font-family: var(--font); font-size: 1rem; font-weight: 600; cursor: pointer;
     transition: transform .3s var(--ease-emph), box-shadow .3s, background .3s, border-radius .4s var(--ease-emph);
-    white-space: nowrap;
+    text-align: center;
   }
-  .btn svg { width: 20px; height: 20px; }
+  .btn svg { width: 20px; height: 20px; flex: none; }
   .btn-filled { background: var(--primary); color: var(--on-primary); box-shadow: 0 2px 10px color-mix(in oklab, var(--primary) 30%, transparent); }
   .btn-filled:hover { box-shadow: 0 6px 22px color-mix(in oklab, var(--primary) 45%, transparent); transform: translateY(-2px); border-radius: 18px; }
   .btn-tonal { background: var(--secondary-container); color: var(--on-secondary-container); }
@@ -329,13 +337,14 @@
 
   /* Reveal */
   .reveal { transition: opacity .7s var(--ease), transform .7s var(--ease-emph); }
-  .reveal.pending:not(.in) { opacity: 0; transform: translateY(26px); }
+  .reveal.pending:not(.in):not(:focus-within) { opacity: 0; transform: translateY(26px); }
   /* `.reveal` comes later in the cascade and would otherwise drop the hover transitions below. */
   .card.reveal { transition: opacity .7s var(--ease), transform .4s var(--ease-emph), box-shadow .4s, border-radius .4s var(--ease-emph); }
   .step.reveal { transition: opacity .7s var(--ease), background .3s, transform .4s var(--ease-emph); }
   /* The stagger applies to the reveal only; the script drops `pending` once the fade has run
      so the delay cannot postpone later hover transitions. */
   .reveal.pending { transition-delay: var(--reveal-delay, 0s); }
+  .reveal:focus-within { transition: none; }
 
   /* Snackbar */
   .snack {
@@ -343,7 +352,8 @@
     background: var(--inverse-surface); color: var(--inverse-on-surface);
     padding: 14px 20px; border-radius: 12px; font-size: .92rem; box-shadow: 0 8px 24px rgba(0,0,0,.25);
     opacity: 0; pointer-events: none;
-    transition: transform .4s var(--ease-emph), opacity .4s var(--ease); z-index: 99; white-space: nowrap;
+    transition: transform .4s var(--ease-emph), opacity .4s var(--ease); z-index: 99;
+    width: max-content; max-width: calc(100% - 24px); text-align: center; overflow-wrap: anywhere;
   }
   .snack.show { transform: translate(-50%, 0); opacity: 1; }
 
@@ -377,6 +387,7 @@
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main">跳到主要内容</a>
 
 <!-- ===== Top App Bar ===== -->
 <header class="appbar" id="appbar">
@@ -387,7 +398,7 @@
       </span>
       YiTate
     </a>
-    <nav class="nav">
+    <nav class="nav" aria-label="主导航">
       <div class="links">
         <a href="#features">特性</a>
         <a href="#why">缘起</a>
@@ -418,7 +429,7 @@
   </div>
 </header>
 
-<main>
+<main id="main" tabindex="-1">
   <!-- ===== Hero ===== -->
   <section class="hero">
     <div class="blob b1" aria-hidden="true"></div>
@@ -809,9 +820,17 @@
     }, { threshold: .12 });
     const reveals = $$('.reveal');
     reveals.forEach(el => { io.observe(el); el.classList.add('pending'); });
+    const onRevealFocus = e => {
+      const el = e.target.closest('.reveal.pending');
+      if (!el) return;
+      io.unobserve(el);
+      clearPending(el);
+    };
+    document.addEventListener('focusin', onRevealFocus);
     const onReducedMotion = e => {
       if (!e.matches) return;
       if (io.disconnect) io.disconnect();
+      document.removeEventListener('focusin', onRevealFocus);
       reveals.forEach(clearPending);
     };
     if (reducedMotion.addEventListener) reducedMotion.addEventListener('change', onReducedMotion);
