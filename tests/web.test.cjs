@@ -202,6 +202,14 @@ test('palette stays inside narrow viewports', () => {
   assert.match(mobile, /\.palette\s*\{[^}]*width:\s*min\(240px,\s*92vw\)/);
 });
 
+test('palette scrolls independently when the viewport is too short', () => {
+  const styles = html.match(/\.palette\s*\{([^}]*)\}/)[1];
+  assert.match(styles, /max-height:\s*calc\(100vh - var\(--appbar-height\) - 8px\)/);
+  assert.match(styles, /max-height:\s*calc\(100dvh - var\(--appbar-height\) - 8px\)/);
+  assert.match(styles, /overflow-y:\s*auto/);
+  assert.match(html, /\.palette > \*\s*\{\s*flex:\s*none/);
+});
+
 test('snackbar messages are announced to assistive technology and hidden when dismissed', () => {
   assert.match(html, /<div class="snack" id="snack" role="status" aria-live="polite"[^>]*><\/div>/);
   assert.match(html, /\.snack\s*\{[^}]*opacity:\s*0;\s*pointer-events:\s*none;/);

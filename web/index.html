@@ -139,12 +139,16 @@
   .palette-wrap { position: relative; }
   .palette {
     position: absolute; right: 0; top: 52px; width: 240px;
+    max-height: calc(100vh - var(--appbar-height) - 8px);
+    max-height: calc(100dvh - var(--appbar-height) - 8px);
+    overflow-y: auto; overscroll-behavior: contain;
     background: var(--surface-container-high); border-radius: var(--radius-l);
     padding: 16px; display: none; flex-direction: column; gap: 12px;
     box-shadow: 0 8px 28px rgba(0,0,0,.18);
     animation: pop .3s var(--ease-emph);
   }
   .palette.open { display: flex; }
+  .palette > * { flex: none; }
   .palette h4 { font-size: .85rem; font-weight: 600; color: var(--on-surface-variant); letter-spacing: .04em; }
   .swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
   .swatch {
