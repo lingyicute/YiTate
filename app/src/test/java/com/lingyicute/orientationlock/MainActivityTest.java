@@ -3,6 +3,7 @@ package com.lingyicute.orientationlock;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.AppOpsManager;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
@@ -17,6 +18,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.Process;
 import android.provider.Settings;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -232,6 +234,20 @@ public class MainActivityTest {
         try (ActivityController<MainActivity> second = Robolectric.buildActivity(MainActivity.class).setup()) {
             assertNull(ReflectionHelpers.getField(second.get(), "rationaleDialog"));
             assertNull(shadowOf(second.get()).getLastRequestedPermission());
+        }
+    }
+
+    @Test
+    @Config(sdk = {21, 22})
+    public void legacyOverlayPermissionHonorsExplicitAppOpsDenials() {
+        Context context = RuntimeEnvironment.getApplication();
+        AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+        int op = 24; // SYSTEM_ALERT_WINDOW before its public string name.
+        shadowOf(appOps).setMode(op, Process.myUid(), context.getPackageName(), AppOpsManager.MODE_ALLOWED);
+        assertTrue(PermissionUtils.isDrawOverlaysPermissionGranted(context));
+        for (int mode : new int[]{AppOpsManager.MODE_ERRORED, AppOpsManager.MODE_IGNORED}) {
+            shadowOf(appOps).setMode(op, Process.myUid(), context.getPackageName(), mode);
+            assertFalse(PermissionUtils.isDrawOverlaysPermissionGranted(context));
         }
     }
 
