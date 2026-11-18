@@ -30,10 +30,11 @@ import com.lingyicute.orientationlock.utils.PermissionUtils;
 public class YiTateService extends Service {
     private static final String TAG = YiTateService.class.getSimpleName();
     private static final String NOTIFICATION_ID = BuildConfig.APPLICATION_ID + ".notification";
-    public static final String ACTION_SET_ORIENTATION = BuildConfig.APPLICATION_ID + ".action.SET_ORIENTATION";
-    public static final String KEY_ORIENTATION = "orientation";
+    public static final String ACTION_SYNC_ORIENTATION = BuildConfig.APPLICATION_ID + ".action.SYNC_ORIENTATION";
 
+    private PreferenceManager preferences;
     private Space holderView;
+    private int latestStartId;
     private int currentOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
     private String lastChannelName;
     private String lastNotificationTitle;
@@ -45,9 +46,8 @@ public class YiTateService extends Service {
             if (intent == null) return;
             if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
                 removeOrientationLayout();
-            } else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())
-                    && currentOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
-                applyOrientation();
+            } else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction()) && latestStartId != 0) {
+                syncLock(false);
             }
         }
     };
@@ -55,6 +55,7 @@ public class YiTateService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        preferences = PreferenceManager.getInstance(this);
         ensureNotificationChannel();
         // API 21-25 also need a foreground service to keep the lock alive.
         setForeground();
@@ -78,30 +79,29 @@ public class YiTateService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        int orientation;
-        if (intent == null) {
-            // START_STICKY recreation does not redeliver the original intent.
-            orientation = PreferenceManager.getInstance(this).getOrientation();
-        } else if (ACTION_SET_ORIENTATION.equals(intent.getAction())) {
-            orientation = intent.getIntExtra(KEY_ORIENTATION, Integer.MIN_VALUE);
-        } else {
-            orientation = Integer.MIN_VALUE;
-        }
-        if (!OrientationUtils.isSupported(orientation)) {
-            setForeground();
+        latestStartId = startId;
+        if (intent != null && !ACTION_SYNC_ORIENTATION.equals(intent.getAction())) {
             if (currentOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
-                clearLock();
+                stopLock();
                 return START_NOT_STICKY;
             }
             return START_STICKY;
         }
-        currentOrientation = orientation;
-        // Reuse the running notification to show which mode is locked and
-        // fulfill startForegroundService() before any early stop.
-        setForeground();
-        if (!applyOrientation()) return START_NOT_STICKY;
-        PreferenceManager.getInstance(this).setOrientation(orientation);
-        return START_STICKY;
+        // A start request may arrive after a newer selection or an explicit stop. Sticky
+        // recreation also has no original intent. Always reconcile the latest saved choice.
+        return syncLock(true) ? START_STICKY : START_NOT_STICKY;
+    }
+
+    private boolean syncLock(boolean refreshNotification) {
+        int previousOrientation = currentOrientation;
+        currentOrientation = preferences.getOrientation();
+        if (currentOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+            stopLock();
+            return false;
+        }
+        if (!applyOrientation()) return false;
+        if (refreshNotification || currentOrientation != previousOrientation) setForeground();
+        return true;
     }
 
     @Override
@@ -165,10 +165,6 @@ public class YiTateService extends Service {
     }
 
     private boolean applyOrientation() {
-        if (currentOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
-            clearLock();
-            return false; // Do not recreate an overlay after removing it.
-        }
         if (!PermissionUtils.isDrawOverlaysPermissionGranted(this)) {
             failLock();
             return false;
@@ -210,16 +206,16 @@ public class YiTateService extends Service {
     }
 
     private void failLock() {
-        clearLock();
+        preferences.setOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        stopLock();
         Toast.makeText(this, R.string.orientation_failed, Toast.LENGTH_LONG).show();
     }
 
-    private void clearLock() {
+    private void stopLock() {
         currentOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
-        PreferenceManager.getInstance(this).setOrientation(currentOrientation);
         removeOrientationLayout();
-        stopForeground(true);
-        stopSelf();
+        // A later start may already be queued. Do not stop it or demote its service.
+        stopSelf(latestStartId);
     }
 
     private void removeOrientationLayout() {

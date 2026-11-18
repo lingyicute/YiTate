@@ -56,9 +56,13 @@ public class YiTateServiceTest {
     }
 
     private int select(int orientation) {
+        preferences.setOrientation(orientation);
+        return dispatchSelection(1);
+    }
+
+    private int dispatchSelection(int startId) {
         return service.onStartCommand(new Intent(context, YiTateService.class)
-                .setAction(YiTateService.ACTION_SET_ORIENTATION)
-                .putExtra(YiTateService.KEY_ORIENTATION, orientation), 0, 1);
+                .setAction(YiTateService.ACTION_SYNC_ORIENTATION), 0, startId);
     }
 
     private View overlay() {
@@ -173,19 +177,35 @@ public class YiTateServiceTest {
     public void invalidCommandCannotReplaceActiveLock() {
         select(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         View first = overlay();
-        select(999);
-        service.onStartCommand(new Intent(context, YiTateService.class)
-                .setAction(YiTateService.ACTION_SET_ORIENTATION), 0, 1);
+        service.onStartCommand(new Intent(context, YiTateService.class), 0, 2);
         assertSame(first, overlay());
         assertEquals(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, preferences.getOrientation());
     }
 
     @Test
-    public void invalidInitialCommandStopsForegroundAndSelf() {
-        assertEquals(Service.START_NOT_STICKY, select(999));
+    public void invalidInitialCommandStopsWithoutDiscardingSavedChoice() {
+        preferences.setOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        assertEquals(Service.START_NOT_STICKY,
+                service.onStartCommand(new Intent(context, YiTateService.class), 0, 1));
         assertNull(overlay());
-        assertTrue(shadowOf(service).isForegroundStopped());
         assertTrue(shadowOf(service).isStoppedBySelf());
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, preferences.getOrientation());
+    }
+
+    @Test
+    public void queuedStartsApplyOnlyTheLatestSelection() {
+        preferences.setOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        // The first start has not reached our process yet when the user changes modes.
+        preferences.setOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        assertEquals(Service.START_STICKY, dispatchSelection(1));
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT,
+                ((WindowManager.LayoutParams) overlay().getLayoutParams()).screenOrientation);
+
+        // The user then picks Default before command 2 arrives.
+        preferences.setOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        assertEquals(Service.START_NOT_STICKY, dispatchSelection(2));
+        assertNull(overlay());
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, preferences.getOrientation());
     }
 
     @Test
