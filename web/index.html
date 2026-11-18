@@ -315,6 +315,7 @@
     padding: clamp(36px, 6vw, 72px); position: relative; overflow: hidden; text-align: center;
   }
   .download::before, .download::after {
+    pointer-events: none;
     content: ""; position: absolute; border-radius: 50%; background: color-mix(in oklab, var(--on-primary) 10%, transparent);
   }
   .download::before { width: 360px; height: 360px; top: -160px; left: -120px; }

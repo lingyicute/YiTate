@@ -330,6 +330,10 @@ test('public content does not wait for the page load event or fonts', () => {
   assert.match(html, /class="hero-cta"\s*>\s*<a[^>]+href="https:\/\/github.com\/lingyicute\/YiTate\/releases\/latest"/);
 });
 
+test('download decorations cannot intercept release links', () => {
+  assert.match(html, /\.download::before,\s*\.download::after\s*\{[^}]*pointer-events:\s*none/);
+});
+
 test('printing hides popovers and shows unvisited content', () => {
   assert.match(html, /@media print\s*\{[\s\S]*?\.snack,\s*\.palette\s*\{\s*display:\s*none/);
   // Check where the hiding rule applies, not merely the presence of a weaker override.
