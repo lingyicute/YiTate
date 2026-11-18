@@ -60,20 +60,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
-        run: |
-          notes="auto build · ${GITHUB_SHA:0:7} · ${GITHUB_REF_NAME} · unsigned APK"
-          if gh release view nightly >/dev/null 2>&1; then
-            # Update in place and upload the new APK before moving the tag or
-            # notes so a failed upload never leaves metadata ahead of its asset.
-            gh release upload nightly apk/app-release-unsigned.apk --clobber
-            # --target updates release metadata, not the existing Git tag ref.
-            git tag --force nightly "$GITHUB_SHA"
-            git push --force origin refs/tags/nightly
-            gh release edit nightly --notes "$notes" --target "$GITHUB_SHA"
-          else
-            git tag --force nightly "$GITHUB_SHA"
-            git push --force origin refs/tags/nightly
-            gh release create nightly apk/app-release-unsigned.apk \
-              --title "Nightly Build" --notes "$notes" \
-              --prerelease --target "$GITHUB_SHA"
-          fi
+        run: bash scripts/publish_nightly.sh apk/app-release-unsigned.apk

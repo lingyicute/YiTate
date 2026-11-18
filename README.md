@@ -29,7 +29,7 @@ YiTate 是一个开源 App，帮助你轻松锁定屏幕方向，适用于 Andro
 可在 [最新正式版](https://github.com/lingyicute/YiTate/releases/latest) 页面下载 APK，[Releases](https://github.com/lingyicute/YiTate/releases) 也列出历史版本和 Nightly 构建。
 
 > [!IMPORTANT]
-> 对于 Nightly 构建版本，请自行对 APK 实施签名。
+> Nightly 的 APK 未签名，请自行签名后安装。文件名随构建变化，请使用 [Nightly 发布说明](https://github.com/lingyicute/YiTate/releases/tag/nightly)中的 APK 链接。
 
 ## 网站字体
 

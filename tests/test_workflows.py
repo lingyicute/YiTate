@@ -7,25 +7,16 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class WorkflowTests(unittest.TestCase):
-    def test_nightly_publish_moves_the_existing_tag_to_the_built_commit(self):
+    def test_nightly_publisher_depends_on_the_verified_artifact_and_runs_on_main_only(self):
         workflow = (ROOT / ".github/workflows/create-release.yml").read_text(encoding="utf-8")
-
-        self.assertIn("contents: write", workflow)
-        self.assertIn("uses: actions/checkout@v4", workflow)
-        self.assertNotIn("fetch-depth: 0", workflow)
-        self.assertIn('git tag --force nightly "$GITHUB_SHA"', workflow)
-        self.assertIn("git push --force origin refs/tags/nightly", workflow)
-        self.assertIn('gh release edit nightly --notes "$notes" --target "$GITHUB_SHA"', workflow)
-        self.assertLess(
-            workflow.index("gh release upload nightly apk/app-release-unsigned.apk --clobber"),
-            workflow.index("git push --force origin refs/tags/nightly"),
-            "upload the new APK before moving the nightly tag",
-        )
-        self.assertLess(
-            workflow.index("git push --force origin refs/tags/nightly"),
-            workflow.index("gh release edit nightly"),
-            "move the Git tag before updating the release metadata",
-        )
+        verify, publish = workflow.split("\n  publish:", maxsplit=1)
+        self.assertNotIn("contents: write", verify)
+        self.assertIn("persist-credentials: false", verify)
+        self.assertIn("contents: write", publish)
+        self.assertIn("needs: verify", publish)
+        self.assertIn("github.ref == 'refs/heads/main' && github.event_name != 'pull_request'", publish)
+        self.assertIn("uses: actions/download-artifact@v4", publish)
+        self.assertIn("bash scripts/publish_nightly.sh apk/app-release-unsigned.apk", publish)
 
     def test_android_job_caches_gradle_downloads(self):
         workflow = (ROOT / ".github/workflows/create-release.yml").read_text(encoding="utf-8")
