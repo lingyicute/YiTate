@@ -32,32 +32,24 @@ class WorkflowTests(unittest.TestCase):
 
         self.assertIn("cache: gradle", workflow)
 
-    def test_font_workflows_use_pinned_dependencies_and_regenerate_cleanly(self):
-        subset = (ROOT / ".github/workflows/font-subset.yml").read_text(encoding="utf-8")
-        pages = (ROOT / ".github/workflows/static.yml").read_text(encoding="utf-8")
-
-        self.assertIn('"scripts/requirements.txt"', subset)
-        self.assertIn("pip install -r scripts/requirements.txt", subset)
-        self.assertIn("pip install -r scripts/requirements.txt", pages)
-        self.assertIn("cache: pip", subset)
-        self.assertIn("cache: pip", pages)
-        self.assertIn("cache-dependency-path: scripts/requirements.txt", subset)
-        self.assertIn("cache-dependency-path: scripts/requirements.txt", pages)
-        self.assertIn('"web/**"', pages)
-        self.assertIn('".github/workflows/static.yml"', pages)
-        self.assertIn("persist-credentials: false", pages)
-        self.assertIn("GIT_USER_NAME: ${{ github.actor }}", subset)
-        self.assertIn("GIT_USER_EMAIL: ${{ github.event.pusher.email || format(", subset)
-        self.assertIn("for attempt in 1 2 3; do", subset)
-        self.assertIn('if git push origin "HEAD:$GITHUB_REF_NAME"; then', subset)
-        self.assertIn('echo "Push raced with a newer commit (attempt $attempt); retrying."', subset)
-        self.assertNotIn("git pull --rebase", subset)
-        self.assertNotIn('git config user.email "${{', subset)
-        self.assertLess(
-            subset.index('git checkout -B "$GITHUB_REF_NAME" "origin/$GITHUB_REF_NAME"'),
-            subset.index("python scripts/subset_font.py"),
-            "subset against the latest branch head to avoid @font-face rebase conflicts",
-        )
+    def test_pages_generates_the_subset_without_repository_write_credentials(self):
+        workflows = ROOT / ".github/workflows"
+        pages = (workflows / "static.yml").read_text(encoding="utf-8")
+        self.assertFalse((workflows / "font-subset.yml").exists())
+        build, deploy = pages.split("\n  deploy:", maxsplit=1)
+        self.assertIn("python scripts/subset_font.py", build)
+        self.assertIn("pip install -r scripts/requirements.txt", build)
+        self.assertIn("cache: pip", build)
+        self.assertIn("cache-dependency-path: scripts/requirements.txt", build)
+        self.assertIn('"web/**"', build)
+        self.assertIn('".github/workflows/static.yml"', build)
+        self.assertIn("persist-credentials: false", build)
+        self.assertNotIn("contents: write", pages)
+        self.assertNotIn("id-token: write", build)
+        self.assertNotIn("pages: write", build)
+        self.assertIn("needs: build", deploy)
+        self.assertIn("id-token: write", deploy)
+        self.assertIn("pages: write", deploy)
 
     def test_workflow_changes_trigger_lightweight_regression_checks(self):
         checks = (ROOT / ".github/workflows/lightweight-checks.yml").read_text(encoding="utf-8")

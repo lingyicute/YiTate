@@ -35,6 +35,8 @@ YiTate 是一个开源 App，帮助你轻松锁定屏幕方向，适用于 Andro
 
 网页嵌入了 lingyicute 的 [Nebulove](https://github.com/lingyicute/Nebulove) 字体子集。字体是单独授权的素材，不属于下文的 GPL 代码许可；字体使用和再分发受 [Nebulove 项目嵌入许可 1.0（限非商业使用）](https://github.com/lingyicute/Nebulove/blob/df0d98ed69435d0ff1f3705c084aca057f4ca9a5/LICENSE)约束。
 
+修改网页文案后，可用 Python 3.11 安装 `scripts/requirements.txt` 中的依赖，再运行 `python scripts/subset_font.py` 更新随仓库保存的子集。Pages 会为部署的提交生成子集，不回写 `main`。
+
 ## LICENSE 📜
 
 Copyright (C) 2024 lingyicute.
