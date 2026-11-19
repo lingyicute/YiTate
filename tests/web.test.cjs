@@ -6,12 +6,16 @@ const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
 const html = fs.readFileSync(process.env.INDEX_HTML || path.join(__dirname, '../web/index.html'), 'utf8');
-const script = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].at(-1)[1];
+const [earlyScript, script] = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
 
 function element() {
   const classes = new Set();
   return {
-    style: { writes: [], setProperty(key, value) { this[key] = value; this.writes.push([key, value]); } },
+    style: {
+      writes: [],
+      getPropertyValue(key) { return String(this[key] ?? ''); },
+      setProperty(key, value) { this[key] = value; this.writes.push([key, value]); }
+    },
     dataset: {}, children: [], listeners: {}, attributes: {},
     setAttribute(name, value) { this.attributes[name] = String(value); },
     getAttribute(name) { return name in this.attributes ? this.attributes[name] : null; },
@@ -134,6 +138,7 @@ function boot({
     }
   });
   sandbox.window = sandbox;
+  vm.runInNewContext(earlyScript, sandbox, { timeout: 1000 });
   vm.runInNewContext(script, sandbox, { timeout: 1000 });
   return {
     get, root, storage, reveals, observers, calls, timeouts, document, window: sandbox, frames,
@@ -151,7 +156,7 @@ test('theme is resolved before the stylesheet paints', () => {
   const head = html.slice(0, html.indexOf('<style>'));
   const headScripts = [...head.matchAll(/<script>([\s\S]*?)<\/script>/g)];
   assert.equal(headScripts.length, 1, 'exactly one early theme script');
-  const runEarly = ({ stored = null, blocked = false, schemeDark = false, hasMedia = true } = {}) => {
+  const runEarly = ({ stored = null, hue = null, blocked = false, schemeDark = false, hasMedia = true } = {}) => {
     const root = element();
     const ctx = {
       document: { documentElement: root },
@@ -160,17 +165,20 @@ test('theme is resolved before the stylesheet paints', () => {
     Object.defineProperty(ctx, 'localStorage', {
       get() {
         if (blocked) throw new Error('blocked');
-        return { getItem: () => stored };
+        return { getItem: key => key === 'yt-dark' ? stored : hue };
       }
     });
     ctx.window = ctx;
     vm.runInNewContext(headScripts[0][1], ctx, { timeout: 1000 });
-    return root.dataset.theme;
+    return { theme: root.dataset.theme, hue: root.style.getPropertyValue('--hue') };
   };
-  assert.equal(runEarly({ schemeDark: true }), 'dark');
-  assert.equal(runEarly({ stored: '0', schemeDark: true }), 'light');
-  assert.equal(runEarly({ stored: '1', schemeDark: false }), 'dark');
-  assert.equal(runEarly({ blocked: true, hasMedia: false }), 'light');
+  assert.deepEqual(runEarly({ schemeDark: true }), { theme: 'dark', hue: '' });
+  assert.deepEqual(runEarly({ stored: '0', schemeDark: true, hue: '0' }), { theme: 'light', hue: '0' });
+  assert.deepEqual(runEarly({ stored: '1', schemeDark: false, hue: '350' }), { theme: 'dark', hue: '350' });
+  assert.deepEqual(runEarly({ blocked: true, hasMedia: false }), { theme: 'light', hue: '' });
+  assert.equal(runEarly({ hue: '361' }).hue, '');
+  assert.match(html, /--primary: oklch\(\.48 \.16 var\(--hue\)\)/);
+  assert.match(html, /--primary: oklch\(\.82 \.10 var\(--hue\)\)/);
 });
 
 test('the system dark palette also applies without scripts, but not to an explicit choice', () => {
@@ -360,7 +368,7 @@ test('blocked localStorage does not abort initialization or theme clicks', () =>
   const page = boot({ blocked: true });
   assert.equal(page.get('#swatches').children.length, 10);
   page.get('#themeBtn').listeners.click();
-  assert.equal(page.root.style.colorScheme, 'dark');
+  assert.equal(page.root.dataset.theme, 'dark');
 });
 
 test('zero-degree hue survives reload', () => {
@@ -386,7 +394,7 @@ test('reduced-motion preference avoids reveal animations', () => {
 
 test('unsupported OKLCH keeps the theme toggle but does not offer an inert palette', () => {
   const page = boot({ color: false });
-  assert.equal(page.root.style['--primary'], undefined);
+  assert.equal(page.root.style.getPropertyValue('--hue'), '');
   assert.equal(page.get('#paletteControls').hidden, true);
   assert.equal(page.get('#swatches').children.length, 0);
   assert.equal(page.get('#themeBtn').hidden, false);
@@ -561,7 +569,7 @@ test('hue input coalesces palette and swatch updates into one render per frame',
   const page = boot(), range = page.get('#hueRange');
   const writes = () => page.root.style.writes.filter(([key]) => key === '--hue').length;
   assert.equal(writes(), 1, 'initialization paints the palette only once');
-  assert.equal(page.root.style['--primary'], 'oklch(0.48 0.16 290)');
+  assert.equal(page.root.style.getPropertyValue('--hue'), '290');
   for (const value of [25, 170, 250]) {
     range.value = value;
     range.listeners.input({ target: range });
@@ -592,7 +600,7 @@ test('commits, swatches, and theme changes supersede a queued hue frame', () => 
   page.get('#themeBtn').listeners.click();
   assert.equal(page.frames.size, 0);
   assert.equal(page.root.dataset.theme, 'dark');
-  assert.equal(page.root.style['--primary'], 'oklch(0.82 0.1 170)');
+  assert.equal(page.root.style.getPropertyValue('--hue'), '170');
   assert.equal(page.get('#swatches').children[3].attributes['aria-pressed'], 'true');
   range.value = 50;
   range.listeners.input({ target: range });

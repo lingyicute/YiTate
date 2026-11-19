@@ -6,13 +6,21 @@
 <title>YiTate · 轻松锁定屏幕方向</title>
 <meta name="description" content="YiTate 是一个不到 100k 的开源 Android 应用，帮助你轻松锁定屏幕方向。无依赖、无广告、无追踪器。Made with ❤️ by lingyicute.">
 <script>
-  /* Runs before the stylesheet paints so the first paint uses the right theme. */
+  /* Resolve the theme and its saved hue before the stylesheet paints. */
   (function () {
-    var stored = null;
-    try { stored = localStorage.getItem('yt-dark'); } catch (_) { /* storage blocked */ }
-    var dark = stored === '1' || (stored !== '0' && window.matchMedia
+    var storedDark = null, storedHue = null;
+    try {
+      storedDark = localStorage.getItem('yt-dark');
+      storedHue = localStorage.getItem('yt-hue');
+    } catch (_) { /* storage blocked */ }
+    var dark = storedDark === '1' || (storedDark !== '0' && window.matchMedia
       && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    var root = document.documentElement;
+    root.dataset.theme = dark ? 'dark' : 'light';
+    var hue = Number(storedHue);
+    if (storedHue && storedHue.trim() && hue >= 0 && hue <= 360 && hue % 1 === 0) {
+      root.style.setProperty('--hue', String(hue));
+    }
   })();
 </script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='28' fill='%236750a4'/><rect x='30' y='18' width='40' height='64' rx='9' fill='white'/><rect x='36' y='26' width='28' height='40' rx='3' fill='%236750a4' opacity='.35'/></svg>">
@@ -78,6 +86,39 @@
       --surface-container-high: #2b2930; --surface-container-highest: #36343b;
       --outline: #938f99; --outline-variant: #49454f;
       --inverse-surface: #e6e0e9; --inverse-on-surface: #313033;
+    }
+  }
+
+  /* The same tones apply on initial paint and later changes. */
+  @supports (color: oklch(.5 .1 290)) {
+    :root[data-theme] {
+      --tertiary-hue: calc(var(--hue) + 60);
+        --primary: oklch(.48 .16 var(--hue)); --on-primary: oklch(.99 .01 var(--hue));
+        --primary-container: oklch(.90 .07 var(--hue)); --on-primary-container: oklch(.25 .10 var(--hue));
+        --secondary: oklch(.50 .06 var(--hue)); --on-secondary: oklch(.99 .01 var(--hue));
+        --secondary-container: oklch(.91 .04 var(--hue)); --on-secondary-container: oklch(.26 .05 var(--hue));
+        --tertiary: oklch(.50 .11 var(--tertiary-hue)); --on-tertiary: oklch(.99 .01 var(--tertiary-hue));
+        --tertiary-container: oklch(.90 .07 var(--tertiary-hue)); --on-tertiary-container: oklch(.26 .08 var(--tertiary-hue));
+        --surface: oklch(.985 .006 var(--hue)); --on-surface: oklch(.22 .02 var(--hue));
+        --on-surface-variant: oklch(.42 .03 var(--hue));
+        --surface-container-low: oklch(.965 .008 var(--hue)); --surface-container: oklch(.945 .01 var(--hue));
+        --surface-container-high: oklch(.92 .012 var(--hue)); --surface-container-highest: oklch(.895 .014 var(--hue));
+        --outline: oklch(.58 .03 var(--hue)); --outline-variant: oklch(.83 .02 var(--hue));
+        --inverse-surface: oklch(.27 .02 var(--hue)); --inverse-on-surface: oklch(.95 .01 var(--hue));
+    }
+    :root[data-theme="dark"] {
+        --primary: oklch(.82 .10 var(--hue)); --on-primary: oklch(.30 .12 var(--hue));
+        --primary-container: oklch(.40 .13 var(--hue)); --on-primary-container: oklch(.92 .06 var(--hue));
+        --secondary: oklch(.80 .05 var(--hue)); --on-secondary: oklch(.30 .05 var(--hue));
+        --secondary-container: oklch(.38 .05 var(--hue)); --on-secondary-container: oklch(.92 .03 var(--hue));
+        --tertiary: oklch(.82 .09 var(--tertiary-hue)); --on-tertiary: oklch(.30 .09 var(--tertiary-hue));
+        --tertiary-container: oklch(.40 .10 var(--tertiary-hue)); --on-tertiary-container: oklch(.92 .05 var(--tertiary-hue));
+        --surface: oklch(.17 .012 var(--hue)); --on-surface: oklch(.92 .01 var(--hue));
+        --on-surface-variant: oklch(.78 .02 var(--hue));
+        --surface-container-low: oklch(.20 .014 var(--hue)); --surface-container: oklch(.23 .016 var(--hue));
+        --surface-container-high: oklch(.27 .018 var(--hue)); --surface-container-highest: oklch(.31 .02 var(--hue));
+        --outline: oklch(.60 .03 var(--hue)); --outline-variant: oklch(.36 .02 var(--hue));
+        --inverse-surface: oklch(.92 .01 var(--hue)); --inverse-on-surface: oklch(.25 .02 var(--hue));
     }
   }
 
@@ -646,45 +687,12 @@
   const supportsOklch = Boolean(window.CSS && typeof CSS.supports === 'function' && CSS.supports('color', 'oklch(.5 .1 290)'));
   function applyPalette(hue, dark) {
     root.dataset.theme = dark ? 'dark' : 'light';
-    root.style.colorScheme = dark ? 'dark' : 'light';
-    if (!supportsOklch) return;
-    const c = (l, ch, h) => `oklch(${l} ${ch} ${h})`;
-    const h = hue, h2 = hue, h3 = (hue + 60) % 360;
-    const p = dark ? {
-      '--primary': c(.82, .10, h), '--on-primary': c(.30, .12, h),
-      '--primary-container': c(.40, .13, h), '--on-primary-container': c(.92, .06, h),
-      '--secondary': c(.80, .05, h2), '--on-secondary': c(.30, .05, h2),
-      '--secondary-container': c(.38, .05, h2), '--on-secondary-container': c(.92, .03, h2),
-      '--tertiary': c(.82, .09, h3), '--on-tertiary': c(.30, .09, h3),
-      '--tertiary-container': c(.40, .10, h3), '--on-tertiary-container': c(.92, .05, h3),
-      '--surface': c(.17, .012, h), '--on-surface': c(.92, .01, h),
-      '--on-surface-variant': c(.78, .02, h),
-      '--surface-container-low': c(.20, .014, h), '--surface-container': c(.23, .016, h),
-      '--surface-container-high': c(.27, .018, h), '--surface-container-highest': c(.31, .02, h),
-      '--outline': c(.60, .03, h), '--outline-variant': c(.36, .02, h),
-      '--inverse-surface': c(.92, .01, h), '--inverse-on-surface': c(.25, .02, h),
-    } : {
-      '--primary': c(.48, .16, h), '--on-primary': c(.99, .01, h),
-      '--primary-container': c(.90, .07, h), '--on-primary-container': c(.25, .10, h),
-      '--secondary': c(.50, .06, h2), '--on-secondary': c(.99, .01, h2),
-      '--secondary-container': c(.91, .04, h2), '--on-secondary-container': c(.26, .05, h2),
-      '--tertiary': c(.50, .11, h3), '--on-tertiary': c(.99, .01, h3),
-      '--tertiary-container': c(.90, .07, h3), '--on-tertiary-container': c(.26, .08, h3),
-      '--surface': c(.985, .006, h), '--on-surface': c(.22, .02, h),
-      '--on-surface-variant': c(.42, .03, h),
-      '--surface-container-low': c(.965, .008, h), '--surface-container': c(.945, .01, h),
-      '--surface-container-high': c(.92, .012, h), '--surface-container-highest': c(.895, .014, h),
-      '--outline': c(.58, .03, h), '--outline-variant': c(.83, .02, h),
-      '--inverse-surface': c(.27, .02, h), '--inverse-on-surface': c(.95, .01, h),
-    };
-    for (const k in p) root.style.setProperty(k, p[k]);
-    root.style.setProperty('--hue', hue);
+    if (supportsOklch && root.style.getPropertyValue('--hue') !== String(hue)) {
+      root.style.setProperty('--hue', hue);
+    }
   }
 
-  const storedHue = storage.get('yt-hue');
-  const parsedHue = Number(storedHue);
-  let hue = storedHue !== null && storedHue.trim() !== '' && Number.isInteger(parsedHue)
-    && parsedHue >= 0 && parsedHue <= 360 ? parsedHue : 290;
+  let hue = Number(root.style.getPropertyValue('--hue') || '290');
   const darkMedia = mediaQuery('(prefers-color-scheme: dark)');
   const storedDark = storage.get('yt-dark');
   let dark = storedDark === '1' || (storedDark !== '0' && darkMedia.matches);
