@@ -173,6 +173,13 @@ test('theme is resolved before the stylesheet paints', () => {
   assert.equal(runEarly({ blocked: true, hasMedia: false }), 'light');
 });
 
+test('the system dark palette also applies without scripts, but not to an explicit choice', () => {
+  const explicit = html.match(/:root\[data-theme="dark"\]\s*\{([^}]+)\}/);
+  const fallback = html.match(/@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root:not\(\[data-theme\]\)\s*\{([^}]+)\}/);
+  assert.ok(explicit && fallback);
+  assert.equal(fallback[1].replace(/\s+/g, ''), explicit[1].replace(/\s+/g, ''));
+});
+
 test('palette reports its open state and closes on Escape', () => {
   const page = boot();
   const trigger = page.get('#paletteBtn'), palette = page.get('#palette');
