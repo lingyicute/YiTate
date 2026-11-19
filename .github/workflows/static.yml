@@ -23,6 +23,8 @@ jobs:
   build:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    outputs:
+      artifact_name: ${{ steps.artifact.outputs.name }}
     permissions:
       contents: read
       pages: read
@@ -48,9 +50,13 @@ jobs:
         run: node --test tests/web.test.cjs
       - name: Setup Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b  # v5
+      - name: Name the artifact for this build attempt
+        id: artifact
+        run: echo "name=github-pages-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa  # v3
         with:
+          name: ${{ steps.artifact.outputs.name }}
           path: './web'
   deploy:
     # Serialize writes without replacing a pending run with a stale rerun.
@@ -77,3 +83,6 @@ jobs:
         if: steps.current.outputs.deploy == 'true'
         id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346  # v5
+        with:
+          # Deploy-only reruns must reuse the output of the earlier successful build.
+          artifact_name: ${{ needs.build.outputs.artifact_name }}

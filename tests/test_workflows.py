@@ -72,6 +72,15 @@ class WorkflowTests(unittest.TestCase):
         self.assertLess(generate, test)
         self.assertLess(test, upload)
 
+    def test_pages_reruns_deploy_the_artifact_named_by_the_build_job(self):
+        workflow = (ROOT / ".github/workflows/static.yml").read_text(encoding="utf-8")
+        build, deploy = workflow.split("\n  deploy:", maxsplit=1)
+        self.assertIn('name=github-pages-${GITHUB_RUN_ATTEMPT}', build)
+        self.assertIn('artifact_name: ${{ steps.artifact.outputs.name }}', build)
+        self.assertIn('name: ${{ steps.artifact.outputs.name }}', build)
+        self.assertIn('artifact_name: ${{ needs.build.outputs.artifact_name }}', deploy)
+        self.assertNotIn('github.run_attempt', deploy)
+
     def test_publication_queues_never_replace_pending_runs(self):
         for filename, job in (("static.yml", "deploy"), ("create-release.yml", "publish")):
             workflow = (ROOT / ".github/workflows" / filename).read_text(encoding="utf-8")
