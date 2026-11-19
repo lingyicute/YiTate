@@ -82,7 +82,6 @@ public class YiTateService extends Service {
     public void onCreate() {
         super.onCreate();
         preferences = PreferenceManager.getInstance(this);
-        ensureNotificationChannel();
         // API 21-25 also need a foreground service to keep the lock alive.
         setForeground();
         // Do not stop a queued foreground start from the Activity before we get here.
@@ -112,9 +111,9 @@ public class YiTateService extends Service {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         if (currentOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-                && (!getString(R.string.running_notification_title).equals(lastNotificationTitle)
+                && (!getString(R.string.running_notification_channel_name).equals(lastChannelName)
+                || !getString(R.string.running_notification_title).equals(lastNotificationTitle)
                 || !getNotificationText().equals(lastNotificationText))) {
-            ensureNotificationChannel();
             setForeground();
         }
     }
@@ -180,6 +179,7 @@ public class YiTateService extends Service {
     }
 
     private void setForeground() {
+        ensureNotificationChannel();
         String title = getString(R.string.running_notification_title);
         String text = getNotificationText();
         Notification.Builder builder = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O

@@ -286,7 +286,14 @@ public class YiTateServiceTest {
 
     @Test
     public void notificationRefreshesWhenSystemLocaleChanges() {
+        RuntimeEnvironment.setQualifiers("zh-rCN");
+        service.onConfigurationChanged(service.getResources().getConfiguration());
         select(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        assertEquals("运行状态通知", ReflectionHelpers.getField(service, "lastChannelName"));
+        assertEquals("已锁定：竖屏", notificationText());
+        RuntimeEnvironment.setQualifiers("");
+        service.onConfigurationChanged(service.getResources().getConfiguration());
+        assertEquals("Running Notification", ReflectionHelpers.getField(service, "lastChannelName"));
         assertEquals("Locked: Portrait", notificationText());
         android.app.Notification initial = shadowOf(service).getLastForegroundNotification();
         service.onConfigurationChanged(service.getResources().getConfiguration());
@@ -294,6 +301,7 @@ public class YiTateServiceTest {
         RuntimeEnvironment.setQualifiers("zh-rCN");
         service.onConfigurationChanged(service.getResources().getConfiguration());
         assertNotSame(initial, shadowOf(service).getLastForegroundNotification());
+        assertEquals("运行状态通知", ReflectionHelpers.getField(service, "lastChannelName"));
         assertEquals("已锁定：竖屏", notificationText());
     }
 
