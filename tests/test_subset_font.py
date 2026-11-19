@@ -124,6 +124,25 @@ class FontSubsetTests(unittest.TestCase):
             self.assertEqual(font.collect_characters(RULE),
                              font.collect_characters(RULE.replace('\n', '\r\n')))
 
+    def test_edits_during_generation_are_not_replaced_with_the_old_page(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'index.html'
+            path.write_text(RULE, encoding='utf-8')
+            edited = RULE + '\n<p>新文案</p>'
+
+            def edit_page(*args):
+                path.write_text(edited, encoding='utf-8')
+                return b'subset'
+
+            with (patch.object(font, 'INDEX_PATH', path),
+                  patch.object(font.urllib.request, 'urlopen', return_value=io.BytesIO(b'font')),
+                  patch.object(font, 'FONT_SHA256', hashlib.sha256(b'font').hexdigest()),
+                  patch.object(font, 'build_subset', side_effect=edit_page)):
+                with self.assertRaisesRegex(RuntimeError, 'changed during font generation'):
+                    font.main()
+            self.assertEqual(path.read_text(encoding='utf-8'), edited)
+            self.assertEqual(list(Path(tmp).iterdir()), [path])
+
     def test_invalid_template_fails_before_network(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / 'index.html'
