@@ -191,6 +191,27 @@ public class YiTateServiceTest {
     }
 
     @Test
+    @Config(sdk = {21, 22})
+    public void legacyAppOpRevocationClearsTheLockImmediately() {
+        shadowOf(RuntimeEnvironment.getApplication()).grantPermissions(
+                android.Manifest.permission.SYSTEM_ALERT_WINDOW);
+        AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+        int op = 24; // SYSTEM_ALERT_WINDOW before its public integer constants.
+        shadowOf(appOps).setMode(op, Process.myUid(), context.getPackageName(),
+                AppOpsManager.MODE_ALLOWED);
+        select(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        assertNotNull(overlay());
+
+        shadowOf(appOps).setMode(op, Process.myUid(), context.getPackageName(),
+                AppOpsManager.MODE_ERRORED);
+        shadowOf(Looper.getMainLooper()).idle();
+
+        assertNull(overlay());
+        assertTrue(shadowOf(service).isStoppedBySelf());
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, preferences.getOrientation());
+    }
+
+    @Test
     public void missingPermissionDoesNotAttemptToAttachOverlay() {
         ShadowSettings.setCanDrawOverlays(false);
         assertEquals(Service.START_NOT_STICKY, select(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT));
