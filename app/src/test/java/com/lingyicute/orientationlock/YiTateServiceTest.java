@@ -355,6 +355,20 @@ public class YiTateServiceTest {
     }
 
     @Test
+    @Config(sdk = {21, 25})
+    public void unchangedConfigurationDoesNotRepostTheNotificationWithoutAChannel() {
+        select(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+        android.app.Notification initial = shadowOf(service).getLastForegroundNotification();
+        // Sensor modes still rotate; each rotation reaches the service as a configuration change.
+        service.onConfigurationChanged(service.getResources().getConfiguration());
+        assertSame(initial, shadowOf(service).getLastForegroundNotification());
+        RuntimeEnvironment.setQualifiers("zh-rCN");
+        service.onConfigurationChanged(service.getResources().getConfiguration());
+        assertNotSame(initial, shadowOf(service).getLastForegroundNotification());
+        assertEquals("已锁定：感应竖屏", notificationText());
+    }
+
+    @Test
     public void notificationFallsBackToTheGenericDescriptionWithoutALock() {
         assertEquals("YiTate is running for keeping the orientation", notificationText());
     }
