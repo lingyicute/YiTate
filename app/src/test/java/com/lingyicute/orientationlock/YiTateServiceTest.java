@@ -29,6 +29,8 @@ import org.robolectric.shadows.ShadowNotification;
 import org.robolectric.shadows.ShadowSettings;
 import org.robolectric.util.ReflectionHelpers;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.Assert.*;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -192,7 +194,7 @@ public class YiTateServiceTest {
 
     @Test
     @Config(sdk = {21, 22})
-    public void legacyAppOpRevocationClearsTheLockImmediately() {
+    public void legacyAppOpRevocationClearsAnAttachedLockOnTheNextPoll() {
         shadowOf(RuntimeEnvironment.getApplication()).grantPermissions(
                 android.Manifest.permission.SYSTEM_ALERT_WINDOW);
         AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
@@ -205,7 +207,33 @@ public class YiTateServiceTest {
         shadowOf(appOps).setMode(op, Process.myUid(), context.getPackageName(),
                 AppOpsManager.MODE_ERRORED);
         shadowOf(Looper.getMainLooper()).idle();
+        assertNotNull(overlay()); // AOSP Lollipop does not deliver a public listener callback.
+        shadowOf(Looper.getMainLooper()).idleFor(5, TimeUnit.SECONDS);
 
+        assertNull(overlay());
+        assertTrue(shadowOf(service).isStoppedBySelf());
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, preferences.getOrientation());
+    }
+
+    @Test
+    @Config(sdk = {21, 22})
+    public void legacyPollingStopsWhileScreenIsOffAndWakeRechecksPermission() {
+        shadowOf(RuntimeEnvironment.getApplication()).grantPermissions(
+                android.Manifest.permission.SYSTEM_ALERT_WINDOW);
+        AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+        int op = 24;
+        shadowOf(appOps).setMode(op, Process.myUid(), context.getPackageName(),
+                AppOpsManager.MODE_ALLOWED);
+        assertEquals(Service.START_STICKY, select(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE));
+        screen(false);
+        assertNull(overlay());
+
+        shadowOf(appOps).setMode(op, Process.myUid(), context.getPackageName(),
+                AppOpsManager.MODE_ERRORED);
+        shadowOf(Looper.getMainLooper()).idleFor(10, TimeUnit.SECONDS);
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, preferences.getOrientation());
+
+        screen(true);
         assertNull(overlay());
         assertTrue(shadowOf(service).isStoppedBySelf());
         assertEquals(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, preferences.getOrientation());
