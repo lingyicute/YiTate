@@ -61,6 +61,11 @@ elif args[:2] == ['release', 'view']:
 elif args[:2] == ['release', 'delete-asset']:
     assert not notes.exists() or args[3] not in notes.read_text(), 'the linked asset must not be deleted'
     (assets / args[3]).unlink()
+elif args[:2] == ['release', 'delete']:
+    assert draft.exists() and not notes.exists(), 'only an unpublished draft release may be deleted'
+    for p in assets.iterdir():
+        p.unlink()
+    draft.unlink()
 else:
     raise AssertionError(args)
 '''
@@ -128,6 +133,13 @@ class PublishNightlyTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.tag(), self.sha)
         self.assertEqual((self.assets / self.asset).read_bytes(), b'new apk')
+        self.assertFalse((self.store / 'draft').exists())
+
+    def test_aborted_first_release_deletes_the_unpublished_draft(self):
+        result = self.publish(FAKE_GH_MODE='main-moved')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.tag(), '')
+        self.assertFalse((self.assets / self.asset).exists())
         self.assertFalse((self.store / 'draft').exists())
 
     def test_failed_upload_does_not_change_the_existing_release(self):

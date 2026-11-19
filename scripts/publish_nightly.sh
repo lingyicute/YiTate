@@ -26,11 +26,17 @@ previous_tag=${previous_tag%%$'\t'*}
 # Use a new filename instead of deleting the live asset before an upload.
 staging=$(mktemp -d)
 staged=false
+created_draft=false
 asset="app-release-unsigned-${GITHUB_SHA:0:12}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.apk"
 cleanup_staging() {
   if [[ $staged == true ]]; then
-    gh release delete-asset nightly "$asset" --yes ||
-      echo "::warning::Could not remove unpublished nightly asset $asset" >&2
+    if [[ $created_draft == true ]]; then
+      gh release delete nightly --yes ||
+        echo "::warning::Could not remove unpublished draft nightly release" >&2
+    else
+      gh release delete-asset nightly "$asset" --yes ||
+        echo "::warning::Could not remove unpublished nightly asset $asset" >&2
+    fi
   fi
   rm -rf -- "$staging"
 }
@@ -50,6 +56,7 @@ if [[ -n "$release" ]]; then
 else
   gh release create nightly "$staging/$asset" --draft --prerelease --latest=false \
     --title 'Nightly Build' --target "$GITHUB_SHA"
+  created_draft=true
 fi
 staged=true
 
