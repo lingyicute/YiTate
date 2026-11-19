@@ -28,16 +28,20 @@ if args[0] == 'api':
         sys.exit(1)
     if notes.exists() or draft.exists():
         print(42)
-elif args[:2] in (['release', 'create'], ['release', 'upload']):
-    assert '--clobber' not in args
+elif args[:2] == ['release', 'create']:
+    assert args[2:4] == ['nightly', '--draft'] and not notes.exists() and not draft.exists()
+    draft.touch()
+elif args[:2] == ['release', 'upload']:
+    assert '--clobber' not in args and (notes.exists() or draft.exists())
     if mode == 'upload-failed':
         sys.exit(1)
     path = Path(args[3])
     assert not (assets / path.name).exists()
+    if mode == 'partial-upload':
+        # The upload endpoint can create an empty starter asset before returning HTTP 502.
+        (assets / path.name).touch()
+        sys.exit(1)
     (assets / path.name).write_bytes(path.read_bytes())
-    if args[1] == 'create':
-        assert '--draft' in args and not notes.exists()
-        draft.touch()
     if mode == 'main-moved':
         subprocess.run(['git', 'commit', '--quiet', '--allow-empty', '-m', 'concurrent main'], check=True)
         subprocess.run(['git', 'push', '--quiet', 'origin', 'main'], check=True)
@@ -148,6 +152,31 @@ class PublishNightlyTests(unittest.TestCase):
         self.assertEqual(self.tag(), self.old_sha)
         self.assertEqual((self.store / 'notes').read_text(), 'previous notes')
         self.assertEqual((self.assets / 'app-release-unsigned.apk').read_bytes(), b'previous apk')
+
+    def test_failed_first_upload_cleans_up_its_draft_and_partial_asset(self):
+        result = self.publish(FAKE_GH_MODE='partial-upload')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(self.tag(), '')
+        self.assertFalse((self.store / 'draft').exists())
+        self.assertEqual(list(self.assets.iterdir()), [])
+
+    def test_failed_upload_with_partial_asset_preserves_the_published_apk(self):
+        self.previous_release()
+        result = self.publish(FAKE_GH_MODE='partial-upload')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(self.tag(), self.old_sha)
+        self.assertEqual((self.store / 'notes').read_text(), 'previous notes')
+        self.assertEqual({p.name for p in self.assets.iterdir()},
+                         {'app-release-unsigned.apk', 'unrelated.txt'})
+
+    def test_retry_with_the_same_asset_name_cannot_delete_a_published_apk(self):
+        result = self.publish()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        result = self.publish()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('already exists', result.stderr)
+        self.assertEqual((self.assets / self.asset).read_bytes(), b'new apk')
+        self.assertIn(self.asset, (self.store / 'notes').read_text())
 
     def test_failed_metadata_update_retains_the_previous_usable_asset(self):
         self.previous_release()
