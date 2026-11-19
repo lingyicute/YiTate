@@ -219,7 +219,19 @@ public class YiTateService extends Service {
                 .build();
         lastNotificationTitle = title;
         lastNotificationText = text;
-        startForeground(1, notification);
+        try {
+            startForeground(1, notification);
+        } catch (IllegalStateException | SecurityException e) {
+            // API 31+ rejects a background start, e.g. a sticky restart after the overlay
+            // permission (the exemption this app relies on) was revoked while the process was
+            // dead. Clear the lock and let the pending command stop the service instead.
+            Log.w(TAG, "Unable to run in the foreground", e);
+            if (preferences.getOrientation() == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+                stopLock(); // Nothing to report: the user already returned to Default.
+            } else {
+                failLock();
+            }
+        }
     }
 
     /** The notification is the only place a locked mode is visible outside the app. */
