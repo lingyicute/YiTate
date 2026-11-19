@@ -170,7 +170,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode != NOTIFICATION_PERMISSION_REQUEST_CODE) return;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+                || requestCode != NOTIFICATION_PERMISSION_REQUEST_CODE) return;
         boolean fromRationale = requestingFromRationale;
         requestingFromRationale = false;
         if (grantResults.length != 1 || permissions.length != 1
@@ -180,7 +181,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
             preferenceManager.setNotificationRationaleShown(false);
             // onResume reconciles the service and overlay permission after the prompt.
         } else {
-            // Only a real answer counts; an interrupted request returns no results.
+            // The Permission Controller may return DENIED even when the prompt was dismissed.
+            // A normal first refusal enables the rationale; refusing the retry disables it.
+            // An unchanged state does not establish a new refusal.
+            if (grantResults[0] != PackageManager.PERMISSION_DENIED
+                    || shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)
+                    == fromRationale) return;
             preferenceManager.setNotificationPermissionRequested(true);
             if (fromRationale) preferenceManager.setNotificationRationaleShown(true);
             // Notification permission is NOT a prerequisite for a foreground service.
