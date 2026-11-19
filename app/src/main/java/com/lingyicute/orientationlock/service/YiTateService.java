@@ -125,10 +125,13 @@ public class YiTateService extends Service {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if (currentOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-                && (!getString(R.string.running_notification_channel_name).equals(lastChannelName)
+        if (currentOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) return;
+        // There is no channel, and hence no remembered channel name, before API 26.
+        boolean channelRenamed = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && !getString(R.string.running_notification_channel_name).equals(lastChannelName);
+        if (channelRenamed
                 || !getString(R.string.running_notification_title).equals(lastNotificationTitle)
-                || !getNotificationText().equals(lastNotificationText))) {
+                || !getNotificationText().equals(lastNotificationText)) {
             setForeground();
         }
     }
