@@ -213,12 +213,13 @@
   /* Blobs */
   .blob {
     position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; pointer-events: none; z-index: -1;
-    animation: drift 18s ease-in-out infinite alternate;
+    /* End automatically instead of moving alongside the content indefinitely. */
+    animation: drift 4s ease-in-out both;
   }
   /* Pausing preserves the current animation phase when the hero returns. */
   .hero.motion-paused .blob { animation-play-state: paused; }
   .blob.b1 { width: 520px; height: 520px; background: var(--primary-container); top: -180px; right: -120px; }
-  .blob.b2 { width: 380px; height: 380px; background: var(--tertiary-container); bottom: -160px; left: -80px; animation-delay: -6s; }
+  .blob.b2 { width: 380px; height: 380px; background: var(--tertiary-container); bottom: -160px; left: -80px; animation-delay: -1s; }
   @keyframes drift { to { transform: translate(40px, 30px) scale(1.08); } }
 
   /* ---------- Phone demo ---------- */

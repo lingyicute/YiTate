@@ -485,6 +485,12 @@ test('enabling reduced motion after load disconnects the observer and clears pen
   assert.equal(first.listeners.transitioncancel, undefined);
 });
 
+test('decorative hero motion stops automatically within five seconds', () => {
+  const duration = html.match(/\.blob\s*\{[^}]*animation:\s*drift\s+([\d.]+)s\s+ease-in-out\s+both\s*;/);
+  assert.ok(duration, 'the drift has a finite duration and one iteration');
+  assert.ok(+duration[1] > 0 && +duration[1] <= 5);
+});
+
 test('hero drift pauses offscreen and in hidden tabs without restarting its animation', () => {
   assert.match(html, /\.hero\.motion-paused \.blob\s*\{\s*animation-play-state:\s*paused/);
   assert.match(html, /class="blob b1" aria-hidden="true"/);
