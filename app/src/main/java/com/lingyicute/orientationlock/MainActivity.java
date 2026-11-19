@@ -90,6 +90,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
                 == PackageManager.PERMISSION_GRANTED) {
+            requestingFromRationale = false;
             preferenceManager.setNotificationPermissionRequested(false);
             preferenceManager.setNotificationRationaleShown(false);
             if (rationaleDialog != null && rationaleDialog.isShowing()) {

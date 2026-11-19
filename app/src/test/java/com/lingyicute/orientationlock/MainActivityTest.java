@@ -427,9 +427,13 @@ public class MainActivityTest {
             AlertDialog dialog = ReflectionHelpers.getField(controller.get(), "rationaleDialog");
             assertNotNull(dialog);
             assertTrue(dialog.isShowing());
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            shadowOf(Looper.getMainLooper()).idle();
+            assertTrue(ReflectionHelpers.getField(controller.get(), "requestingFromRationale"));
             controller.pause();
             shadowOf(RuntimeEnvironment.getApplication()).grantPermissions(Manifest.permission.POST_NOTIFICATIONS);
             controller.resume();
+            assertFalse(ReflectionHelpers.getField(controller.get(), "requestingFromRationale"));
             assertFalse(preferences.isNotificationPermissionRequested());
             assertFalse(preferences.isNotificationRationaleShown());
             assertNull(ReflectionHelpers.getField(controller.get(), "rationaleDialog"));
