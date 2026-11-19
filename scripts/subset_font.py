@@ -65,9 +65,14 @@ def embed_font(html, font_data):
 
 def main():
     path = Path(INDEX_PATH)
-    # Universal newline conversion would rewrite unrelated bytes in a CRLF checkout.
-    with path.open(encoding="utf-8", newline="") as source_page:
-        html = source_page.read()
+    # Read raw bytes to preserve newlines and recognize edits during generation.
+    original = path.read_bytes()
+    html = original.decode("utf-8")
+
+    def require_unchanged():
+        if path.read_bytes() != original:
+            raise RuntimeError(f"{path} changed during font generation; rerun the script")
+
     characters = collect_characters(html)  # Validate the template before downloading.
     print(f"Subsetting {len(characters)} characters from {FONT_URL}")
     with urllib.request.urlopen(FONT_URL, timeout=30) as response:
@@ -77,17 +82,18 @@ def main():
     subset = build_subset(source, characters)
     updated = embed_font(html, subset)
     if updated == html:
+        require_unchanged()
         print("web/index.html is already up to date.")
         return
 
     # Unique temp file, atomic replacement, and no partial HTML on a write error.
     temporary = None
     try:
-        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", newline="\n",
-                                         dir=path.parent, suffix=".html", delete=False) as output:
+        with tempfile.NamedTemporaryFile(dir=path.parent, suffix=".html", delete=False) as output:
             temporary = Path(output.name)
-            output.write(updated)
+            output.write(updated.encode("utf-8"))
         os.chmod(temporary, path.stat().st_mode)
+        require_unchanged()
         os.replace(temporary, path)
     finally:
         if temporary is not None and temporary.exists():
