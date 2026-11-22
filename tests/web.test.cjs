@@ -741,3 +741,8 @@ test('a page restored from the back/forward cache adopts choices saved in the me
   blocked.window.listeners.pageshow({ persisted: true });
   assert.equal(blocked.root.dataset.theme, 'dark', 'unreadable storage keeps the in-memory choice');
 });
+
+test('the download note keeps its own size next to the generic download paragraph rule', () => {
+  assert.match(html, /\.download \.dl-note\s*\{[^}]*font-size:\s*\.85rem/);
+  assert.doesNotMatch(html, /\n\s*\.dl-note\s*\{/, '`.download p` outranks a bare class');
+});

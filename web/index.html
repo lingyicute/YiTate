@@ -391,7 +391,8 @@
   .download .btn-filled { background: var(--on-primary); color: var(--primary); }
   .download .btn-outlined { color: var(--on-primary); box-shadow: inset 0 0 0 1.5px var(--on-primary); box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--on-primary) 50%, transparent); }
   .download .btn-outlined:hover { background: color-mix(in oklab, var(--on-primary) 12%, transparent); }
-  .dl-note { margin-top: 20px; font-size: .85rem; opacity: .75; position: relative; }
+  /* A bare class loses to `.download p` and would never apply. */
+  .download .dl-note { margin-top: 20px; font-size: .85rem; opacity: .75; position: relative; }
   .dl-note code { font-family: var(--font); background: color-mix(in oklab, var(--on-primary) 15%, transparent); padding: 2px 8px; border-radius: 6px; }
 
   /* Footer */
