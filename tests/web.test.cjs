@@ -485,6 +485,15 @@ test('the skip link and anchor navigation account for the sticky app bar', () =>
   assert.match(html, /scroll-padding-top:\s*var\(--appbar-height\)/);
 });
 
+test('the unfocused skip link is parked clear of the viewport edge', () => {
+  const rule = html.match(/\.skip-link\s*\{([^}]*)\}/)[1];
+  const inset = +rule.match(/inset-block-start:\s*(\d+)px/)[1];
+  const parked = +rule.match(/transform:\s*translateY\(calc\(-100% - (\d+)px\)\)/)[1];
+  // Its height is fractional (1.6 line-height); moving it by exactly the inset leaves a hairline.
+  assert.ok(parked > inset, 'sub-pixel rounding must not expose the bottom edge');
+  assert.match(html, /\.skip-link:focus\s*\{\s*transform:\s*none/);
+});
+
 test('enabling reduced motion after load disconnects the observer and clears pending reveals', () => {
   const page = boot();
   const [first, second] = page.reveals;

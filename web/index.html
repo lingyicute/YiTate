@@ -128,7 +128,8 @@
     position: fixed; inset-block-start: 8px; inset-inline-start: 8px; z-index: 100;
     padding: 8px 16px; border-radius: var(--radius-xs);
     background: var(--primary); color: var(--on-primary);
-    transform: translateY(calc(-100% - 8px));
+    /* Park it a full inset above the edge: a fractional height otherwise leaves a hairline. */
+    transform: translateY(calc(-100% - 16px));
   }
   .skip-link:focus { transform: none; }
 
