@@ -780,6 +780,14 @@
     });
     // Only a committed change is stored; it also supersedes any queued paint.
     hueRange.addEventListener('change', e => setHue(+e.target.value));
+    onStoredChange('yt-hue', value => {
+      // A local drag is a newer, uncommitted choice; let the user finish it.
+      if (hueDirty) return;
+      const saved = value !== null && value.trim() !== '' ? Number(value) : NaN;
+      hue = Number.isInteger(saved) && saved >= 0 && saved <= 360 ? saved : 290;
+      cancelHueFrame();
+      renderHue();
+    });
     window.addEventListener('pagehide', commitHue);
     // Mobile browsers often suspend or discard a backgrounded tab without firing `pagehide`.
     document.addEventListener('visibilitychange', () => {

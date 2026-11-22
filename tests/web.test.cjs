@@ -680,3 +680,29 @@ test('theme changes in another tab update this tab without writing back', () => 
   assert.equal(page.root.dataset.theme, 'light');
   assert.equal(page.storage.has('yt-dark'), false);
 });
+
+
+test('external hue changes reconcile swatches without cancelling a local drag', () => {
+  const page = boot();
+  const range = page.get('#hueRange');
+  const change = key => page.window.listeners.storage({ key, storageArea: page.window.localStorage });
+  page.storage.set('yt-hue', '0');
+  change('yt-hue');
+  assert.equal(page.root.style.getPropertyValue('--hue'), '0');
+  page.storage.set('yt-hue', 'bad');
+  change('yt-hue');
+  assert.equal(Number(range.value), 290);
+  assert.equal(page.get('#swatches').children[0].getAttribute('aria-pressed'), 'true');
+  range.value = 123;
+  range.listeners.input({ target: range });
+  page.storage.set('yt-hue', '350');
+  change('yt-hue');
+  page.flushFrames();
+  assert.equal(page.root.style.getPropertyValue('--hue'), '123');
+  range.listeners.change({ target: range });
+  assert.equal(page.storage.get('yt-hue'), '123');
+  page.storage.clear();
+  change(null);
+  assert.equal(page.root.style.getPropertyValue('--hue'), '290');
+  assert.equal(page.storage.has('yt-hue'), false);
+});
