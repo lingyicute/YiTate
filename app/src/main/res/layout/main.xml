@@ -22,11 +22,16 @@
         android:gravity="center_vertical"
         >
 
+      <Space
+          android:layout_width="48dp"
+          android:layout_height="48dp"
+          android:layout_marginStart="12dp"
+          />
+
       <TextView
           android:layout_width="0dp"
           android:layout_height="wrap_content"
           android:layout_weight="1"
-          android:gravity="start|center_vertical"
           android:text="@string/orientation_dynamic"
           style="@style/TitleStyle"
           />

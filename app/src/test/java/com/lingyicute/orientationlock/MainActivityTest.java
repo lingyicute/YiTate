@@ -20,8 +20,11 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.os.Process;
 import android.provider.Settings;
+import android.view.Gravity;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.Space;
 import android.widget.TextView;
 
 import com.lingyicute.orientationlock.preference.PreferenceManager;
@@ -155,6 +158,25 @@ public class MainActivityTest {
             assertTrue(choice.getMaxLines() > 1);
             assertNull(choice.getEllipsize());
             assertTrue(activity.findViewById(R.id.iv_about) instanceof ImageButton);
+        }
+    }
+
+    @Test
+    public void dynamicSectionHeadingRemainsCenteredBetweenBalancedControls() {
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            MainActivity activity = controller.get();
+            LinearLayout root = activity.findViewById(R.id.ll_root);
+            LinearLayout header = (LinearLayout) root.getChildAt(0);
+            assertTrue(header.getChildAt(0) instanceof Space);
+            TextView dynamicHeading = (TextView) header.getChildAt(1);
+            ImageButton about = (ImageButton) header.getChildAt(2);
+            assertEquals(Gravity.CENTER, dynamicHeading.getGravity());
+            LinearLayout.LayoutParams startParams =
+                    (LinearLayout.LayoutParams) header.getChildAt(0).getLayoutParams();
+            LinearLayout.LayoutParams endParams =
+                    (LinearLayout.LayoutParams) about.getLayoutParams();
+            assertEquals(endParams.width, startParams.width);
+            assertEquals(endParams.getMarginEnd(), startParams.getMarginStart());
         }
     }
 
