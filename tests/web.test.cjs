@@ -724,3 +724,20 @@ test('external hue changes reconcile swatches without cancelling a local drag', 
   assert.equal(page.root.style.getPropertyValue('--hue'), '290');
   assert.equal(page.storage.has('yt-hue'), false);
 });
+
+test('a page restored from the back/forward cache adopts choices saved in the meantime', () => {
+  const page = boot();
+  page.storage.set('yt-dark', '1');
+  page.storage.set('yt-hue', '170');
+  page.window.listeners.pageshow({ persisted: false });
+  assert.equal(page.root.dataset.theme, 'light', 'an ordinary load has already read storage');
+  page.window.listeners.pageshow({ persisted: true });
+  assert.equal(page.root.dataset.theme, 'dark');
+  assert.equal(page.root.style.getPropertyValue('--hue'), '170');
+  assert.equal(page.get('#swatches').children[3].getAttribute('aria-pressed'), 'true');
+
+  const blocked = boot({ blocked: true });
+  blocked.get('#themeBtn').listeners.click();
+  blocked.window.listeners.pageshow({ persisted: true });
+  assert.equal(blocked.root.dataset.theme, 'dark', 'unreadable storage keeps the in-memory choice');
+});

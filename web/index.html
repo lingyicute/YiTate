@@ -700,6 +700,13 @@
       } catch (_) { return; }
       apply(value);
     });
+    // No storage event reaches a page while it sits in the back/forward cache.
+    window.addEventListener('pageshow', event => {
+      if (!event.persisted) return;
+      let value;
+      try { value = window.localStorage.getItem(key); } catch (_) { return; }
+      apply(value);
+    });
   }
 
   /* ---------- Material You tonal palette via oklch ---------- */
