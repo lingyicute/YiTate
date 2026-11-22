@@ -427,6 +427,16 @@ public class YiTateServiceTest {
     }
 
     @Test
+    public void notificationReopensTheActivityAsANewTaskLaunch() {
+        Intent launch = shadowOf(shadowOf(service).getLastForegroundNotification().contentIntent)
+                .getSavedIntent();
+        assertEquals(MainActivity.class.getName(), launch.getComponent().getClassName());
+        int required = Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                | Intent.FLAG_ACTIVITY_SINGLE_TOP;
+        assertEquals(required, launch.getFlags() & required);
+    }
+
+    @Test
     public void notificationFallsBackToTheGenericDescriptionWithoutALock() {
         assertEquals("YiTate is running for keeping the orientation", notificationText());
     }

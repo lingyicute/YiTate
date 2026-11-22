@@ -204,7 +204,9 @@ public class YiTateService extends Service {
                 ? new Notification.Builder(this, NOTIFICATION_ID)
                 : new Notification.Builder(this);
         Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        // A notification tap does not come from an activity, so it has to ask for a task itself.
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                         ? PendingIntent.FLAG_IMMUTABLE : 0));
