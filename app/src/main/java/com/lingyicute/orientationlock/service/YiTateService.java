@@ -276,8 +276,8 @@ public class YiTateService extends Service {
             windowManager.addView(view, params);
             holderView = view; // Only remember successfully attached views.
             return true;
-        } catch (SecurityException | WindowManager.BadTokenException e) {
-            // Permission can be revoked between the check and add/updateViewLayout.
+        } catch (SecurityException | WindowManager.BadTokenException | WindowManager.InvalidDisplayException e) {
+            // Permission or the target display can disappear before the window is attached.
             Log.w(TAG, "Unable to apply orientation overlay", e);
             failLock();
             return false;

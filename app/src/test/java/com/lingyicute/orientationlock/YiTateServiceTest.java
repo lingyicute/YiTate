@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.os.PowerManager;
 import android.os.Process;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 
 import com.lingyicute.orientationlock.preference.PreferenceManager;
@@ -30,6 +31,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowService;
+import org.robolectric.shadows.ShadowWindowManagerImpl;
 import org.robolectric.shadows.ShadowNotification;
 import org.robolectric.shadows.ShadowSettings;
 import org.robolectric.util.ReflectionHelpers;
@@ -262,6 +264,24 @@ public class YiTateServiceTest {
         assertEquals(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, preferences.getOrientation());
 
         screen(true);
+        assertNull(overlay());
+        assertTrue(shadowOf(service).isStoppedBySelf());
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, preferences.getOrientation());
+    }
+
+    @Implements(className = "android.view.WindowManagerImpl", isInAndroidSdk = false)
+    public static class RemovedDisplay extends ShadowWindowManagerImpl {
+        @Override
+        @Implementation
+        public void addView(View view, ViewGroup.LayoutParams params) {
+            throw new WindowManager.InvalidDisplayException("Display removed");
+        }
+    }
+
+    @Test
+    @Config(shadows = RemovedDisplay.class)
+    public void losingTheDisplayDuringAttachmentClearsTheLock() {
+        assertEquals(Service.START_NOT_STICKY, select(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE));
         assertNull(overlay());
         assertTrue(shadowOf(service).isStoppedBySelf());
         assertEquals(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, preferences.getOrientation());
