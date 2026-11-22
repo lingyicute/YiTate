@@ -2,6 +2,10 @@
 set -euo pipefail
 
 : "${GITHUB_REF:?}" "${GITHUB_SHA:?}" "${GITHUB_OUTPUT:?}"
+if [[ ! $GITHUB_SHA =~ ^[0-9a-f]{40}$ ]]; then
+  echo "Invalid GITHUB_SHA: $GITHUB_SHA" >&2
+  exit 1
+fi
 if [[ $GITHUB_REF != refs/heads/main ]]; then
   echo '::notice::Skipping Pages deployment outside main.'
   exit 0

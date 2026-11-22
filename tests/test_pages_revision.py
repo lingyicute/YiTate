@@ -74,3 +74,11 @@ class PagesRevisionTests(unittest.TestCase):
         result = self.check(GITHUB_SHA='0' * 40)
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual(self.output.read_text(), '')
+
+    def test_non_commit_sha_is_rejected_before_git_diff(self):
+        self.push('web/index.html', 'new page')
+        for invalid in ('FETCH_HEAD', '--stat', 'not-a-sha'):
+            with self.subTest(invalid=invalid):
+                result = self.check(GITHUB_SHA=invalid)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertEqual(self.output.read_text(), '')
