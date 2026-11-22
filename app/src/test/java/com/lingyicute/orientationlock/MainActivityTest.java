@@ -93,6 +93,21 @@ public class MainActivityTest {
     }
 
     @Test
+    public void restartingActivityReconcilesSelectionChangedWhileStopped() {
+        ShadowSettings.setCanDrawOverlays(true);
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            MainActivity activity = controller.get();
+            activity.findViewById(R.id.tv_orientation_landscape).performClick();
+            assertTrue(activity.findViewById(R.id.tv_orientation_landscape).isSelected());
+            controller.pause().stop();
+            preferences.setOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+            controller.start();
+            assertTrue(activity.findViewById(R.id.tv_orientation_default).isSelected());
+            assertFalse(activity.findViewById(R.id.tv_orientation_landscape).isSelected());
+        }
+    }
+
+    @Test
     public void activeActivityReflectsAServiceRollback() {
         ShadowSettings.setCanDrawOverlays(true);
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {

@@ -76,6 +76,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
     protected void onStart() {
         super.onStart();
         preferenceManager.registerListener(selectionListener);
+        showSelection(PermissionUtils.isDrawOverlaysPermissionGranted(this)
+                ? preferenceManager.getOrientation()
+                : ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     @Override
