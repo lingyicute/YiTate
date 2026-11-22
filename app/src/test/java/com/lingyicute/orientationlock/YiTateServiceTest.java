@@ -1,6 +1,7 @@
 package com.lingyicute.orientationlock;
 
 import android.app.AppOpsManager;
+import android.app.Notification;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -25,6 +26,10 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ServiceController;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowService;
 import org.robolectric.shadows.ShadowNotification;
 import org.robolectric.shadows.ShadowSettings;
 import org.robolectric.util.ReflectionHelpers;
@@ -102,6 +107,29 @@ public class YiTateServiceTest {
         preferences.setOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         assertNull(overlay());
         assertTrue(shadowOf(service).isStoppedBySelf());
+    }
+
+    @Implements(Service.class)
+    public static class RejectableForeground extends ShadowService {
+        boolean reject;
+
+        @Override
+        @Implementation
+        protected void startForeground(int id, Notification notification) {
+            if (reject) throw new SecurityException("Foreground promotion rejected");
+            super.startForeground(id, notification);
+        }
+    }
+
+    @Test
+    @Config(shadows = RejectableForeground.class)
+    public void rejectedForegroundRefreshDoesNotRequestAStickyRestart() {
+        RejectableForeground foreground = Shadow.extract(service);
+        foreground.reject = true; // onCreate succeeded; fail the command's refresh.
+        assertEquals(Service.START_NOT_STICKY, select(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT));
+        assertNull(overlay());
+        assertTrue(shadowOf(service).isStoppedBySelf());
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, preferences.getOrientation());
     }
 
     @Test

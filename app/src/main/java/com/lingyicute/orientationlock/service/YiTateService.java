@@ -160,8 +160,7 @@ public class YiTateService extends Service {
         }
         if (!applyOrientation()) return false;
         scheduleOverlayPermissionPoll();
-        if (refreshNotification || currentOrientation != previousOrientation) setForeground();
-        return true;
+        return (!refreshNotification && currentOrientation == previousOrientation) || setForeground();
     }
 
     @Override
@@ -197,7 +196,7 @@ public class YiTateService extends Service {
         }
     }
 
-    private void setForeground() {
+    private boolean setForeground() {
         ensureNotificationChannel();
         String title = getString(R.string.running_notification_title);
         String text = getNotificationText();
@@ -217,10 +216,11 @@ public class YiTateService extends Service {
                 .setPriority(Notification.PRIORITY_LOW)
                 .setOngoing(true)
                 .build();
-        lastNotificationTitle = title;
-        lastNotificationText = text;
         try {
             startForeground(1, notification);
+            lastNotificationTitle = title;
+            lastNotificationText = text;
+            return true;
         } catch (IllegalStateException | SecurityException e) {
             // API 31+ rejects a background start, e.g. a sticky restart after the overlay
             // permission (the exemption this app relies on) was revoked while the process was
@@ -231,6 +231,7 @@ public class YiTateService extends Service {
             } else {
                 failLock();
             }
+            return false;
         }
     }
 
