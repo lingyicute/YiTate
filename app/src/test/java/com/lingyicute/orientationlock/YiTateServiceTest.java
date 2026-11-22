@@ -375,6 +375,14 @@ public class YiTateServiceTest {
     }
 
     @Test
+    @Config(sdk = 34)
+    public void foregroundNotificationOptsOutOfDeferralOnAndroid12Plus() {
+        Notification notification = shadowOf(service).getLastForegroundNotification();
+        assertEquals(Notification.FOREGROUND_SERVICE_IMMEDIATE,
+                (int) ReflectionHelpers.getField(notification, "mFgsDeferBehavior"));
+    }
+
+    @Test
     public void refreshingThePersistentNotificationDoesNotRepeatItsAlert() {
         select(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         select(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);

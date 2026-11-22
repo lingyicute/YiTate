@@ -210,15 +210,17 @@ public class YiTateService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                         ? PendingIntent.FLAG_IMMUTABLE : 0));
-        Notification notification = builder
-                .setContentTitle(title)
+        builder.setContentTitle(title)
                 .setContentText(text)
                 .setSmallIcon(R.drawable.ic_stat_orientation)
                 .setContentIntent(pendingIntent)
                 .setPriority(Notification.PRIORITY_LOW)
                 .setOnlyAlertOnce(true)
-                .setOngoing(true)
-                .build();
+                .setOngoing(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE);
+        }
+        Notification notification = builder.build();
         try {
             startForeground(1, notification);
             lastNotificationTitle = title;
