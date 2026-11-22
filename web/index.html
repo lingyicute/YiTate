@@ -243,6 +243,10 @@
   .hero {
     position: relative; padding: 72px 0 40px; overflow: hidden;
   }
+  /* A vertical clip cuts the blurred blobs along a hard line; clip sideways only where possible. */
+  @supports (overflow: clip) {
+    .hero { overflow-x: clip; overflow-y: visible; }
+  }
   .hero-grid {
     display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center;
   }

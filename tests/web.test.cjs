@@ -516,6 +516,15 @@ test('decorative hero motion stops automatically within five seconds', () => {
   assert.ok(+duration[1] > 0 && +duration[1] <= 5);
 });
 
+test('the hero does not cut its blurred blobs along a hard horizontal edge', () => {
+  const modern = html.match(/@supports \(overflow: clip\)\s*\{\s*\.hero\s*\{([^}]*)\}/);
+  assert.ok(modern, 'browsers with overflow: clip let the glow fade out past the section');
+  assert.match(modern[1], /overflow-x:\s*clip/, 'blobs must still not widen the page');
+  assert.match(modern[1], /overflow-y:\s*visible/);
+  assert.ok(html.indexOf('@supports (overflow: clip)') > html.search(/\n  \.hero\s*\{[^}]*overflow:\s*hidden/),
+    'the override follows the fallback for older browsers');
+});
+
 test('hero drift pauses offscreen and in hidden tabs without restarting its animation', () => {
   assert.match(html, /\.hero\.motion-paused \.blob\s*\{\s*animation-play-state:\s*paused/);
   assert.match(html, /class="blob b1" aria-hidden="true"/);
