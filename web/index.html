@@ -683,6 +683,20 @@
     set(key, value) { try { window.localStorage.setItem(key, value); } catch (_) { /* session-only */ } }
   };
 
+  function onStoredChange(key, apply) {
+    window.addEventListener('storage', event => {
+      if (event.key !== key && event.key !== null) return;
+      let value;
+      try {
+        const store = window.localStorage;
+        if (event.storageArea !== store) return;
+        // A later write may have superseded this queued event.
+        value = store.getItem(key);
+      } catch (_) { return; }
+      apply(value);
+    });
+  }
+
   /* ---------- Material You tonal palette via oklch ---------- */
   const supportsOklch = Boolean(window.CSS && typeof CSS.supports === 'function' && CSS.supports('color', 'oklch(.5 .1 290)'));
   function applyPalette(hue, dark) {
@@ -694,10 +708,11 @@
 
   let hue = Number(root.style.getPropertyValue('--hue') || '290');
   const darkMedia = mediaQuery('(prefers-color-scheme: dark)');
-  const storedDark = storage.get('yt-dark');
-  let dark = storedDark === '1' || (storedDark !== '0' && darkMedia.matches);
-  // Track an explicit choice in memory too: storage can be unavailable or reject writes.
-  let userSelectedDark = storedDark === '1' || storedDark === '0';
+  let dark, userSelectedDark;
+  function restoreDark(value) {
+    userSelectedDark = value === '1' || value === '0';
+    setDark(value === '1' || (!userSelectedDark && darkMedia.matches), false);
+  }
   const followSystemTheme = e => {
     if (!userSelectedDark) setDark(e.matches, false);
   };
@@ -793,7 +808,8 @@
     cancelHueFrame();
     renderHue();
   }
-  setDark(dark, false);
+  restoreDark(storage.get('yt-dark'));
+  onStoredChange('yt-dark', restoreDark);
 
   themeBtn.addEventListener('click', () => { setDark(!dark); showSnack(dark ? '已切换到深色模式 🌙' : '已切换到浅色模式 ☀️'); });
 

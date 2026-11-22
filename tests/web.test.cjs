@@ -128,13 +128,14 @@ function boot({
     unobserve(target) { this.unobserved = target; }
     disconnect() { this.disconnected = true; }
   };
+  const localStorage = {
+    getItem: key => storage.has(key) ? storage.get(key) : null,
+    setItem: (key, value) => storage.set(key, String(value))
+  };
   Object.defineProperty(sandbox, 'localStorage', {
     get() {
       if (blocked) throw new Error('SecurityError: storage is blocked');
-      return {
-        getItem: key => storage.has(key) ? storage.get(key) : null,
-        setItem: (key, value) => storage.set(key, String(value))
-      };
+      return localStorage;
     }
   });
   sandbox.window = sandbox;
@@ -660,4 +661,22 @@ test('duplicate and stale reveal observer entries do not register extra cleanups
   page.observers[0].fn([{ target: second, isIntersecting: true }]);
   assert.equal(second.classList.contains('in'), false, 'a queued entry after disconnect is ignored');
   assert.equal(page.timeouts.filter(t => t.delay === 1200).length, 1);
+});
+
+
+test('theme changes in another tab update this tab without writing back', () => {
+  const page = boot({ schemeDark: true });
+  const area = page.window.localStorage;
+  page.storage.set('yt-dark', '0');
+  page.window.listeners.storage({ key: 'yt-dark', storageArea: {} });
+  assert.equal(page.root.dataset.theme, 'dark', 'ignore session storage');
+  page.window.listeners.storage({ key: 'yt-dark', storageArea: area, newValue: '1' });
+  assert.equal(page.root.dataset.theme, 'light', 'read the latest stored choice');
+  assert.equal(page.get('#themeBtn').getAttribute('aria-pressed'), 'false');
+  page.storage.clear();
+  page.window.listeners.storage({ key: null, storageArea: area });
+  assert.equal(page.root.dataset.theme, 'dark');
+  page.fireMedia(false);
+  assert.equal(page.root.dataset.theme, 'light');
+  assert.equal(page.storage.has('yt-dark'), false);
 });
