@@ -374,6 +374,15 @@ public class YiTateServiceTest {
     }
 
     @Test
+    public void refreshingThePersistentNotificationDoesNotRepeatItsAlert() {
+        select(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        select(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        Notification notification = shadowOf(service).getLastForegroundNotification();
+        assertEquals("Locked: Portrait", notificationText());
+        assertNotEquals(0, notification.flags & Notification.FLAG_ONLY_ALERT_ONCE);
+    }
+
+    @Test
     public void notificationReportsTheLockedMode() {
         select(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         assertEquals("Locked: Portrait", notificationText());

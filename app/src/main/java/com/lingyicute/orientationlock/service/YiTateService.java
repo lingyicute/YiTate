@@ -214,6 +214,7 @@ public class YiTateService extends Service {
                 .setSmallIcon(R.drawable.ic_stat_orientation)
                 .setContentIntent(pendingIntent)
                 .setPriority(Notification.PRIORITY_LOW)
+                .setOnlyAlertOnce(true)
                 .setOngoing(true)
                 .build();
         try {
