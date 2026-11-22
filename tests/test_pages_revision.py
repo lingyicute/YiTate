@@ -56,6 +56,15 @@ class PagesRevisionTests(unittest.TestCase):
         self.assertIn('Skipping stale Pages deployment', result.stdout)
         self.assertEqual(self.output.read_text(), '')
 
+    def test_changed_build_checks_invalidate_an_older_verified_artifact(self):
+        for name in ('test_subset_font.py', 'test_pages_revision.py'):
+            with self.subTest(name=name):
+                self.push(f'tests/{name}', 'new regression check')
+                result = self.check()
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(self.output.read_text(), '')
+                self.built_sha = self.git('rev-parse', 'HEAD')
+
     def test_main_branch_check_is_case_sensitive(self):
         result = self.check(GITHUB_REF='refs/heads/Main')
         self.assertEqual(result.returncode, 0, result.stderr)

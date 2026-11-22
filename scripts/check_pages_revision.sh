@@ -11,7 +11,7 @@ fi
 git fetch --quiet --no-tags --depth=1 origin refs/heads/main
 if git diff --quiet "$GITHUB_SHA" FETCH_HEAD -- web/ scripts/subset_font.py \
     scripts/requirements.txt scripts/check_pages_revision.sh tests/web.test.cjs \
-    .github/workflows/static.yml; then
+    tests/test_subset_font.py tests/test_pages_revision.py .github/workflows/static.yml; then
   echo 'deploy=true' >> "$GITHUB_OUTPUT"
 else
   status=$?

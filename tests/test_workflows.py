@@ -60,6 +60,15 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("id-token: write", deploy)
         self.assertIn("pages: write", deploy)
 
+    def test_pages_runs_its_script_regressions_before_generating_artifacts(self):
+        pages = (ROOT / '.github/workflows/static.yml').read_text(encoding='utf-8')
+        build = pages.split('\n  deploy:', maxsplit=1)[0]
+        generate = build.index('run: python scripts/subset_font.py')
+        for name in ('test_subset_font.py', 'test_pages_revision.py'):
+            self.assertIn(f'"tests/{name}"', build)
+            self.assertLess(build.index(f"python -m unittest discover -s tests -p '{name}'"), generate)
+        self.assertNotIn('continue-on-error: true', build)
+
     def test_pages_build_and_deploy_are_restricted_to_main(self):
         pages = (ROOT / ".github/workflows/static.yml").read_text(encoding="utf-8")
         self.assertEqual(pages.count("if: github.ref == 'refs/heads/main'"), 2)
