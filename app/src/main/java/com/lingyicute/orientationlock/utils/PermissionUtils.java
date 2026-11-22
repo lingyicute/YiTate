@@ -36,7 +36,8 @@ public class PermissionUtils {
                         "checkOpNoThrow", int.class, int.class, String.class);
                 int result = (Integer) checkOp.invoke(appOps, LEGACY_OP_SYSTEM_ALERT_WINDOW,
                         Process.myUid(), context.getPackageName());
-                return result == AppOpsManager.MODE_ALLOWED;
+                return result == AppOpsManager.MODE_ALLOWED
+                        || result == AppOpsManager.MODE_DEFAULT;
             } catch (ReflectiveOperationException | SecurityException ignored) {
                 // Some OEM builds may not expose the hidden check. Use the install-time grant.
             }
