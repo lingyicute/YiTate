@@ -29,7 +29,7 @@ if args[0] == 'api':
     if notes.exists() or draft.exists():
         print(42)
 elif args[:2] == ['release', 'create']:
-    assert args[2:4] == ['nightly', '--draft'] and not notes.exists() and not draft.exists()
+    assert args[2:4] == ['nightly', '--draft'] and '--notes' in args and not notes.exists() and not draft.exists()
     draft.touch()
 elif args[:2] == ['release', 'upload']:
     assert '--clobber' not in args and (notes.exists() or draft.exists())

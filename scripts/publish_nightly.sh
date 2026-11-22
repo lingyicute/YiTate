@@ -64,7 +64,7 @@ release=$(gh api --paginate 'repos/{owner}/{repo}/releases?per_page=100' \
 if [[ -z "$release" ]]; then
   # Do not combine draft creation and upload: a failed upload may leave the draft.
   gh release create nightly --draft --prerelease --latest=false \
-    --title 'Nightly Build' --target "$GITHUB_SHA"
+    --title 'Nightly Build' --notes '' --target "$GITHUB_SHA"
   created_draft=true
 else
   if [[ ! $release =~ ^[0-9]+$ ]]; then
