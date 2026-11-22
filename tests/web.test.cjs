@@ -746,3 +746,45 @@ test('the download note keeps its own size next to the generic download paragrap
   assert.match(html, /\.download \.dl-note\s*\{[^}]*font-size:\s*\.85rem/);
   assert.doesNotMatch(html, /\n\s*\.dl-note\s*\{/, '`.download p` outranks a bare class');
 });
+
+// OKLCH to gamma-encoded sRGB, clipped to the gamut the way browsers paint it.
+function srgb(lightness, chroma, hue) {
+  const a = chroma * Math.cos(hue * Math.PI / 180), b = chroma * Math.sin(hue * Math.PI / 180);
+  const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+  const m = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+  const s = (lightness - 0.0894841775 * a - 1.2914855480 * b) ** 3;
+  return [
+    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s
+  ].map(v => Math.min(1, Math.max(0, v))).map(v => v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055);
+}
+const blend = (front, back, alpha) => front.map((v, i) => v * alpha + back[i] * (1 - alpha));
+function contrast(first, second) {
+  const luminance = color => color.map(v => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+    .reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+  const [dim, bright] = [luminance(first), luminance(second)].sort((x, y) => x - y);
+  return (bright + 0.05) / (dim + 0.05);
+}
+
+test('text on the primary tone keeps WCAG AA contrast at every selectable hue', () => {
+  const tone = name => [...html.matchAll(new RegExp(`--${name}: oklch\\(([\\d.]+) ([\\d.]+) var\\(--hue\\)\\)`, 'g'))]
+    .map(match => [+match[1], +match[2]]);
+  const primary = tone('primary'), onPrimary = tone('on-primary'), backdrop = tone('surface-container-low');
+  assert.deepEqual([primary.length, onPrimary.length, backdrop.length], [2, 2, 2], 'light and dark tones');
+  const lead = +html.match(/\.download p\s*\{\s*opacity:\s*([\d.]+)/)[1];
+  const note = +html.match(/\.download \.dl-note\s*\{[^}]*opacity:\s*([\d.]+)/)[1];
+  const tint = html.match(/\.dl-note code\s*\{[^}]*var\(--on-primary\) (\d+)%, transparent/)[1] / 100;
+  const layer = html.match(/\.layer\.l3\s*\{[^}]*var\(--primary\) (\d+)%, transparent/)[1] / 100;
+  for (const theme of [0, 1]) {
+    for (let hue = 0; hue <= 360; hue += 5) {
+      const fill = srgb(...primary[theme], hue), text = srgb(...onPrimary[theme], hue);
+      const chip = blend(text, fill, tint * note), overlay = blend(fill, srgb(...backdrop[theme], hue), layer);
+      const where = `${theme ? 'dark' : 'light'} theme, hue ${hue}`;
+      assert.ok(contrast(blend(text, fill, lead), fill) >= 4.5, `download lead: ${where}`);
+      assert.ok(contrast(blend(text, fill, note), fill) >= 4.5, `download note: ${where}`);
+      assert.ok(contrast(blend(text, chip, note), chip) >= 4.5, `permission chip: ${where}`);
+      assert.ok(contrast(text, overlay) >= 4.5, `overlay layer label: ${where}`);
+    }
+  }
+});

@@ -372,7 +372,7 @@
   .layers:hover .layer { transform: translate(-50%,-50%) rotateX(55deg) rotateZ(-35deg) translateZ(calc(var(--z) * 1.6)); }
   .layer.l1 { --z: 0px; background: var(--surface-container-highest); color: var(--on-surface); }
   .layer.l2 { --z: 50px; background: var(--secondary-container); color: var(--on-secondary-container); }
-  .layer.l3 { --z: 100px; background: var(--primary); background: color-mix(in oklab, var(--primary) 75%, transparent); color: var(--on-primary); border: 2px dashed var(--on-primary); backdrop-filter: blur(2px); }
+  .layer.l3 { --z: 100px; background: var(--primary); background: color-mix(in oklab, var(--primary) 92%, transparent); color: var(--on-primary); border: 2px dashed var(--on-primary); backdrop-filter: blur(2px); }
 
   /* Download */
   .download {
@@ -386,14 +386,15 @@
   .download::before { width: 360px; height: 360px; top: -160px; left: -120px; }
   .download::after { width: 280px; height: 280px; bottom: -140px; right: -80px; }
   .download h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; letter-spacing: -.02em; position: relative; }
-  .download p { opacity: .85; margin-top: 12px; position: relative; font-size: 1.05rem; }
+  /* Dimming costs contrast: these values keep 4.5:1 on the primary tone at every hue. */
+  .download p { opacity: .9; margin-top: 12px; position: relative; font-size: 1.05rem; }
   .dl-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; margin-top: 32px; position: relative; }
   .download .btn-filled { background: var(--on-primary); color: var(--primary); }
   .download .btn-outlined { color: var(--on-primary); box-shadow: inset 0 0 0 1.5px var(--on-primary); box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--on-primary) 50%, transparent); }
   .download .btn-outlined:hover { background: color-mix(in oklab, var(--on-primary) 12%, transparent); }
   /* A bare class loses to `.download p` and would never apply. */
-  .download .dl-note { margin-top: 20px; font-size: .85rem; opacity: .75; position: relative; }
-  .dl-note code { font-family: var(--font); background: color-mix(in oklab, var(--on-primary) 15%, transparent); padding: 2px 8px; border-radius: 6px; }
+  .download .dl-note { margin-top: 20px; font-size: .85rem; opacity: 1; position: relative; }
+  .dl-note code { font-family: var(--font); background: color-mix(in oklab, var(--on-primary) 6%, transparent); padding: 2px 8px; border-radius: 6px; }
 
   /* Footer */
   footer { padding: 48px 0 40px; color: var(--on-surface-variant); font-size: .9rem; }
