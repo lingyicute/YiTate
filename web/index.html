@@ -365,7 +365,8 @@
   .layer {
     position: absolute; left: 50%; top: 50%; width: 220px; height: 150px; border-radius: 18px;
     transform: translate(-50%,-50%) rotateX(55deg) rotateZ(-35deg) translateZ(var(--z));
-    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .9rem;
+    /* Labels sit on the edge the upper layers leave uncovered, so reading them needs no hover. */
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 12px; font-weight: 700; font-size: .9rem;
     box-shadow: 0 20px 40px -20px rgba(0,0,0,.4);
     transition: transform .6s var(--ease-emph);
   }

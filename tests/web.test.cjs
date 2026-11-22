@@ -788,3 +788,9 @@ test('text on the primary tone keeps WCAG AA contrast at every selectable hue', 
     }
   }
 });
+
+test('layer diagram labels stay readable on touch screens that cannot hover', () => {
+  const layer = html.match(/\n  \.layer\s*\{([^}]*)\}/)[1];
+  assert.match(layer, /align-items:\s*flex-end/, 'a centred label is covered by the layer above');
+  assert.match(layer, /padding-bottom:\s*\d+px/);
+});
