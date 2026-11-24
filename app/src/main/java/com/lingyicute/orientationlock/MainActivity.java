@@ -144,7 +144,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 // prompting again on every cold start would only nag or fail silently.
                 return;
             }
-            // 检查是否应该显示权限说明
             if (rationale) {
                 // Persist only once the user answers; an interrupted dialog must be shown again.
                 rationaleDialog = new AlertDialog.Builder(this)
@@ -162,7 +161,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                 preferenceManager.setNotificationRationaleShown(true))
                         .show();
             } else {
-                // 首次请求或用户选择了"不再询问"
+                // First request, or a retry after an earlier prompt was dismissed unanswered.
                 requestPermissions(
                         new String[]{Manifest.permission.POST_NOTIFICATIONS},
                         NOTIFICATION_PERMISSION_REQUEST_CODE);
