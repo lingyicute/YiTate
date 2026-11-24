@@ -196,6 +196,19 @@ public class MainActivityTest {
     }
 
     @Test
+    public void aboutButtonHasRoomForItsIconWithoutClipping() {
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            ImageButton about = controller.get().findViewById(R.id.iv_about);
+            Drawable icon = about.getDrawable();
+            assertNotNull(icon);
+            int width = about.getLayoutParams().width - about.getPaddingLeft() - about.getPaddingRight();
+            int height = about.getLayoutParams().height - about.getPaddingTop() - about.getPaddingBottom();
+            assertTrue(width >= icon.getIntrinsicWidth());
+            assertTrue(height >= icon.getIntrinsicHeight());
+        }
+    }
+
+    @Test
     @Config(sdk = {21, 28, 34})
     public void iconsAreTintedWithTheThemeAccent() {
         try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
