@@ -810,3 +810,9 @@ test('the layer diagram scales and stays contained on narrow screens', () => {
   const mobile = html.match(/@media \(max-width: 560px\)\s*\{([\s\S]*?)\n  \}/)[1];
   assert.match(mobile, /\.layer\s*\{[^}]*width:\s*184px/);
 });
+
+test('footer note and links align with the start edge on narrow screens', () => {
+  const mobile = html.match(/@media \(max-width: 560px\)\s*\{([\s\S]*?)\n  \}/)[1];
+  assert.match(mobile, /\.foot \.foot-end\s*\{\s*align-items:\s*flex-start/);
+  assert.match(mobile, /\.foot \.foot-note\s*\{[^}]*text-align:\s*left/);
+});
