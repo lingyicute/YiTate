@@ -794,3 +794,8 @@ test('layer diagram labels stay readable on touch screens that cannot hover', ()
   assert.match(layer, /align-items:\s*flex-end/, 'a centred label is covered by the layer above');
   assert.match(layer, /padding-bottom:\s*\d+px/);
 });
+
+test('the hero chip dot does not shrink when the label wraps on narrow screens', () => {
+  const dot = html.match(/\.chip \.dot\s*\{([^}]*)\}/)[1];
+  assert.match(dot, /flex:\s*none|flex-shrink:\s*0/);
+});
