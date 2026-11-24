@@ -235,7 +235,7 @@ public class YiTateServiceTest {
     @Config(sdk = {21, 22})
     public void legacyAppOpRevocationClearsAnAttachedLockOnTheNextPoll() {
         AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
-        int op = 24; // SYSTEM_ALERT_WINDOW before its public integer constants.
+        int op = 24; // SYSTEM_ALERT_WINDOW before its public string name.
         select(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         assertNotNull(overlay());
 
