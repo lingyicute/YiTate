@@ -199,6 +199,7 @@ public class YiTateService extends Service {
             }
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
                     channelName, NotificationManager.IMPORTANCE_LOW);
+            channel.setShowBadge(false);
             manager.createNotificationChannel(channel);
             lastChannelName = channelName;
         }
