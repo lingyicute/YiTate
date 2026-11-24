@@ -227,9 +227,11 @@ public class YiTateService extends Service {
                 .setContentText(text)
                 .setSmallIcon(R.drawable.ic_stat_orientation)
                 .setContentIntent(pendingIntent)
-                .setPriority(Notification.PRIORITY_LOW)
                 .setOnlyAlertOnce(true)
                 .setOngoing(true);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            builder.setPriority(Notification.PRIORITY_LOW);
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE);
         }
