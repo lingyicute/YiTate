@@ -216,3 +216,11 @@ class PublishNightlyTests(unittest.TestCase):
         self.assertNotEqual(self.publish(FAKE_GH_MODE='lookup-failed').returncode, 0)
         self.assertEqual(self.tag(), self.old_sha)
         self.assertNotIn('release create', (self.store / 'calls').read_text())
+
+    def test_directory_path_is_rejected_as_apk(self):
+        result = subprocess.run(
+            ['bash', str(ROOT / 'scripts/publish_nightly.sh'), str(self.repo)],
+            cwd=self.repo, env=self.env, text=True, capture_output=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('Invalid nightly artifact', result.stderr)
+        self.assertFalse((self.store / 'calls').exists())

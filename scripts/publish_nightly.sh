@@ -4,7 +4,7 @@ set -euo pipefail
 apk=${1:?usage: publish_nightly.sh PATH_TO_UNSIGNED_APK}
 : "${GITHUB_SHA:?}" "${GITHUB_RUN_ID:?}" "${GITHUB_RUN_ATTEMPT:?}"
 : "${GITHUB_SERVER_URL:?}" "${GITHUB_REPOSITORY:?}"
-if [[ ! -s "$apk" || ! $GITHUB_SHA =~ ^[0-9a-f]{40}$ ||
+if [[ ! -f "$apk" || ! -s "$apk" || ! $GITHUB_SHA =~ ^[0-9a-f]{40}$ ||
       ! $GITHUB_RUN_ID =~ ^[0-9]+$ || ! $GITHUB_RUN_ATTEMPT =~ ^[0-9]+$ ]]; then
   echo 'Invalid nightly artifact or build identity' >&2
   exit 1
