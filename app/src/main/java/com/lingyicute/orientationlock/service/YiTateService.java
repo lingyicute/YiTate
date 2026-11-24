@@ -46,7 +46,7 @@ public class YiTateService extends Service {
     private String lastNotificationTitle;
     private String lastNotificationText;
     private final SharedPreferences.OnSharedPreferenceChangeListener orientationListener = (store, key) -> {
-        if (PreferenceManager.KEY_ORIENTATION.equals(key)
+        if ((key == null || PreferenceManager.KEY_ORIENTATION.equals(key))
                 && currentOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 && preferences.getOrientation() == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
             stopLock();

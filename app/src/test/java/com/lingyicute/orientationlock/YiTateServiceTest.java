@@ -120,6 +120,15 @@ public class YiTateServiceTest {
         assertTrue(shadowOf(service).isStoppedBySelf());
     }
 
+    @Test
+    public void activeLockStopsWhenPreferencesAreCleared() {
+        select(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        assertNotNull(overlay());
+        context.getSharedPreferences("settings", Context.MODE_PRIVATE).edit().clear().commit();
+        assertNull(overlay());
+        assertTrue(shadowOf(service).isStoppedBySelf());
+    }
+
     @Implements(Service.class)
     public static class RejectableForeground extends ShadowService {
         boolean reject;
