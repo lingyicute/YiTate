@@ -361,7 +361,7 @@
   .step h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
   .step p { color: var(--on-surface-variant); font-size: .96rem; }
   .layers {
-    margin-top: 40px; background: var(--surface-container-low); border-radius: var(--radius-xl); padding: 40px;
+    margin-top: 40px; background: var(--surface-container-low); border-radius: var(--radius-xl); padding: clamp(24px, 5vw, 40px); overflow: hidden;
     display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;
   }
   .layer-stack { position: relative; height: 260px; perspective: 900px; }
@@ -449,6 +449,7 @@
     .hero { padding-top: 40px; }
     section { padding: 52px 0; }
     .phone { width: 169px; height: 330px; }
+    .layer { width: 184px; height: 126px; font-size: .82rem; }
     /* Anchor the popover to the app bar: right-aligned to the 40px trigger it
        overflows the left edge of viewports narrower than ~350px. */
     .palette-wrap { position: static; }

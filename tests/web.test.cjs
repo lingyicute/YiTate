@@ -803,3 +803,10 @@ test('the hero chip dot does not shrink when the label wraps on narrow screens',
 test('body prefers overflow-x clip so sticky positioning is not affected', () => {
   assert.match(html, /@supports \(overflow: clip\)\s*\{\s*body\s*\{\s*overflow-x:\s*clip;/);
 });
+
+test('the layer diagram scales and stays contained on narrow screens', () => {
+  const layers = html.match(/\n  \.layers\s*\{([^}]*)\}/)[1];
+  assert.match(layers, /overflow:\s*hidden/);
+  const mobile = html.match(/@media \(max-width: 560px\)\s*\{([\s\S]*?)\n  \}/)[1];
+  assert.match(mobile, /\.layer\s*\{[^}]*width:\s*184px/);
+});
