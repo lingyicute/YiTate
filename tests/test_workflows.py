@@ -73,6 +73,16 @@ class WorkflowTests(unittest.TestCase):
         pages = (ROOT / ".github/workflows/static.yml").read_text(encoding="utf-8")
         self.assertEqual(pages.count("if: github.ref == 'refs/heads/main'"), 2)
 
+    def test_pages_trigger_paths_match_the_revision_guard(self):
+        pages = (ROOT / ".github/workflows/static.yml").read_text(encoding="utf-8")
+        guard = (ROOT / "scripts/check_pages_revision.sh").read_text(encoding="utf-8")
+        triggers = re.findall(r'^      - "([^"]+)"$', pages, re.MULTILINE)
+        watched = re.search(r"git diff --quiet \S+ \S+ -- ((?:.*\\\n)*.*); then", guard).group(1)
+        self.assertTrue(triggers)
+        # A directory glob in the trigger is a directory pathspec in the guard.
+        self.assertEqual(sorted(path.replace("/**", "/") for path in triggers),
+                         sorted(watched.replace("\\\n", " ").split()))
+
     def test_pages_checks_its_generated_html_before_upload(self):
         workflow = (ROOT / ".github/workflows/static.yml").read_text(encoding="utf-8")
         generate = workflow.index("python scripts/subset_font.py")
