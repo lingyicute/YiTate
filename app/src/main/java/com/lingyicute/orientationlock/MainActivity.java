@@ -161,6 +161,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                 preferenceManager.setNotificationRationaleShown(true))
                         .setOnCancelListener(dialog ->
                                 preferenceManager.setNotificationRationaleShown(true))
+                        .setOnDismissListener(dialog -> {
+                            if (rationaleDialog == dialog) {
+                                rationaleDialog = null;
+                            }
+                        })
                         .show();
             } else {
                 // First request, or a retry after an earlier prompt was dismissed unanswered.

@@ -312,6 +312,7 @@ public class MainActivityTest {
             // AlertDialog delivers button clicks through a Handler message.
             shadowOf(Looper.getMainLooper()).idle();
             assertTrue(preferences.isNotificationRationaleShown());
+            assertNull(ReflectionHelpers.getField(first.get(), "rationaleDialog"));
         }
         try (ActivityController<MainActivity> second = Robolectric.buildActivity(MainActivity.class).setup()) {
             assertNull(ReflectionHelpers.getField(second.get(), "rationaleDialog"));
