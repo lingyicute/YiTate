@@ -816,3 +816,8 @@ test('footer note and links align with the start edge on narrow screens', () => 
   assert.match(mobile, /\.foot \.foot-end\s*\{\s*align-items:\s*flex-start/);
   assert.match(mobile, /\.foot \.foot-note\s*\{[^}]*text-align:\s*left/);
 });
+
+test('reveal observer triggers with minimal intersection for short viewports', () => {
+  const page = boot();
+  assert.ok(page.observers[0].options.threshold <= 0.01);
+});

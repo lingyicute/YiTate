@@ -909,7 +909,7 @@
         el.addEventListener('transitionend', settle);
         el.addEventListener('transitioncancel', settle);
       });
-    }, { threshold: .12 });
+    }, { threshold: .01 });
     const reveals = $$('.reveal');
     reveals.forEach(el => { io.observe(el); el.classList.add('pending'); });
     const onRevealFocus = e => {
