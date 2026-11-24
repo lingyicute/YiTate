@@ -829,3 +829,12 @@ test('reveal focus handler ignores targets without closest()', () => {
     page.document.listeners.focusin({ target: {} });
   });
 });
+
+test('all decorative inline SVG icons are hidden from assistive technology', () => {
+  const body = html.slice(html.indexOf('<body>'));
+  const svgs = [...body.matchAll(/<svg\b[^>]*>/g)].map(m => m[0]);
+  assert.equal(svgs.length, 15);
+  for (const tag of svgs) {
+    assert.match(tag, /aria-hidden="true"/, tag);
+  }
+});
