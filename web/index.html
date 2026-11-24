@@ -156,7 +156,7 @@
     -webkit-backdrop-filter: blur(18px) saturate(1.4);
     background: var(--surface);
     background: color-mix(in oklab, var(--surface) 78%, transparent);
-    transition: background .4s var(--ease), box-shadow .3s;
+    transition: background .4s var(--ease);
   }
   .appbar.scrolled {
     background: var(--surface-container);
@@ -949,7 +949,7 @@
     syncDrift();
   }
 
-  /* ---------- App bar shadow ---------- */
+  /* ---------- App bar scrolled state ---------- */
   const appbar = $('#appbar');
   const syncAppbar = () => appbar.classList.toggle('scrolled', scrollY > 10);
   syncAppbar();
