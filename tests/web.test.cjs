@@ -821,3 +821,11 @@ test('reveal observer triggers with minimal intersection for short viewports', (
   const page = boot();
   assert.ok(page.observers[0].options.threshold <= 0.01);
 });
+
+test('reveal focus handler ignores targets without closest()', () => {
+  const page = boot();
+  assert.doesNotThrow(() => {
+    page.document.listeners.focusin({ target: null });
+    page.document.listeners.focusin({ target: {} });
+  });
+});

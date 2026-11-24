@@ -913,7 +913,7 @@
     const reveals = $$('.reveal');
     reveals.forEach(el => { io.observe(el); el.classList.add('pending'); });
     const onRevealFocus = e => {
-      const el = e.target.closest('.reveal.pending');
+      const el = e.target && e.target.closest ? e.target.closest('.reveal.pending') : null;
       if (!el) return;
       io.unobserve(el);
       clearPending(el);
