@@ -120,6 +120,20 @@ public class MainActivityTest {
         }
     }
 
+    @Test
+    @Config(sdk = 34)
+    public void activeActivityResetsSelectionWhenPreferencesAreCleared() {
+        ShadowSettings.setCanDrawOverlays(true);
+        try (ActivityController<MainActivity> controller = Robolectric.buildActivity(MainActivity.class).setup()) {
+            MainActivity activity = controller.get();
+            activity.findViewById(R.id.tv_orientation_landscape).performClick();
+            assertTrue(activity.findViewById(R.id.tv_orientation_landscape).isSelected());
+            activity.getSharedPreferences("settings", Context.MODE_PRIVATE).edit().clear().commit();
+            assertTrue(activity.findViewById(R.id.tv_orientation_default).isSelected());
+            assertFalse(activity.findViewById(R.id.tv_orientation_landscape).isSelected());
+        }
+    }
+
     public static class RejectingActivity extends MainActivity {
         @Override
         public ComponentName startForegroundService(Intent intent) {
