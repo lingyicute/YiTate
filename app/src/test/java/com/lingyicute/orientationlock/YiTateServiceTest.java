@@ -446,7 +446,7 @@ public class YiTateServiceTest {
 
     @Test
     public void notificationFallsBackToTheGenericDescriptionWithoutALock() {
-        assertEquals("YiTate is running for keeping the orientation", notificationText());
+        assertEquals("YiTate is running to keep the screen orientation", notificationText());
     }
 
     private String notificationText() {
