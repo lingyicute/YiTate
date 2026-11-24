@@ -194,6 +194,9 @@ public class YiTateService extends Service {
                 return;
             }
             NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            if (manager == null) {
+                return;
+            }
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
                     channelName, NotificationManager.IMPORTANCE_LOW);
             manager.createNotificationChannel(channel);
@@ -259,11 +262,15 @@ public class YiTateService extends Service {
             return false;
         }
         PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        if (!powerManager.isInteractive()) {
+        if (powerManager != null && !powerManager.isInteractive()) {
             removeOrientationLayout();
             return true; // Keep the requested orientation for SCREEN_ON.
         }
         WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        if (windowManager == null) {
+            failLock();
+            return false;
+        }
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(0, 0,
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                         ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE,
@@ -311,7 +318,10 @@ public class YiTateService extends Service {
         mainHandler.removeCallbacks(pollOverlayPermission);
         if (holderView == null) return;
         try {
-            ((WindowManager) getSystemService(WINDOW_SERVICE)).removeViewImmediate(holderView);
+            WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+            if (windowManager != null) {
+                windowManager.removeViewImmediate(holderView);
+            }
         } catch (IllegalArgumentException e) {
             Log.w(TAG, "Overlay was already detached", e);
         } finally {
