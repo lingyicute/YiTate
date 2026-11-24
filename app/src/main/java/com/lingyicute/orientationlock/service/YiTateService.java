@@ -94,7 +94,11 @@ public class YiTateService extends Service {
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(Intent.ACTION_SCREEN_ON);
         // These are protected system broadcasts, not app-defined broadcasts.
-        registerReceiver(screenReceiver, filter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(screenReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(screenReceiver, filter);
+        }
         AppOpsManager appOps = (AppOpsManager) getSystemService(APP_OPS_SERVICE);
         // On API 21-22 the integer watcher can register, but Android only dispatches
         // this listener for ops with a public string name. Overlay has none until M.
