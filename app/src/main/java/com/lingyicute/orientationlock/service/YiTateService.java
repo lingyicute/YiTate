@@ -178,7 +178,11 @@ public class YiTateService extends Service {
         if (appOps != null) appOps.stopWatchingMode(overlayListener);
         mainHandler.removeCallbacks(checkOverlayPermission);
         removeOrientationLayout();
-        stopForeground(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_REMOVE);
+        } else {
+            stopForeground(true);
+        }
         super.onDestroy();
     }
 
