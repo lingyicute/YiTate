@@ -33,7 +33,8 @@ import com.lingyicute.orientationlock.utils.PermissionUtils;
 
 public class YiTateService extends Service {
     private static final String TAG = YiTateService.class.getSimpleName();
-    private static final String NOTIFICATION_ID = BuildConfig.APPLICATION_ID + ".notification";
+    private static final String CHANNEL_ID = BuildConfig.APPLICATION_ID + ".notification";
+    private static final int NOTIFICATION_ID = 1;
     private static final long OVERLAY_PERMISSION_POLL_MS = 5_000;
     public static final String ACTION_SYNC_ORIENTATION = BuildConfig.APPLICATION_ID + ".action.SYNC_ORIENTATION";
 
@@ -189,7 +190,7 @@ public class YiTateService extends Service {
                 return;
             }
             NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            NotificationChannel channel = new NotificationChannel(NOTIFICATION_ID,
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
                     channelName, NotificationManager.IMPORTANCE_LOW);
             manager.createNotificationChannel(channel);
             lastChannelName = channelName;
@@ -201,7 +202,7 @@ public class YiTateService extends Service {
         String title = getString(R.string.running_notification_title);
         String text = getNotificationText();
         Notification.Builder builder = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                ? new Notification.Builder(this, NOTIFICATION_ID)
+                ? new Notification.Builder(this, CHANNEL_ID)
                 : new Notification.Builder(this);
         Intent intent = new Intent(this, MainActivity.class);
         // A notification tap does not come from an activity, so it has to ask for a task itself.
@@ -222,7 +223,7 @@ public class YiTateService extends Service {
         }
         Notification notification = builder.build();
         try {
-            startForeground(1, notification);
+            startForeground(NOTIFICATION_ID, notification);
             lastNotificationTitle = title;
             lastNotificationText = text;
             return true;
