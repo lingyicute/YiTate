@@ -412,7 +412,6 @@
   .license { margin-top: 28px; padding: 22px 26px; border-radius: var(--radius-l); background: var(--surface-container); font-size: .85rem; line-height: 1.7; }
   .license strong { color: var(--on-surface); }
   .license a { color: var(--primary); text-decoration: underline; }
-  .font-notice { margin-top: 12px; }
 
   /* Reveal */
   .reveal { transition: opacity .7s var(--ease), transform .7s var(--ease-emph); }
@@ -522,11 +521,11 @@
       <div>
         <span class="chip"><span class="dot">✦</span>GPL-3.0 · Android 5+ · Made with ❤️ by lingyicute</span>
         <h1>轻松<span class="accent">锁定</span><br>你的屏幕方向</h1>
-        <p class="lead">YiTate 是一个不到 100k 的开源小工具。躺着刷手机、横着看平板，可以按需要选择方向。没有多余功能，只做好一件事。</p>
+        <p class="lead">YiTate 是一个不到 100k 的开源小工具。躺着刷手机、横着看平板，屏幕再也不会乱转。没有多余功能，只做好一件事。</p>
         <div class="hero-cta">
           <a class="btn btn-filled" href="https://github.com/lingyicute/YiTate/releases/latest" target="_blank" rel="noopener">
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-            查看最新正式版
+            下载最新版本
           </a>
           <a class="btn btn-tonal" href="https://github.com/lingyicute/YiTate" target="_blank" rel="noopener">
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
@@ -608,7 +607,7 @@
         <div class="step reveal">
           <div class="num">1</div>
           <h3>授予悬浮窗权限</h3>
-          <p>用“显示在其他应用的上层”权限创建透明窗口；通知权限可选。</p>
+          <p>YiTate 只需要“显示在其他应用的上层”这一项权限，用来创建一个透明窗口。</p>
         </div>
         <div class="step reveal" style="--reveal-delay:.08s">
           <div class="num">2</div>
@@ -617,8 +616,8 @@
         </div>
         <div class="step reveal" style="--reveal-delay:.16s">
           <div class="num">3</div>
-          <h3>系统处理旋转请求</h3>
-          <p>系统根据窗口请求决定方向；某些设备或应用可能限制悬浮窗和旋转。</p>
+          <h3>系统跟随旋转</h3>
+          <p>悬浮窗位于其它应用上方，系统便会按悬浮窗的要求来旋转屏幕。</p>
         </div>
       </div>
       <div class="layers reveal">
@@ -640,16 +639,16 @@
     <div class="container">
       <div class="download reveal">
         <h2>现在就试试 YiTate</h2>
-        <p>从 GitHub Releases 获取正式版 · 适用于 Android 5.0 及以上</p>
+        <p>最新版本 v1.6 · 修复了 Android 14+ 兼容性 · 适用于 Android 5.0 及以上</p>
         <div class="dl-actions">
           <a class="btn btn-filled" href="https://github.com/lingyicute/YiTate/releases/latest" target="_blank" rel="noopener">
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-            查看正式版 APK
+            下载 APK
           </a>
           <a class="btn btn-outlined" href="https://github.com/lingyicute/YiTate/releases" target="_blank" rel="noopener">所有版本</a>
           <a class="btn btn-outlined" href="https://github.com/lingyicute/YiTate/issues" target="_blank" rel="noopener">反馈问题</a>
         </div>
-        <p class="dl-note">首次选择非默认方向时，请允许 <code>显示在其他应用的上层</code> 权限</p>
+        <p class="dl-note">首次使用时请允许 <code>显示在其他应用的上层</code> 权限</p>
       </div>
     </div>
   </section>
@@ -678,7 +677,6 @@
     <div class="license">
       <strong>Copyright © 2024 lingyicute.</strong><br>
       This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the <a href="https://www.gnu.org/licenses" target="_blank" rel="noopener">GNU General Public License</a> for more details.
-      <p class="font-notice">字体：<a href="https://github.com/lingyicute/Nebulove" target="_blank" rel="noopener">Nebulove</a>（lingyicute）。这项素材单独授权，不适用项目代码的 GPL 许可。按 <a href="https://github.com/lingyicute/Nebulove/blob/df0d98ed69435d0ff1f3705c084aca057f4ca9a5/LICENSE" target="_blank" rel="noopener">Nebulove 项目嵌入许可 1.0（限非商业使用）</a>使用。</p>
     </div>
   </div>
 </footer>
