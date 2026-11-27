@@ -121,6 +121,7 @@ public class YiTateServiceTest {
     }
 
     @Test
+    @Config(sdk = 34)
     public void activeLockStopsWhenPreferencesAreCleared() {
         select(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         assertNotNull(overlay());
